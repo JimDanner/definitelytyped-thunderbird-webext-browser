@@ -35,7 +35,7 @@ Go to [the source code site](https://hg.mozilla.org/try-comm-central/tags) and c
 
 The script [src/overrides.ts](https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts) corrects shortcomings of the downloaded JSON files – they have some duplication, they don't always show the correct return type for functions, and they list some mandatory function parameters as optional. Thus, **whenever the APIs change, overrides.ts must also be updated**. The current file was updated for
 
-https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/71d05fed8960397e66665ecd67efc0ae09a93428/src/overrides.ts#L1
+https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts#L1
 
 If that differs a lot from the version you're generating for, there may be imperfections in the result.
 
