@@ -5,6 +5,9 @@ Script to generate type definitions and documentation for the development of Web
 This generator is derived from [definitelytyped-firefox-webext-browser](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser), a generator for the type definitions for development of Firefox add-ons, made by [Jasmin Bom](https://github.com/jsmnbom).
 
 ## Usage
+
+#### Note: not fully working yet. Please come back in a week or so.
+
 *You should only need to do this if you wanna update the definitions; to just use them, download the resulting definition file.*
 
 ### 1. Clone, install, and compile to JavaScript
@@ -59,19 +62,19 @@ It will download several files:
 If everything has downloaded successfully, the program can generate the type definitions and documentation:
 
 ```shell
-$ node build/index.js --tag <TAG> --out <OUTPUT_FILE>
+$ node build/index.js [--tag <TAG>] [--out <OUTPUT_FILE>]
 ```
 
 for example,
 
 ```shell
-$ node build/index.js --tag THUNDERBIRD_102_7_2_RELEASE --out index.d.ts
+$ node build/index.js --tag THUNDERBIRD_102_7_2_RELEASE --out v102/index.d.ts
 ```
 
 Both options may be omitted:
 
-* without `--out` the output file will be `index.d.ts`
-* without `--tag` the program takes the first version whose downloads it finds in the current directory – so if you have downloaded more than one version, be sure to include the tag.
+* without `--out` the output file will be `index.d.ts` in the current directory
+* without `--tag` the program takes the first version whose downloads it finds – so if you have downloaded more than one version, be sure to include the tag.
 
 ### 4. Use the definitions, or submit them to DefinitelyTyped
 How you install the definition file `index.d.ts` in your IDE depends on the IDE. For example, in WebStorm you go to the settings, Languages & Frameworks, JavaScript, Libraries, click on Add... and choose the framework type *Custom*, click the + icon and attach the file.
