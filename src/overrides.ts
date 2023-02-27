@@ -1,3 +1,4 @@
+// THUNDERBIRD_109_0b4_RELEASE FIREFOX_109_0b9_RELEASE
 import Converter from './converter';
 
 export default function override(converter: Converter) {
