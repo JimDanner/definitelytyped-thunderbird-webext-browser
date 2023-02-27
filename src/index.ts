@@ -1,9 +1,9 @@
 /**
- * Generates typescript definitions for webextension development in firefox.
+ * Generates typescript definitions for webextension development in thunderbird.
  *
  * See ../README.md for usage.
  *
- * @author Jasmin Bom.
+ * @author Jasmin Bom, Jim Danner
  */
 
 import minimist from 'minimist';

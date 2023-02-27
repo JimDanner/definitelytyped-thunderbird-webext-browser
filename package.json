@@ -1,14 +1,14 @@
 {
-    "name": "definitelytyped-firefox-webext-browser",
+    "name": "definitelytyped-thunderbird-webext-browser",
     "version": "1.0.0",
-    "description": "Generate typescript/definitelytyped definitions for Firefox Webextension developement.",
+    "description": "Generate typescript/definitelytyped definitions for Thunderbird WebExtension developement",
     "main": "build/index.js",
     "typings": "build/index.d.ts",
     "scripts": {
         "watch": "tsc -p . -w",
         "once": "tsc -p ."
     },
-    "author": "Jasmin Bom",
+    "author": "Jasmin Bom, Jim Danner",
     "license": "MIT",
     "private": true,
     "dependencies": {
