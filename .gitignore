@@ -63,12 +63,9 @@ typings/
 # Built code from tsc
 build/
 
-# Suggested folders to put schema files in
-firefox/
-schemas/
-
-# Symlinked to DefinitelyTyped/types/firefox-webext-browser
-firefox-webext-browser
+# API schemas and data
+APIs/
 
 # Vscode stuff
 workspace.code-workspace
+.vscode/
