@@ -33,9 +33,7 @@ Go to [the source code site](https://hg.mozilla.org/try-comm-central/tags) and c
 
 #### Notice: one part of this generator is version-dependent
 
-The script [src/overrides.ts](https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts) corrects shortcomings of the downloaded JSON files – they have some duplication, they don't always show the correct return type for functions, and they list some mandatory function parameters as optional. Thus, **whenever the APIs change, overrides.ts must also be updated**. The current file was updated for
-
-https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts#L1
+The script [src/overrides.ts](https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts) corrects shortcomings of the downloaded JSON files – they have some duplication, they don't always show the correct return type for functions, and they list some mandatory function parameters as optional. Thus, **whenever the APIs change, overrides.ts must also be updated**. The current file was updated for version THUNDERBIRD_109_0b4_RELEASE (see [the file itself](https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts#L1) to verify the current version).
 
 If that differs a lot from the version you're generating for, there may be imperfections in the result.
 
