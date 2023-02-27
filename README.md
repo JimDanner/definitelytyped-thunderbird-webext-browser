@@ -74,7 +74,7 @@ $ node build/index.js --tag THUNDERBIRD_102_7_2_RELEASE --out v102/index.d.ts
 Both options may be omitted:
 
 * without `--out` the output file will be `index.d.ts` in the current directory
-* without `--tag` the program takes the first version whose downloads it finds – so if you have downloaded more than one version, be sure to include the tag.
+* without `--tag` the program takes the first version whose downloads it finds – so if you have downloaded the files for more than one version, be sure to include the tag.
 
 ### 4. Use the definitions, or submit them to DefinitelyTyped
 How you install the definition file `index.d.ts` in your IDE depends on the IDE. For example, in WebStorm you go to the settings, Languages & Frameworks, JavaScript, Libraries, click on Add... and choose the framework type *Custom*, click the + icon and attach the file.

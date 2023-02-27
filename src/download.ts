@@ -29,11 +29,15 @@ if (!tb_tag) {
 }
 let gecko_tag: string;
 
+
+
 const TB_BASE_URL  = 'https://hg.mozilla.org/try-comm-central',
-      TB_DOC_URL   = 'https://webextension-api.thunderbird.net/en/latest/',
+      TB_DOC_URL   = 'https://webextension-api.thunderbird.net/en/stable/',
       FF_BASE_URL  = 'https://hg.mozilla.org/mozilla-unified',
       API_DIR      = 'APIs',
-      METAINFO_DIR = 'metainfo';
+      METAINFO_DIR = 'metainfo',
+      TB_SCHEM_DIR = 'thunderbird-schemas',
+      FF_SCHEM_DIR = 'gecko-schemas';
 
 /** absolute path where this API will be saved */
 const out_dir = path.resolve(API_DIR, tb_tag);
@@ -61,11 +65,10 @@ type namespace_link = {
     name: string,
     doc_url: string
 }
-
 // Step 1: download the metadata files
 // TODO: perhaps adjust API homepage URL to Thunderbird version;
-//  problem is that the page doesn't exist for every TB version.
 
+//  problem is that the page doesn't exist for every TB version.
 const meta_info: dl_data[] = [
     {descr: 'version number', type: 'file', save_to: METAINFO_DIR,
         url: `${TB_BASE_URL}/raw-file/${tb_tag}/mail/config/version.txt`},
@@ -75,17 +78,19 @@ const meta_info: dl_data[] = [
         url: TB_DOC_URL},
 ];
 const meta_urls = meta_info.map(item => item.url);
+
 download(meta_info);
 
 // Step 2: download the API archives
-
 const api_files: dl_data[] = [{
     descr: 'Thunderbird JSON schemas',
     type: 'archive',
-    save_to: 'thunderbird-schemas',
+    save_to: TB_SCHEM_DIR,
     url: `${TB_BASE_URL}/archive/${tb_tag}.zip/mail/components/extensions/schemas/`
 }];
 let api_urls: string[];
+
+
 function proceed_with_metainfo(completed_url: string): void {
     if (!meta_urls.length) return;  // this is not one of the files this function is concerned with
     meta_urls.splice(meta_urls.indexOf(completed_url), 1)
@@ -99,7 +104,7 @@ function proceed_with_metainfo(completed_url: string): void {
     api_files.push({
         descr: 'Gecko JSON schemas',
         type: 'archive',
-        save_to: 'gecko-schemas',
+        save_to: FF_SCHEM_DIR,
         url: `${FF_BASE_URL}/archive/${gecko_tag}.zip/toolkit/components/extensions/schemas/`
     });
     api_urls = api_files.map(item => item.url);
@@ -113,7 +118,7 @@ function get_missing_schemas(completed_url: string): void {
     api_urls.splice(api_urls.indexOf(completed_url), 1)
     if (api_urls.length) return;   // start working when all files have been downloaded
 
-    const api_home_root = parse(fs.readFileSync(path.join(out_dir, METAINFO_DIR, 'latest'),
+    const api_home_root = parse(fs.readFileSync(path.join(out_dir, METAINFO_DIR, path.basename(TB_DOC_URL)),
         {encoding: "utf-8"}));
     let tb_namespaces: namespace_link[] = [], gecko_namespaces: namespace_link[] = [];
     api_home_root.getElementsByTagName('tbody').forEach(tbody_el => {
@@ -127,14 +132,14 @@ function get_missing_schemas(completed_url: string): void {
     gecko_namespaces.forEach(ns => {
         let filenm = snake_case(ns.name)+'.json';
         if (filenm == 'protocol_handlers.json') filenm = 'extension_protocol_handlers.json';
-        if (!fs.existsSync(path.join(out_dir, 'gecko-schemas', filenm)))
+        if (!fs.existsSync(path.join(out_dir, FF_SCHEM_DIR, filenm)))
             missing_filenames.push(filenm);
     });
     const missing_files = missing_filenames.map(name => {
         return {
             descr: `Gecko JSON schema ${name}`,
             type: 'file',
-            save_to: 'gecko-schemas',
+            save_to: FF_SCHEM_DIR,
             url: `${FF_BASE_URL}/raw-file/${gecko_tag}/browser/components/extensions/schemas/${name}`
         } as dl_data
     });
@@ -145,9 +150,12 @@ function get_missing_schemas(completed_url: string): void {
 
 function read_table(body: HTMLElement): namespace_link[] {
      return body.querySelectorAll('td:first-child a').map(cell => {
+         let link = cell.attributes.href;
+         if (!link.startsWith('http'))
+             link = TB_DOC_URL + link;
          return {
            name: cell.textContent,
-           doc_url: cell.attributes.href
+           doc_url: link
          } as namespace_link
      })
 }
