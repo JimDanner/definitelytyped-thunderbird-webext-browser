@@ -27,6 +27,7 @@ if (!tb_tag) {
     process.exit(1);
 }
 let gecko_tag: string;
+const version_from_tag: string = tb_tag.match(/\d+/)?.[0] || '';
 
 const TB_BASE_URL    = 'https://hg.mozilla.org/try-comm-central',
       TB_DOC_URL     = 'https://webextension-api.thunderbird.net/en/',
@@ -40,93 +41,69 @@ const TB_BASE_URL    = 'https://hg.mozilla.org/try-comm-central',
 /** absolute path where this API will be saved */
 const out_dir = path.resolve(API_DIR, tb_tag);
 
-// Step 1: download the metadata files
+run_download_procedure();
 
-const meta_info: dl_data[] = [
-    {descr: 'version number', type: 'file', save_to: METAINFO_DIR,
-        url: `${TB_BASE_URL}/raw-file/${tb_tag}/mail/config/version.txt`},
-    {descr: 'Gecko version tag', type: 'file', save_to: METAINFO_DIR,
-        url: `${TB_BASE_URL}/raw-file/${tb_tag}/.gecko_rev.yml`},
-];
-let meta_urls: Set<string>;
+async function run_download_procedure() {
+    // Step 1: download the metadata files
 
-// determine whether this TB version has its own documentation page
-const version_from_tag: string = tb_tag.match(/\d+/)?.[0] || '';
-let tb_documentation: string;
-if (version_from_tag) {
-    tb_documentation = `${TB_DOC_URL}${version_from_tag}`;
-    request.head(tb_documentation, (err, status) => {
-        if (err) {
-            console.error(`Error connecting to ${TB_DOC_URL}`);
-            process.exit(2);
+    // determine whether this TB version has its own documentation page
+    let tb_documentation: string;
+    if (!version_from_tag) tb_documentation = `${TB_DOC_URL}${TB_DEFAULT_VER}`;
+    else {
+        tb_documentation = `${TB_DOC_URL}${version_from_tag}`;
+        if (!await url_works(tb_documentation)) {
+            console.log(`No documentation webpage specific to version ${version_from_tag}`);
+            console.log(`\tUsing default version '${TB_DEFAULT_VER}'`);
+            tb_documentation = `${TB_DOC_URL}${TB_DEFAULT_VER}`;
         }
-        if (status.statusCode !== 200) {
-             console.log(`No documentation webpage specific to version ${version_from_tag}`);
-             console.log(`\tUsing default version '${TB_DEFAULT_VER}'`);
-             tb_documentation = `${TB_DOC_URL}${TB_DEFAULT_VER}`;
-         }
-         start_download_procedure();
-    });
-}
-else {
-    tb_documentation = `${TB_DOC_URL}${TB_DEFAULT_VER}`;
-    start_download_procedure();
-}
+    }
+    // download the meta-information files
+    const meta_info: dl_data[] = [
+        {descr: 'version number', type: 'file', save_to: METAINFO_DIR,
+            url: `${TB_BASE_URL}/raw-file/${tb_tag}/mail/config/version.txt`},
+        {descr: 'Gecko version tag', type: 'file', save_to: METAINFO_DIR,
+            url: `${TB_BASE_URL}/raw-file/${tb_tag}/.gecko_rev.yml`},
+        {descr: 'API homepage', type: 'file', save_to: METAINFO_DIR,
+            url: tb_documentation},
+    ];
+    await Promise.all(meta_info.map(download));
+    console.log('[DONE]');
 
-function start_download_procedure() {
-    meta_info.push({
-        descr: 'API homepage',
-        type: 'file',
-        save_to: METAINFO_DIR,
-        url: tb_documentation
-    });
-    meta_urls = new Set(meta_info.map(item => item.url));
-    download(meta_info);
-}
-
-// Step 2: download the API archives
-
-const api_files: dl_data[] = [{
-    descr: 'Thunderbird JSON schemas',
-    type: 'archive',
-    save_to: TB_SCHEMA_DIR,
-    url: `${TB_BASE_URL}/archive/${tb_tag}.zip/mail/components/extensions/schemas/`
-}];
-let api_urls: Set<string>;
-
-function process_metainfo(completed_url: string): void {
-    if (!meta_urls.has(completed_url)) return;
-    meta_urls.delete(completed_url);
-    if (meta_urls.size) return;   // start working when all files have been downloaded
-
-    // extract the Gecko tag, then see if the Firefox version exists. if not, use the default
+    // extract the Gecko tag, then see if that Firefox version exists; if not, use the default
     gecko_tag = fs.readFileSync(path.join(out_dir, METAINFO_DIR, '.gecko_rev.yml'), {encoding: "utf-8"})
-        .match(/GECKO_HEAD_REF: \S+\n/)?.[0].replace(/GECKO_HEAD_REF: (\S+)\n/, '$1')
+            .match(/GECKO_HEAD_REF: \S+\n/)?.[0].replace(/GECKO_HEAD_REF: (\S+)\n/, '$1')
         || 'default';
-    console.log(`Gecko version tag: ${gecko_tag}`);
-    api_files.push({
+    if (!await url_works(`${FF_BASE_URL}/raw-file/${gecko_tag}`)) {
+        console.warn(`Gecko version ${gecko_tag} is not available. Using 'default'`);
+        gecko_tag = 'default';
+    }
+    else console.log(`Gecko version tag: ${gecko_tag}`);
+
+    // Step 2: download the API archives
+
+    const api_files: dl_data[] = [{
+        descr: 'Thunderbird JSON schemas',
+        type: 'archive',
+        save_to: TB_SCHEMA_DIR,
+        url: `${TB_BASE_URL}/archive/${tb_tag}.zip/mail/components/extensions/schemas/`
+    },
+    {
         descr: 'Gecko JSON schemas',
         type: 'archive',
         save_to: FF_SCHEMA_DIR,
         url: `${FF_BASE_URL}/archive/${gecko_tag}.zip/toolkit/components/extensions/schemas/`
-    });
-    api_urls = new Set(api_files.map(item => item.url));
-    download(api_files);
-}
+    }];
+    await Promise.all(api_files.map(download));
+    console.log('[DONE]');
 
-// Step 3: download missing API schemas
+    // Step 3: download any missing API schemas and save a JSON file of namespaces
 
-function get_missing_schemas(completed_url: string): void {
-    if (!api_urls.has(completed_url)) return;
-    api_urls.delete(completed_url);
-    if (api_urls.size) return;   // start working when all files have been downloaded
-
-    const api_home_root = parse(fs.readFileSync(path.join(out_dir, METAINFO_DIR,
+    const api_home_DOM_root = parse(fs.readFileSync(path.join(out_dir, METAINFO_DIR,
         path.posix.basename(tb_documentation)), {encoding: "utf-8"}));
     let tb_namespaces: namespace_link[] = [], gecko_namespaces: namespace_link[] = [];
-    api_home_root.getElementsByTagName('tbody').forEach(tbody_el => {
+    api_home_DOM_root.getElementsByTagName('tbody').forEach(tbody_el => {
         if (tbody_el.parentNode.previousElementSibling.textContent.includes('MailExtension'))
-            tb_namespaces = read_table(tbody_el);
+            tb_namespaces = read_table(tbody_el, tb_documentation);
         else if (tbody_el.parentNode.previousElementSibling.textContent.includes('Firefox'))
             gecko_namespaces = read_table(tbody_el);
     });
@@ -138,24 +115,34 @@ function get_missing_schemas(completed_url: string): void {
         if (!fs.existsSync(path.join(out_dir, FF_SCHEMA_DIR, filenm)))
             missing_filenames.push(filenm);
     });
-    const missing_files = missing_filenames.map(name => {
-        return {
-            descr: `Gecko JSON schema ${name}`,
-            type: 'file',
-            save_to: FF_SCHEMA_DIR,
-            url: `${FF_BASE_URL}/raw-file/${gecko_tag}/browser/components/extensions/schemas/${name}`
-        } as dl_data
-    });
-    download(missing_files);
+    // download the missing files from the Gecko source code
+    if (missing_filenames.length) {
+        const missing_files = missing_filenames.map(name => {
+            return {
+                descr: `Gecko JSON schema ${name}`,
+                type: 'file',
+                save_to: FF_SCHEMA_DIR,
+                url: `${FF_BASE_URL}/raw-file/${gecko_tag}/browser/components/extensions/schemas/${name}`
+            } as dl_data
+        });
+        await Promise.all(missing_files.map(download));
+        console.log('[DONE]');
+    }
+    // create a JSON file of the namespaces and their documentation URLs
     Writer({path: path.join(out_dir, METAINFO_DIR, 'namespaces.json')})
         .write(JSON.stringify({'tb': tb_namespaces, 'gecko': gecko_namespaces}, null, '\t'));
 }
 
-function read_table(body: HTMLElement): namespace_link[] {
+/**
+ * Get the names and links of the namespaces on the Thunderbird documentation website
+ * @param body the root DOM element of the page
+ * @param [base_url] URL with which the links should begin for the TB documentation
+ */
+function read_table(body: HTMLElement, base_url?: string): namespace_link[] {
      return body.querySelectorAll('td:first-child a').map(cell => {
          let link = cell.attributes.href;
-         if (!link.startsWith('http'))
-             link = tb_documentation + '/' + link;
+         if (!link.startsWith('http') && base_url)
+             link = base_url + '/' + link;
          return {
            name: cell.textContent,
            doc_url: link
@@ -173,11 +160,27 @@ function snake_case(s: string): string {
         .reduce((r, c) => r + (c.match(/[A-Z]/) ? '_'+c.toLowerCase() : c), '')
 }
 
-function download(items: dl_data[]): void {
-    items.forEach(item => {
-        console.log(`Downloading ${item.descr}\n\tto ${path.join(API_DIR, tb_tag, item.save_to)}/`);
-        // TODO: error checking on the download process (e.g. THUNDERBIRD_78_10_1_RELEASE has
-        //  a Gecko version FIREFOX_78_10_1esr_BUILD1 that's not available anymore => status 404)
+/**
+ * Check whether a URL is available (i.e. it gives status code **200 OK**).
+ * Terminates the program if there's an operational error (not if the status code is ≥ 300)
+ * @param {string} url the URL to check
+ */
+async function url_works(url: string): Promise<boolean> {
+    return new Promise(function(successCallback) {
+        request.head(url, (err, status) => {
+            if (err) {
+                console.error(`Error connecting to ${url}`);
+                process.exit(2);
+            }
+            else successCallback(status?.statusCode === 200)
+        })
+    })
+}
+
+async function download(item: dl_data): Promise<string> {
+    console.log(`Downloading ${item.descr}\n\tto ${path.join(API_DIR, tb_tag, item.save_to)}/`);
+    // TODO: error checking on the download process
+    return new Promise(function(successCallback) {
         switch (item.type) {
             case "archive":
                 request(item.url)
@@ -186,14 +189,15 @@ function download(items: dl_data[]): void {
                         const filename = path.basename(path.normalize(entry.path));
                         entry.pipe(Writer({path: path.join(out_dir, item.save_to, filename)}));
                     })
-                    .on('close', () => get_missing_schemas(item.url));
+                    .on('close', () => successCallback(item.url));
                 break;
             case "file":
                 const filename = path.posix.basename(item.url);  // works for URLs too. TODO: in Windows too?
                 request(item.url)
                     .pipe(Writer({path: path.join(out_dir, item.save_to, filename)}))
-                    .on('close', () => process_metainfo(item.url));
+                    .on('close', () => successCallback(item.url));
                 break;
         }
     });
 }
+
