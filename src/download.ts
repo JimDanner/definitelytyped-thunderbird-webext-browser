@@ -22,10 +22,9 @@ const argv = minimist(process.argv.slice(2), {
   alias: { t: 'tag' },
 });
 const tb_tag: string = argv['tag'];
-if (!tb_tag) {
-    console.error('No version tag\nSee README.md for usage information.');
-    process.exit(1);
-}
+if (!tb_tag)
+    exit_with_error_message('No version tag\nSee README.md for usage information.');
+
 let gecko_tag: string;
 const version_from_tag: string = tb_tag.match(/\d+/)?.[0] || '';
 
@@ -160,6 +159,11 @@ function snake_case(s: string): string {
         .reduce((r, c) => r + (c.match(/[A-Z]/) ? '_'+c.toLowerCase() : c), '')
 }
 
+function exit_with_error_message(msg: string, errcode?: number): never {
+    console.error(msg);
+    process.exit(errcode || 1);
+}
+
 /**
  * Check whether a URL is available (i.e. it gives status code **200 OK**).
  * Terminates the program if there's an operational error (not if the status code is ≥ 300)
@@ -168,34 +172,49 @@ function snake_case(s: string): string {
 async function url_works(url: string): Promise<boolean> {
     return new Promise(function(successCallback) {
         request.head(url, (err, status) => {
-            if (err) {
-                console.error(`Error connecting to ${url}`);
-                process.exit(2);
-            }
+            if (err) exit_with_error_message(`Error connecting to ${url}: ${err.toString()}`, 2);
             else successCallback(status?.statusCode === 200)
         })
     })
 }
 
-async function download(item: dl_data): Promise<string> {
+/**
+ * download a file, or download and expand a ZIP archive
+ * @param item - details of the download: URL, where to save etc.
+ * @return an empty promise
+ */
+async function download(item: dl_data): Promise<void> {
     console.log(`Downloading ${item.descr}\n\tto ${path.join(API_DIR, tb_tag, item.save_to)}/`);
-    // TODO: error checking on the download process
     return new Promise(function(successCallback) {
         switch (item.type) {
             case "archive":
                 request(item.url)
+                    .on('error', err => {
+                        exit_with_error_message(`Error loading ${item.url}: ${err.toString()}`, 2)
+                    })
+                    .on('response', resp => {
+                        if (resp.statusCode >= 400)
+                            exit_with_error_message(`Couldn't load ${item.url}: ${resp.statusMessage}`, 3)
+                    })
                     .pipe(unzipper.Parse())
                     .on('entry', (entry: Entry) => {
                         const filename = path.basename(path.normalize(entry.path));
                         entry.pipe(Writer({path: path.join(out_dir, item.save_to, filename)}));
                     })
-                    .on('close', () => successCallback(item.url));
+                    .on('close', successCallback);
                 break;
             case "file":
                 const filename = path.posix.basename(item.url);  // works for URLs too. TODO: in Windows too?
                 request(item.url)
+                    .on('error', err => {
+                        exit_with_error_message(`Error loading ${item.url}: ${err.toString()}`, 2)
+                    })
+                    .on('response', resp => {
+                        if (resp.statusCode >= 400)
+                            exit_with_error_message(`Couldn't load ${item.url}: ${resp.statusMessage}`, 3)
+                    })
                     .pipe(Writer({path: path.join(out_dir, item.save_to, filename)}))
-                    .on('close', () => successCallback(item.url));
+                    .on('close', successCallback);
                 break;
         }
     });
