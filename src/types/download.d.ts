@@ -12,12 +12,3 @@ type dl_data = {
     url: string
 };
 
-/**
- * details of an API schema listed on thunderbird.net
- * @property {string} name - name by which it is listed in the table
- * @property {string} doc_url - the link on the name in the listing
- */
-type namespace_link = {
-    name: string,
-    doc_url: string
-}
