@@ -37,7 +37,7 @@ if (!tb_tag) {
 }
 
 let tb_version: string = fs.readFileSync(path.resolve(API_DIR, tb_tag, METAINFO_DIR, 'version.txt'),
-    {encoding: "utf-8"}).match(/^\d+(\.\d+)?/)?.[0] || tb_tag.match(/\d+/)?.[0] || '???';
+    {encoding: "utf-8"}).match(/^\w+(\.\w+)?/)?.[0] || tb_tag.match(/\d+/)?.[0] || '???';
 console.log(`Thunderbird version number ${tb_version}`);
 
 let namespaces_used: Record<string, string> = JSON.parse(fs.readFileSync(path.resolve(API_DIR, tb_tag,
@@ -90,16 +90,13 @@ let converter = new Converter([path.resolve(API_DIR, tb_tag, TB_SCHEMA_DIR),
 
 converter.setUnsupportedAsOptional();
 
-console.log('\n\u001b[1mOVERRIDE\u001b[m');
-
+console.log('\n\x1b[1mOverride\x1b[m');
 override(converter);
 
-console.log('\n\u001b[1mCONVERT\u001b[m');
-
+console.log('\n\x1b[1mConvert\x1b[m');
 converter.convert(FOOTER);
 
-console.log('\n\u001b[1mWRITE\u001b[m');
-
+console.log('\n\x1b[1mWrite to file\x1b[m');
 converter.write(outfile);
 
-console.log('DONE');
+console.log('\x1b[33m[DONE]\x1b[m');

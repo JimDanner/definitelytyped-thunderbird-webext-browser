@@ -69,7 +69,7 @@ async function run_download_procedure() {
             url: tb_documentation},
     ];
     await Promise.all(meta_info.map(download));
-    console.log('[DONE]');
+    console.log('\x1b[33m[DONE]\x1b[m');
 
     // extract the Gecko tag, then see if that Firefox version exists; if not, use the default
     gecko_tag = fs.readFileSync(path.join(out_dir, METAINFO_DIR, '.gecko_rev.yml'), {encoding: "utf-8"})
@@ -91,7 +91,7 @@ async function run_download_procedure() {
             url: `${FF_BASE_URL}/archive/${gecko_tag}.zip/toolkit/components/extensions/schemas/`},
     ];
     await Promise.all(api_files.map(download));
-    console.log('[DONE]');
+    console.log('\x1b[33m[DONE]\x1b[m');
 
     // Step 3: download any missing API schemas and save a JSON file of namespaces
 
@@ -123,7 +123,7 @@ async function run_download_procedure() {
             } as dl_data
         });
         await Promise.all(missing_files.map(download));
-        console.log('[DONE]');
+        console.log('\x1b[33m[DONE]\x1b[m');
     }
     // create a JSON file of the namespaces and their documentation URLs
     Writer({path: path.join(out_dir, METAINFO_DIR, 'namespaces.json')})
@@ -181,7 +181,9 @@ async function url_works(url: string): Promise<boolean> {
  * @return an empty promise
  */
 async function download(item: dl_data): Promise<void> {
-    console.log(`Downloading ${item.descr}\n\tto ${path.join(API_DIR, tb_tag, item.save_to)}/`);
+    console.log(`Downloading ${item.descr}
+    from ${item.url}
+    to ${path.join(API_DIR, tb_tag, item.save_to)}/`);
     return new Promise(function(successCallback) {
         const tcp_stream: request.Request = request(item.url)
             .on('error', err => {

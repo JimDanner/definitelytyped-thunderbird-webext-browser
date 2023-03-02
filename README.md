@@ -32,7 +32,7 @@ $ npm run once
 ### 2. Download type info and documentation
 The generator uses type information and documentation contained in JSON files from the source code of Thunderbird and its rendering engine Gecko. The `download.js` script can do most of the work, you only need to choose a Thunderbird version whose WebExtension API you want to use for writing add-ons.
 
-Go to [the source code site](https://hg.mozilla.org/try-comm-central/tags) and copy the *tag* of the version you choose – this would be `THUNDERBIRD_102_7_2_RELEASE` if you plan to develop add-ons for Thunderbird 102.7.2.
+Go to [the source code site](https://hg.mozilla.org/try-comm-central/tags) and copy the *tag* of the version you choose – this would be `THUNDERBIRD_102_7_2_RELEASE` if you plan to develop add-ons for Thunderbird 102.7.2, or `default` to get the latest version that's under development.
 
 #### Notice: one part of this generator is version-dependent
 
@@ -51,11 +51,11 @@ for example,
 $ node build/download.js --tag THUNDERBIRD_102_7_2_RELEASE
 ```
 
-It will download several files:
+You can also use `-t` instead of `--tag`. It will download several files:
 
 * JSON files from the Thunderbird source code, containing definitions and documentation for Thunderbird-specific APIs like `addressBooks` (the ones that Firefox doesn't have).
 * Additional meta-information that is in Thunderbird's source code, like the version number (in this example: 102.7.2) and the version tag of its Gecko renderer (in this example: `FIREFOX_102_7_0esr_BUILD1`)
-* The list of APIs that this Thunderbird version inherits from Gecko/Firefox, which is in a table on a webpage at [thunderbird.net](https://webextension-api.thunderbird.net/en/102/#firefox-webextension-apis-supported-by-thunderbird).
+* The list of APIs that this Thunderbird version inherits from Gecko/Firefox, which is in a table on a webpage at [thunderbird.net](https://webextension-api.thunderbird.net/en/102/#firefox-webextension-apis-supported-by-thunderbird). ***Note:*** if anyone knows of a systematic way to get this list from the Thunderbird source code, let me know!
 * JSON files from the Firefox source code, containing definitions and documentation for the Firefox/Gecko APIs that Thunderbird uses.
 
 ### 3. Generate the definition file
@@ -73,8 +73,8 @@ $ node build/index.js --tag THUNDERBIRD_102_7_2_RELEASE --out v102/index.d.ts
 
 Both options may be omitted:
 
-* without `--out` the output file will be `index.d.ts` in the current directory
-* without `--tag` the program takes the first version whose downloads it finds – so if you have downloaded the files for more than one version, be sure to include the tag.
+* without `--out` (or `-o`) the output file will be `index.d.ts` in the current directory
+* without `--tag` (or `-t`) the program takes the first version whose downloads it finds – so if you have downloaded the files for more than one version, be sure to include the tag.
 
 ### 4. Use the definitions, or submit them to DefinitelyTyped
 How you install the definition file `index.d.ts` in your IDE depends on the IDE. For example, in WebStorm you go to the settings, Languages & Frameworks, JavaScript, Libraries, click on Add... and choose the framework type *Custom*, click the + icon and attach the file.

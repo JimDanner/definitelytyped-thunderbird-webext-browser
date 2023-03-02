@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+// @ts-ignore
+import {Writer} from 'fstream'; // file writer that also creates the containing directory tree
 import * as path from 'path';
 
 import stripJsonComments from 'strip-json-comments';
@@ -1101,11 +1103,8 @@ export default class Converter {
   }
 
   write(filename: string) {
-    // Delete file
-    fs.truncate(filename, 0, () => {
-      // Write this.out to file except the very last character (which is an extra \n)
-      fs.writeFileSync(filename, this.out.slice(0, this.out.length - 1));
-    });
+    // Write this.out to file except the very last character (which is an extra \n)
+    Writer({path: filename}).write(this.out.slice(0, this.out.length - 1));
   }
 
   removeNamespace(name: string) {
