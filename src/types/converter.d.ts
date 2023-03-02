@@ -10,6 +10,7 @@ interface NamespaceSchema {
   permissions?: string[];
   min_manifest_version: number;
   max_manifest_version: number;
+  docURL?: string;  // added for Thunderbird, to add @see documentation links
 }
 
 interface NameDesc {

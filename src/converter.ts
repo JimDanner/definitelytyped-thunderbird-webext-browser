@@ -196,7 +196,8 @@ export default class Converter {
   functions: string[] = [];
   events: string[] = [];
 
-  constructor(folders: string[], header: string, namespace_aliases: Indexable<string>) {
+  constructor(folders: string[], header: string, namespace_aliases: Indexable<string>,
+              allowed_namespaces?: Record<string, string>) {
     // Generated source
     this.out = header;
 
@@ -214,6 +215,10 @@ export default class Converter {
     for (let data of this.schemaData) {
       // Enumerate the actual namespace data
       for (let namespace of data[1]) {
+        // Thunderbird: if it's not on the list, skip it
+        if (allowed_namespaces && !allowed_namespaces.hasOwnProperty(namespace.namespace))
+          continue;
+        const doc_url: string | undefined = allowed_namespaces?.[namespace.namespace];
         // Check if we have an alias for it
         if (this.namespace_aliases.hasOwnProperty(namespace.namespace)) {
           namespace.namespace = this.namespace_aliases[namespace.namespace];
@@ -233,6 +238,7 @@ export default class Converter {
             allowedContexts: [],
             min_manifest_version: namespace.min_manifest_version,
             max_manifest_version: namespace.max_manifest_version,
+            docURL: doc_url,
           };
           this.namespaces[namespace.namespace] = resNamespace;
         } else {
@@ -274,12 +280,13 @@ export default class Converter {
     }
   }
 
-  convert() {
+  convert(footertext: string = '') {
     // For each namespace, set it as current, and convert it, which adds directly onto this.out
     for (let namespace of Object.keys(this.namespaces)) {
       this.namespace = namespace;
       this.convertNamespace();
     }
+    this.out += footertext;
   }
 
   collectSchemas(folders: string[]) {
@@ -569,8 +576,13 @@ export default class Converter {
         } else if (type.additionalProperties) {
           // If it has additional, but not normal properties, try converting those properties as a type,
           // passing the parent name
-          type.additionalProperties.id = type.id;
-          out += `{[key: string]: ${this.convertType(type.additionalProperties)}}`;
+          // bugfix: additionalProperties is sometimes a boolean, so you can't assign .id
+          //  and you can't run convertType with additionalProperties as the argument
+          if (typeof(type.additionalProperties) === 'object') {
+            type.additionalProperties.id = type.id;
+            out += `{[key: string]: ${this.convertType(type.additionalProperties)}}`;
+          }
+          else out += `{[key: string]: ${typeof(type.additionalProperties)}}`;
         } else {
           // Okay so it's just some kind of object, right?...
           out += 'object';
@@ -1061,11 +1073,19 @@ export default class Converter {
     if (contexts) {
       doclines.push(contexts);
     }
+
+    // See also links (Thunderbird)
+    if (data.docURL) {
+      doclines.push(`@see ${data.docURL}`);
+    }
     if (doclines.length > 0) {
       out += toDocComment(doclines.join('\n\n')) + '\n';
     }
 
-    out += `declare namespace browser.${data.namespace} {\n`;
+    // Thunderbird: declare each namespace as a constant, so it has
+    // documentation in its tooltip (at least in WebStorm)
+    out += `const ${data.namespace.replace(/^.+\./, '')};\n`
+    out += `declare namespace ${data.namespace} {\n`;
     if (this.types.length > 0)
       out += `/* ${data.namespace} types */\n${this.types.join('\n\n')}\n\n`;
     if (this.additionalTypes.length > 0) out += `${this.additionalTypes.join('\n\n')}\n\n`;
@@ -1103,6 +1123,9 @@ export default class Converter {
   }
 
   remove(namespace: string, section: string, id_or_name: string) {
+    // prevent Firefox overrides from failing on Thunderbird API
+    if (!this.namespaces[namespace] || !(this.namespaces[namespace] as any)[section])
+      return console.debug(`[skipping ${namespace}.${section}.${id_or_name}]`);
     const index = this.getIndex(namespace, section, id_or_name);
     if (index === -1) {
       console.warn('Missing thing to remove', namespace, section, id_or_name);
@@ -1117,6 +1140,9 @@ export default class Converter {
     id_or_name: string,
     edit: (type: TypeSchema) => TypeSchema
   ) {
+    // prevent Firefox overrides from failing on Thunderbird API
+    if (!this.namespaces[namespace] || !(this.namespaces[namespace] as any)[section])
+      return console.debug(`[skipping ${namespace}.${section}.${id_or_name}]`);
     console.log(`Editing ${namespace}.${section}.${id_or_name}`);
     const index = this.getIndex(namespace, section, id_or_name);
     if (index === -1) {
@@ -1131,6 +1157,9 @@ export default class Converter {
   }
 
   add(namespace: string, section: string, value: TypeSchema) {
+    // prevent Firefox overrides from failing on Thunderbird API
+    if (!this.namespaces[namespace] || !(this.namespaces[namespace] as any)[section])
+      return console.debug(`[skipping ${namespace}.${section}]`);
     console.log(`Adding to ${namespace}.${section}.${this.getIdOrName(value)}`);
     const sectionObj = (this.namespaces[namespace] as any)[section];
     sectionObj.push(value);
