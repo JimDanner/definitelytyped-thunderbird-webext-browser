@@ -285,6 +285,9 @@ export default class Converter {
   convert(footertext: string = '') {
     // For each namespace, set it as current, and convert it, which adds directly onto this.out
     for (let namespace of Object.keys(this.namespaces)) {
+      // Thunderbird: nest the nested namespaces (like addressBooks.provider) in the output
+      // this means for such namespaces running convertNamespace recursively, not from here.
+      if (namespace.match(/\./)) continue;
       this.namespace = namespace;
       this.convertNamespace();
     }
@@ -1086,8 +1089,9 @@ export default class Converter {
 
     // Thunderbird: declare each namespace as a constant, so it has
     // documentation in its tooltip (at least in WebStorm)
-    out += `const ${data.namespace.replace(/^.+\./, '')};\n`
-    out += `declare namespace ${data.namespace} {\n`;
+    const namespace_name_leaf: string = data.namespace.replace(/^.+\./, '');
+    out += `const ${namespace_name_leaf};\n`
+    out += `declare namespace ${namespace_name_leaf} {\n`;
     if (this.types.length > 0)
       out += `/* ${data.namespace} types */\n${this.types.join('\n\n')}\n\n`;
     if (this.additionalTypes.length > 0) out += `${this.additionalTypes.join('\n\n')}\n\n`;
@@ -1097,8 +1101,16 @@ export default class Converter {
       out += `/* ${data.namespace} functions */\n${this.functions.join('\n\n')}\n\n`;
     if (this.events.length > 0)
       out += `/* ${data.namespace} events */\n${this.events.join('\n\n')}\n\n`;
-    out = out.slice(0, out.length - 1) + '}\n\n';
+    // Thunderbird: nest the nested namespaces (like addressBooks.provider) in the output
+    for (let child_namespace of Object.keys(this.namespaces).
+      filter(ns => ns.match(new RegExp('^' + data.namespace + '\\.[^.]+$')))) {
+      this.out += out;
+      out = '\n';
+      this.namespace = child_namespace;
+      this.convertNamespace();
+    }
 
+    out = out.slice(0, out.length - 1) + '}\n\n';
     this.out += out;
   }
 
