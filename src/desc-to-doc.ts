@@ -63,12 +63,48 @@ export function descToMarkdown(description: string) {
   // chrome.* -> browser.*
   description = description.replace(/\bchrome\.(?=[a-zA-Z])/, 'browser.');
 
+  // Thunderbird: sort of bug in this toMarkdown converter: links like
+  // <https://github.com/thundernest/sample-extensions/tree/master/theme_experiment>
+  // are converted to something like
+  // <https: github.com="" thundernest="" sample-extensions="" tree="" master="" theme_experiment="">
+  description = description.replace(/<(https::[^>]+)>/, '$1');
+
   description = toMarkdown(description, toMarkdownOptions);
 
   // a few descriptions contain "<webview>" which is interpreted as an unclosed tag, fix it
   description = description
     .replace(/<\/webview>$/, '')
     .replace(/<webview>(?!\s)(?!$)/, '<webview> ');
+
+  /* Thunderbird replacements, due to the different syntax
+   * used in Thunderbird's JSON schemas (some reStructuredText syntax)
+   * Also, some constructs don't seem to work in WebStorm
+   */
+
+  // browser.* -> messenger.*
+  description = description.replace(/\bbrowser\.(?=[a-zA-Z])/g, 'messenger.');
+
+  // some literal strings are between <value> and </value>
+  description = description.replace(/<\/?value>/g, '``');
+
+  // references to other documentation items are in reStructuredText form
+  description = description.replace(/:ref:`([^`]+)`/g, '{@link $1}');
+
+  // references to the documentation website in reStructuredText form
+  description = description.replace(/:doc:`([^`]+)`/g,
+      '[$1](https://webextension-api.thunderbird.net/en/stable/$1.html)');
+
+  // Construct <literalinclude>includes/commands/manifest.json<lang>JSON</lang></literalinclude>
+  description = description.replace(
+      /<literalinclude>([^<]+)\/([^</]+)<[^<]+<[^<]+<\/literalinclude>/g,
+      `[$2](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/$1/$2)`
+  );
+
+  // Construct `legacy properties <|link-legacy-properties|>`__
+  description = description.replace(/`([^`]+)<\|[^|]+\|>`__/g, '$1');
+
+  // References to other documentation in the form |ImageData|
+  description = description.replace(/\|(\w+)\|/g, '{@link $1}');
 
   return description;
 }

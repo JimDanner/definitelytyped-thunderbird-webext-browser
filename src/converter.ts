@@ -1083,6 +1083,8 @@ export default class Converter {
     if (data.docURL) {
       doclines.push(`@see ${data.docURL}`);
     }
+
+    // Turn it into JSDoc comment form
     if (doclines.length > 0) {
       out += toDocComment(doclines.join('\n\n')) + '\n';
     }
