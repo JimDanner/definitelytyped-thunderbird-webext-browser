@@ -23,12 +23,11 @@ const argv = minimist(process.argv.slice(2), {
   string: ['tag'],
   alias: { t: 'tag' },
 });
-const tb_tag: string = argv['tag'];
-if (!tb_tag)
+if (!argv.tag)
     exit_with_error_message('No version tag\nSee README.md for usage information.');
 
 let gecko_tag: string;
-const version_from_tag: string = tb_tag.match(/\d+/)?.[0] || '';
+const version_from_tag: string = argv.tag.match(/\d+/)?.[0] || '';
 
 const TB_BASE_URL    = 'https://hg.mozilla.org/try-comm-central',
       TB_DOC_URL     = 'https://webextension-api.thunderbird.net/en/',
@@ -40,7 +39,7 @@ const TB_BASE_URL    = 'https://hg.mozilla.org/try-comm-central',
       FF_SCHEMA_DIR  = 'gecko-schemas';
 
 /** absolute path where this API will be saved */
-const out_dir = path.resolve(API_DIR, tb_tag);
+const out_dir = path.resolve(API_DIR, argv.tag);
 
 run_download_procedure();
 
@@ -62,9 +61,9 @@ async function run_download_procedure() {
     // download the meta-information files
     const meta_info: dl_data[] = [
         {descr: 'version number', type: 'file', save_to: METAINFO_DIR,
-            url: `${TB_BASE_URL}/raw-file/${tb_tag}/mail/config/version.txt`},
+            url: `${TB_BASE_URL}/raw-file/${argv.tag}/mail/config/version.txt`},
         {descr: 'Gecko version tag', type: 'file', save_to: METAINFO_DIR,
-            url: `${TB_BASE_URL}/raw-file/${tb_tag}/.gecko_rev.yml`},
+            url: `${TB_BASE_URL}/raw-file/${argv.tag}/.gecko_rev.yml`},
         {descr: 'API homepage', type: 'file', save_to: METAINFO_DIR,
             url: tb_documentation},
     ];
@@ -86,7 +85,7 @@ async function run_download_procedure() {
 
     const api_files: dl_data[] = [
         {descr: 'Thunderbird JSON schemas', type: 'archive', save_to: TB_SCHEMA_DIR,
-            url: `${TB_BASE_URL}/archive/${tb_tag}.zip/mail/components/extensions/schemas/`},
+            url: `${TB_BASE_URL}/archive/${argv.tag}.zip/mail/components/extensions/schemas/`},
         {descr: 'Gecko JSON schemas', type: 'archive', save_to: FF_SCHEMA_DIR,
             url: `${FF_BASE_URL}/archive/${gecko_tag}.zip/toolkit/components/extensions/schemas/`},
     ];
@@ -96,7 +95,7 @@ async function run_download_procedure() {
     // Step 3: download any missing API schemas and save a JSON file of namespaces
 
     const api_home_DOM_root = parse(fs.readFileSync(path.join(out_dir, METAINFO_DIR,
-        path.posix.basename(tb_documentation)), {encoding: "utf-8"}));
+        path.basename(tb_documentation)), {encoding: "utf-8"}));
     let tb_namespaces: Record<string, string> = {}, gecko_namespaces: Record<string, string> = {};
     api_home_DOM_root.getElementsByTagName('tbody').forEach(tbody_el => {
         if (tbody_el.parentNode.previousElementSibling.textContent.includes('MailExtension'))
@@ -183,7 +182,7 @@ async function url_works(url: string): Promise<boolean> {
 async function download(item: dl_data): Promise<void> {
     console.log(`Downloading ${item.descr}
     from ${item.url}
-    to ${path.join(API_DIR, tb_tag, item.save_to)}/`);
+    to ${path.join(API_DIR, argv.tag, item.save_to)}/`);
     return new Promise(function(successCallback) {
         const tcp_stream: request.Request = request(item.url)
             .on('error', err => {
@@ -195,7 +194,7 @@ async function download(item: dl_data): Promise<void> {
             });
         switch (item.type) {
             case "file":
-                const filename = path.posix.basename(item.url);  // works for URLs too. TODO: in Windows too?
+                const filename = path.basename(item.url);  // works for URLs too
                 tcp_stream.pipe(Writer({path: path.join(out_dir, item.save_to, filename)}))
                     .on('close', successCallback);
                 break;

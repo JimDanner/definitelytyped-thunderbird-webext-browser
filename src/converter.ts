@@ -197,6 +197,7 @@ export default class Converter {
   properties: string[] = [];
   functions: string[] = [];
   events: string[] = [];
+  webstorm: boolean | undefined;
 
   constructor(folders: string[], header: string, namespace_aliases: Indexable<string>,
               allowed_namespaces?: Record<string, string>) {
@@ -282,7 +283,8 @@ export default class Converter {
     }
   }
 
-  convert(footertext: string = '') {
+  convert(footertext: string = '', webstorm: boolean = false) {
+    this.webstorm = webstorm;
     // For each namespace, set it as current, and convert it, which adds directly onto this.out
     for (let namespace of Object.keys(this.namespaces)) {
       // Thunderbird: nest the nested namespaces (like addressBooks.provider) in the output
@@ -1089,10 +1091,15 @@ export default class Converter {
       out += toDocComment(doclines.join('\n\n')) + '\n';
     }
 
-    // Thunderbird: declare each namespace as a constant, so it has
-    // documentation in its tooltip (at least in WebStorm)
+    // Nested namespace declarations, so each declaration only uses the 'leaf' of the namespace:
+    // if this is namespace browser.browserSettings.colorManagement, we are already two levels deep
+    // and we  declare namespace colorManagement  here.
     const namespace_name_leaf: string = data.namespace.replace(/^.+\./, '');
-    out += `const ${namespace_name_leaf};\n`
+    // Thunderbird on WebStorm: declare each namespace as a constant, so it has
+    // documentation in its tooltip (seems to be a WebStorm bug, not needed elsewhere)
+    if (this.webstorm) {
+      out += `const ${namespace_name_leaf};\n`
+    }
     out += `declare namespace ${namespace_name_leaf} {\n`;
     if (this.types.length > 0)
       out += `/* ${data.namespace} types */\n${this.types.join('\n\n')}\n\n`;
@@ -1117,8 +1124,16 @@ export default class Converter {
   }
 
   write(filename: string) {
+    // would prefer to have 'prettier' do this, but it errors out
+    let indentation = '';
+    let lines = this.out.split('\n');
+    lines.forEach((line, n) => {
+      if (line[0] === '}' && indentation) indentation = indentation.slice(1);
+      lines[n] = indentation + line;
+      if (line.match(/\{\s*$/)) indentation += '\t';
+    });
     // Write this.out to file except the very last character (which is an extra \n)
-    Writer({path: filename}).write(this.out.slice(0, this.out.length - 1));
+    Writer({path: filename}).write(lines.join('\n'));
   }
 
   removeNamespace(name: string) {

@@ -20,10 +20,11 @@ const API_DIR        = 'APIs',
 
 const argv = minimist(process.argv.slice(2), {
     string: ['tag', 'out'],
-    alias: { t: 'tag', version: 'tag', o: 'out' },
+    boolean: ['webstorm'],
+    default: {out: 'index.d.ts', webstorm: false},
+    alias: { t: 'tag', version: 'tag', o: 'out', w: 'webstorm' },
 });
-const outfile = argv['out'] || 'index.d.ts';
-let tb_tag: string = argv['tag'];
+let tb_tag: string = argv.tag;
 if (!tb_tag) {
     try {  // the sync version, to use the result immediately after
         tb_tag = fs.readdirSync(path.resolve(API_DIR), {withFileTypes: true})
@@ -47,8 +48,8 @@ namespaces_used.manifest = MANIFEST_DOC;  // not listed on Thunderbird docs webp
 // Namespace references that need renaming
 const NAMESPACE_ALIASES = { contextMenusInternal: 'menusInternal', manifest: '_manifest' };
 
-// Header of the definitions file
-const HEADER = `// Type definitions for non-npm package WebExtension Development in Thunderbird ${tb_version}
+// Header and footer of the definitions file
+let HEADER = `// Type definitions for non-npm package WebExtension Development in Thunderbird ${tb_version}
 // Project: https://webextension-api.thunderbird.net/en/stable/
 // Definitions by: Jim Danner <https://github.com/JimDanner>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
@@ -70,6 +71,9 @@ interface WebExtEvent<TCallback extends (...args: any[]) => any> {
  * The Thunderbird API is documented at [thunderbird.net](https://webextension-api.thunderbird.net/en/stable/).
  * @version Thunderbird ${tb_version}
  */
+`;
+
+if (argv.webstorm) HEADER += `
 const messenger;
 
 /**
@@ -80,11 +84,23 @@ const messenger;
  */
 const browser;
 
-declare namespace messenger {
 `;
 
-const FOOTER = '}\n';
+HEADER += `declare namespace messenger {
+`;
 
+let FOOTER = '}\n';
+if (!argv.webstorm) FOOTER += `
+/**
+ * **The root object of the WebExtension API**
+ *
+ * In Thunderbird extensions, it is [recommended](https://webextension-api.thunderbird.net/en/stable/#thunderbird-webextension-api-documentation) to use \`messenger\` instead of \`browser\`, to remind yourself of the subtle differences between the Thunderbird, Firefox, and generic WebExtension APIs.
+ * @version Thunderbird ${tb_version}
+ */
+ import browser = messenger;
+`;
+
+// Conversion from schemas to .d.ts
 let converter = new Converter([path.resolve(API_DIR, tb_tag, TB_SCHEMA_DIR),
     path.resolve(API_DIR, tb_tag, FF_SCHEMA_DIR)], HEADER, NAMESPACE_ALIASES, namespaces_used);
 
@@ -94,9 +110,9 @@ console.log('\n\x1b[1mOverride\x1b[m');
 override(converter);
 
 console.log('\n\x1b[1mConvert\x1b[m');
-converter.convert(FOOTER);
+converter.convert(FOOTER, argv.webstorm);
 
 console.log('\n\x1b[1mWrite to file\x1b[m');
-converter.write(outfile);
+converter.write(argv.out);
 
 console.log('\x1b[33m[DONE]\x1b[m');
