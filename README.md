@@ -5,10 +5,7 @@ Script to generate type definitions and documentation for the development of Web
 This generator is derived from [definitelytyped-firefox-webext-browser](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser), a generator for the type definitions for development of Firefox add-ons, made by [Jasmin Bom](https://github.com/jsmnbom).
 
 ## Usage
-
-#### Note: not fully working yet. Please come back in a week or so.
-
-*You should only need to do this if you wanna update the definitions; to just use them, download the resulting definition file.*
+*You should only need to do this if you wanna update the definitions; to just use them, download the resulting definition file from the OUTPUT directory.*
 
 ### 1. Clone, install, and compile to JavaScript
 On a machine that has node.js and npm, download the project files. For example,
@@ -62,7 +59,7 @@ You can also use `-t` instead of `--tag`. It will download several files:
 If everything has downloaded successfully, the program can generate the type definitions and documentation:
 
 ```shell
-$ node build/index.js [--tag <TAG>] [--out <OUTPUT_FILE>]
+$ node build/index.js [--tag <TAG>] [--out <OUTPUT_FILE>] [--webstorm]
 ```
 
 for example,
@@ -71,10 +68,11 @@ for example,
 $ node build/index.js --tag THUNDERBIRD_102_7_2_RELEASE --out v102/index.d.ts
 ```
 
-Both options may be omitted:
+All options may be omitted:
 
-* without `--out` (or `-o`) the output file will be `index.d.ts` in the current directory
-* without `--tag` (or `-t`) the program takes the first version whose downloads it finds – so if you have downloaded the files for more than one version, be sure to include the tag.
+* without `--out` (or `-o`) the output will be a file named `index.d.ts` in a subdrectory of `OUTPUT/`
+* without `--tag` (or `-t`) the program takes the first version whose downloads it finds – so if you have downloaded the files for more than one version, be sure to include the tag
+* with `--webstorm` (or `-w`) the program generates a special version that works better in the WebStorm IDE. The standard version works better in Visual Studio Code.
 
 ### 4. Use the definitions, or submit them to DefinitelyTyped
 How you install the definition file `index.d.ts` in your IDE depends on the IDE. For example, in WebStorm you go to the settings, Languages & Frameworks, JavaScript, Libraries, click on Add... and choose the framework type *Custom*, click the + icon and attach the file.
