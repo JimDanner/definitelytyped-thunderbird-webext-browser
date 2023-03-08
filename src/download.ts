@@ -36,7 +36,15 @@ const TB_BASE_URL    = 'https://hg.mozilla.org/try-comm-central',
       API_DIR        = 'APIs',
       METAINFO_DIR   = 'metainfo',
       TB_SCHEMA_DIR  = 'thunderbird-schemas',
-      FF_SCHEMA_DIR  = 'gecko-schemas';
+      FF_SCHEMA_DIR  = 'gecko-schemas',
+      BASIC_APIS: Record<string, string> = {
+          // not in the table on the Thunderbird WebExtensions documentation webpage:
+          events: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/events',
+          experiments: 'https://webextension-api.thunderbird.net/en/latest/how-to/experiments.html',
+          extensionTypes: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/extensionTypes',
+          manifest: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json',
+          types: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/types',
+      };
 
 /** absolute path where this API will be saved */
 const out_dir = path.resolve(API_DIR, argv.tag);
@@ -96,13 +104,15 @@ async function run_download_procedure() {
 
     const api_home_DOM_root = parse(fs.readFileSync(path.join(out_dir, METAINFO_DIR,
         path.basename(tb_documentation)), {encoding: "utf-8"}));
-    let tb_namespaces: Record<string, string> = {}, gecko_namespaces: Record<string, string> = {};
+    let tb_namespaces: Record<string, string> = {},
+        gecko_namespaces: Record<string, string> = {};
     api_home_DOM_root.getElementsByTagName('tbody').forEach(tbody_el => {
         if (tbody_el.parentNode.previousElementSibling.textContent.includes('MailExtension'))
             tb_namespaces = read_table(tbody_el, tb_documentation);
         else if (tbody_el.parentNode.previousElementSibling.textContent.includes('Firefox'))
             gecko_namespaces = read_table(tbody_el);
     });
+    Object.assign(gecko_namespaces, BASIC_APIS);
     const missing_filenames: string[] = [];
     // check whether we have everything in gecko_namespaces; put missing ones on the list
     Object.keys(gecko_namespaces).forEach(ns => {

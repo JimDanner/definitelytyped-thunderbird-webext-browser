@@ -53,11 +53,14 @@ const RESERVED = [
 const GLOBAL_TYPES = [
   'ImageData',
   'ArrayBuffer',
-  'ImageData',
   'Element',
   'Uint8Array',
   'globalThis.Date',
   'Window',
+  'File', // used in the Thunderbird API
+  'AddressBookNode', // FIXME: the schema defines this as an interface, but the program doesn't detect
+                     //  that, emits a warning, and defines a conflicting type AddressBookNode
+                     //  while also correctly putting in the interface declaration
 ];
 
 // Types that are considered "simple"
@@ -198,12 +201,13 @@ export default class Converter {
   functions: string[] = [];
   events: string[] = [];
   webstorm: boolean | undefined;
+  exp: '' | 'export ';
 
   constructor(folders: string[], header: string, namespace_aliases: Indexable<string>,
               allowed_namespaces?: Record<string, string>) {
     // Generated source
     this.out = header;
-
+    this.exp = '';
     this.namespace_aliases = namespace_aliases;
 
     // Collect schema files
@@ -285,6 +289,7 @@ export default class Converter {
 
   convert(footertext: string = '', webstorm: boolean = false) {
     this.webstorm = webstorm;
+    this.exp = webstorm ? '' : 'export ';
     // For each namespace, set it as current, and convert it, which adds directly onto this.out
     for (let namespace of Object.keys(this.namespaces)) {
       // Thunderbird: nest the nested namespaces (like addressBooks.provider) in the output
@@ -531,7 +536,7 @@ export default class Converter {
             // As per https://github.com/DefinitelyTyped/DefinitelyTyped/issues/23002 don't use actual
             // typescript enums
             this.additionalTypes.push(
-              `${commentFromSchema(type)}type ${typeName} = ${this.convertType(type, true)}`
+              `${commentFromSchema(type)}${this.exp}type ${typeName} = ${this.convertType(type, true)}`
             );
             // And then just reference it by name in output
             out += typeName;
@@ -556,7 +561,7 @@ export default class Converter {
             if (type.id && !root) {
               const typeName = `_${pascalCase(type.id!)}`;
               this.additionalTypes.push(
-                `${commentFromSchema(type)}interface ${typeName} {\n${properties.join(';\n')};\n}`
+                `${commentFromSchema(type)}${this.exp}interface ${typeName} {\n${properties.join(';\n')};\n}`
               );
               // And then just reference it by name in output
               out += typeName;
@@ -719,14 +724,14 @@ export default class Converter {
       if (type.functions || type.events || (type.type === 'object' && !type.isInstanceOf)) {
         // If it has functions or events, or is an object that's not an instance of another one, it's an
         // interface
-        convertedTypes.push(`${comment}interface ${type.id} ${convertedType}`);
+        convertedTypes.push(`${comment}${this.exp}interface ${type.id} ${convertedType}`);
       } else if (type.enum) {
         // As per https://github.com/DefinitelyTyped/DefinitelyTyped/issues/23002 don't use actual
         // typescript enums
-        convertedTypes.push(`${comment}type ${pascalCase(type.id!)} = ${convertedType}`);
+        convertedTypes.push(`${comment}${this.exp}type ${pascalCase(type.id!)} = ${convertedType}`);
       } else {
         // It's just a type of some kind
-        convertedTypes.push(`${comment}type ${type.id} = ${convertedType};`);
+        convertedTypes.push(`${comment}${this.exp}type ${type.id} = ${convertedType};`);
       }
     }
     return convertedTypes;
@@ -739,7 +744,7 @@ export default class Converter {
     for (let [propName, prop] of Object.entries(properties)) {
       prop.id = propName;
       convertedProperties.push(
-        `${commentFromSchema(prop)}const ${propName}: ${this.convertType(prop)}${
+        `${commentFromSchema(prop)}${this.exp}const ${propName}: ${this.convertType(prop)}${
           prop.optional ? ' | undefined' : ''
         };`
       );
@@ -783,9 +788,11 @@ export default class Converter {
         // Add an underscore to the definition and export it as the proper name
         this.additionalTypes.push(`export {_${name} as ${name}};`);
         name = '_' + name;
+        return `${commentFromSchema(func)}function ${name}(${parameters.join(', ')}): ${returnType};`;
       }
       // Optional top-level functions aren't supported, because commenting parameters doesn't work for them
-      return `${commentFromSchema(func)}function ${name}(${parameters.join(', ')}): ${returnType};`;
+      else
+        return `${commentFromSchema(func)}${this.exp}function ${name}(${parameters.join(', ')}): ${returnType};`;
     }
   }
 
@@ -926,8 +933,9 @@ export default class Converter {
   ) {
     if (extra) {
       // It has extra parameters, so output custom event handler
-      let listenerName = '_' + pascalCase(`${this.namespace}_${name}_Event`);
-      this.additionalTypes.push(`interface ${listenerName}<TCallback = (${parameters.join(
+      let listenerName = '_' + pascalCase(`${this.namespace}_${name}_Event`)
+          .replace('.', '_');  // For stuff from nested namespaces
+      this.additionalTypes.push(`${this.exp}interface ${listenerName}<TCallback = (${parameters.join(
         ', '
       )}) => ${returnType}> {
     addListener(cb: TCallback, ${extra.join(', ')}): void;
@@ -983,7 +991,7 @@ export default class Converter {
     });
 
     // Add const and ; if we're not in a class
-    out = `${!classy ? 'const ' : ''}${event.name}: ${this.convertSingleEvent(
+    out = `${!classy ? `${this.exp}const ` : ''}${event.name}: ${this.convertSingleEvent(
       parameters,
       returnType,
       extra,
@@ -1100,7 +1108,7 @@ export default class Converter {
     if (this.webstorm) {
       out += `const ${namespace_name_leaf};\n`
     }
-    out += `declare namespace ${namespace_name_leaf} {\n`;
+    out += `${this.exp}namespace ${namespace_name_leaf} {\n`;
     if (this.types.length > 0)
       out += `/* ${data.namespace} types */\n${this.types.join('\n\n')}\n\n`;
     if (this.additionalTypes.length > 0) out += `${this.additionalTypes.join('\n\n')}\n\n`;

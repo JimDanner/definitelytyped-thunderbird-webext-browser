@@ -15,8 +15,7 @@ import path from 'path';
 const API_DIR        = 'APIs',
       METAINFO_DIR   = 'metainfo',
       TB_SCHEMA_DIR  = 'thunderbird-schemas',
-      FF_SCHEMA_DIR  = 'gecko-schemas',
-      MANIFEST_DOC   = 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json';
+      FF_SCHEMA_DIR  = 'gecko-schemas';
 
 const argv = minimist(process.argv.slice(2), {
     string: ['tag', 'out'],
@@ -43,7 +42,6 @@ console.log(`Thunderbird version number ${tb_version}`);
 
 let namespaces_used: Record<string, string> = JSON.parse(fs.readFileSync(path.resolve(API_DIR, tb_tag,
     METAINFO_DIR, 'namespaces.json'), {encoding: "utf-8"}));
-namespaces_used.manifest = MANIFEST_DOC;  // not listed on Thunderbird docs webpage
 
 // Namespace references that need renaming
 const NAMESPACE_ALIASES = { contextMenusInternal: 'menusInternal', manifest: '_manifest' };
