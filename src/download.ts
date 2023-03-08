@@ -31,7 +31,7 @@ const version_from_tag: string = argv.tag.match(/\d+/)?.[0] || '';
 
 const TB_BASE_URL    = 'https://hg.mozilla.org/try-comm-central',
       TB_DOC_URL     = 'https://webextension-api.thunderbird.net/en/',
-      TB_DEFAULT_VER = 'stable',
+      TB_DEFAULT_VER = 'latest',
       FF_BASE_URL    = 'https://hg.mozilla.org/mozilla-unified',
       API_DIR        = 'APIs',
       METAINFO_DIR   = 'metainfo',
@@ -43,8 +43,11 @@ const TB_BASE_URL    = 'https://hg.mozilla.org/try-comm-central',
           experiments: 'https://webextension-api.thunderbird.net/en/latest/how-to/experiments.html',
           extensionTypes: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/extensionTypes',
           manifest: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json',
+          'privacy.network': 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/network',
+          'privacy.services': 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/services',
+          'privacy.websites': 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/websites',
           types: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/types',
-      };
+      }
 
 /** absolute path where this API will be saved */
 const out_dir = path.resolve(API_DIR, argv.tag);
@@ -116,6 +119,7 @@ async function run_download_procedure() {
     const missing_filenames: string[] = [];
     // check whether we have everything in gecko_namespaces; put missing ones on the list
     Object.keys(gecko_namespaces).forEach(ns => {
+        if (ns.includes('.')) return;  // privacy.network etc. don't have their own files
         let filenm = snake_case(ns)+'.json';
         if (filenm == 'protocol_handlers.json') filenm = 'extension_protocol_handlers.json';
         if (!fs.existsSync(path.join(out_dir, FF_SCHEMA_DIR, filenm)))
@@ -135,8 +139,9 @@ async function run_download_procedure() {
         console.log('\x1b[33m[DONE]\x1b[m');
     }
     // create a JSON file of the namespaces and their documentation URLs
+    console.log('Writing namespace data to file')
     Writer({path: path.join(out_dir, METAINFO_DIR, 'namespaces.json')})
-        .write(JSON.stringify({...tb_namespaces, ...gecko_namespaces}, null, '\t'));
+        .write(JSON.stringify({...tb_namespaces, ...gecko_namespaces}, null, '\t'))
 }
 
 /**

@@ -2,11 +2,12 @@ import * as fs from 'fs';
 // @ts-ignore
 import {Writer} from 'fstream'; // file writer that also creates the containing directory tree
 import * as path from 'path';
+const format: (text: string, opts: any) => string = require('prettier').format;
 
 import stripJsonComments from 'strip-json-comments';
 import * as _ from 'lodash';
 
-import { descToMarkdown, toDocComment } from './desc-to-doc';
+import {descToMarkdown, toDocComment} from './desc-to-doc';
 
 // Reserved keywords in typescript
 const RESERVED = [
@@ -203,10 +204,10 @@ export default class Converter {
   webstorm: boolean | undefined;
   exp: '' | 'export ';
 
-  constructor(folders: string[], header: string, namespace_aliases: Indexable<string>,
+  constructor(folders: string[], initialString: string, namespace_aliases: Indexable<string>,
               allowed_namespaces?: Record<string, string>) {
     // Generated source
-    this.out = header;
+    this.out = initialString;
     this.exp = '';
     this.namespace_aliases = namespace_aliases;
 
@@ -287,7 +288,8 @@ export default class Converter {
     }
   }
 
-  convert(footertext: string = '', webstorm: boolean = false) {
+  convert(headertext: string = '', betweentext: string = '',
+          footertext: string = '', webstorm: boolean = false) {
     this.webstorm = webstorm;
     this.exp = webstorm ? '' : 'export ';
     // For each namespace, set it as current, and convert it, which adds directly onto this.out
@@ -298,7 +300,9 @@ export default class Converter {
       this.namespace = namespace;
       this.convertNamespace();
     }
-    this.out += footertext;
+    this.out = headertext + this.out + betweentext
+        + this.out.replace(/\bmessenger\./g, 'browser.')
+        + footertext;
   }
 
   collectSchemas(folders: string[]) {
@@ -1101,7 +1105,7 @@ export default class Converter {
 
     // Nested namespace declarations, so each declaration only uses the 'leaf' of the namespace:
     // if this is namespace browser.browserSettings.colorManagement, we are already two levels deep
-    // and we  declare namespace colorManagement  here.
+    // and we  [export] namespace colorManagement  here.
     const namespace_name_leaf: string = data.namespace.replace(/^.+\./, '');
     // Thunderbird on WebStorm: declare each namespace as a constant, so it has
     // documentation in its tooltip (seems to be a WebStorm bug, not needed elsewhere)
@@ -1132,16 +1136,19 @@ export default class Converter {
   }
 
   write(filename: string) {
-    // would prefer to have 'prettier' do this, but it errors out
-    let indentation = '';
-    let lines = this.out.split('\n');
-    lines.forEach((line, n) => {
-      if (line[0] === '}' && indentation) indentation = indentation.slice(1);
-      lines[n] = indentation + line;
-      if (line.match(/\{\s*$/)) indentation += '\t';
-    });
-    // Write this.out to file except the very last character (which is an extra \n)
-    Writer({path: filename}).write(lines.join('\n'));
+    try {
+      const output: string = format(this.out, {
+        parser: "typescript",
+        useTabs: true,
+        singleQuote: true,
+        printWidth: 100,
+      });
+      Writer({path: filename}).write(output);
+    } catch(err) {
+      console.debug('[The library \'prettier\' encountered formatting errors]');
+      console.debug(err.toString());
+      Writer({path: filename}).write(this.out);
+    }
   }
 
   removeNamespace(name: string) {
