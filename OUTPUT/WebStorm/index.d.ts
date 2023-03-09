@@ -69,7 +69,7 @@ declare namespace messenger {
 			/**
 			 * A _dictionary object_ defining one or more commands as _name-value_ pairs, the _name_ being the name of the command and the _value_ being a {@link commands.CommandsShortcut}. The _name_ may also be one of the following built-in special shortcuts: * ``_execute_browser_action`` * ``_execute_compose_action`` * ``_execute_message_display_action`` Example: [manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/commands/manifest.json)
 			 */
-			commands?: { [key: string]: _WebExtensionManifestCommands } | undefined;
+			commands?: {[key: string]: _WebExtensionManifestCommands} | undefined;
 			compose_action?: _WebExtensionManifestComposeAction | undefined;
 			message_display_action?: _WebExtensionManifestMessageDisplayAction | undefined;
 			/**
@@ -78,7 +78,7 @@ declare namespace messenger {
 			theme_experiment?: ThemeExperiment | undefined;
 			/** Needs at least manifest version 3. */
 			declarative_net_request?: _WebExtensionManifestDeclarativeNetRequest | undefined;
-			experiment_apis?: { [key: string]: experiments.ExperimentAPI } | undefined;
+			experiment_apis?: {[key: string]: experiments.ExperimentAPI} | undefined;
 			/** A list of protocol handler definitions. */
 			protocol_handlers?: ProtocolHandler[] | undefined;
 			default_locale?: string | undefined;
@@ -172,15 +172,15 @@ declare namespace messenger {
 			/**
 			 * A _dictionary object_ with one or more _key-value_ pairs to map new theme image keys to internal Thunderbird CSS image variables. The new image key is usable as an image reference in {@link theme.ThemeType}. Example: [theme_experiment_image.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_image.json)
 			 */
-			images?: { [key: string]: string } | undefined;
+			images?: {[key: string]: string} | undefined;
 			/**
 			 * A _dictionary object_ with one or more _key-value_ pairs to map new theme color keys to internal Thunderbird CSS color variables. The example shown below maps the theme color key ``popup_affordance`` to the CSS color variable --arrowpanel-dimmed. The new color key is usable as a color reference in {@link theme.ThemeType}. [theme_experiment_color.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_color.json)
 			 */
-			colors?: { [key: string]: string } | undefined;
+			colors?: {[key: string]: string} | undefined;
 			/**
 			 * A _dictionary object_ with one or more _key-value_ pairs to map new theme property keys to internal Thunderbird CSS property variables. The new property key is usable as a property reference in {@link theme.ThemeType}. Example: [theme_experiment_property.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_property.json)
 			 */
-			properties?: { [key: string]: string } | undefined;
+			properties?: {[key: string]: string} | undefined;
 		}
 
 		/** Contains the color, image and property settings of a theme. */
@@ -411,7 +411,7 @@ declare namespace messenger {
 			| {
 					name: ExtensionID;
 					description: string;
-					data: { [key: string]: any };
+					data: {[key: string]: any};
 					type: 'storage';
 			  };
 
@@ -1101,7 +1101,7 @@ declare namespace messenger {
 			name: string;
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* addressBooks functions */
 		/** Opens the address book user interface. */
@@ -1238,7 +1238,7 @@ declare namespace messenger {
 			};
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* contacts functions */
 		/** Gets all the contacts in the address book with the id ``parentId``. */
@@ -1337,7 +1337,7 @@ declare namespace messenger {
 			description?: string | undefined;
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* mailingLists functions */
 		/** Gets all the mailing lists in the address book with id ``parentId``. */
@@ -1488,7 +1488,7 @@ declare namespace messenger {
 			/**
 			 * A format options object as used by {@link DateTimeFormat}. Defaults to: [defaultDateFormat.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/cloudFile/defaultDateFormat.js)
 			 */
-			format?: { [key: string]: boolean } | undefined;
+			format?: {[key: string]: boolean} | undefined;
 		}
 
 		interface _UpdateAccountUpdateProperties {
@@ -2406,7 +2406,7 @@ declare namespace messenger {
 			| 'junk'
 			| 'outbox';
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* folders functions */
 		/** Creates a new subfolder in the specified folder or at the root of the specified account. */
@@ -2517,7 +2517,7 @@ declare namespace messenger {
 			signatureIsPlainText?: boolean | undefined;
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* identities functions */
 		/**
@@ -3512,7 +3512,7 @@ declare namespace messenger {
 			/**
 			 * A _dictionary object_ of part headers as _key-value_ pairs, with the header name as _key_, and an array of headers as _value_
 			 */
-			headers?: { [key: string]: string[] } | undefined;
+			headers?: {[key: string]: string[]} | undefined;
 			/** Name of the part, if it is a file */
 			name?: string | undefined;
 			/** The identifier of this part, used in {@link messages.getAttachmentFile} */
@@ -3633,9 +3633,9 @@ declare namespace messenger {
 			unread?: boolean | undefined;
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
-		export { _import as import };
+		export {_import as import};
 
 		interface _UpdateTagUpdateProperties {
 			/** Human-readable tag name. */
@@ -6117,7 +6117,7 @@ declare namespace messenger {
 		function clear(notificationId: string): Promise<boolean>;
 
 		/** Retrieves all the notifications. */
-		function getAll(): Promise<{ [key: string]: CreateNotificationOptions }>;
+		function getAll(): Promise<{[key: string]: CreateNotificationOptions}>;
 
 		/**
 		 * Retrieves whether the user has enabled notifications from this app or extension.
@@ -6902,7 +6902,7 @@ declare namespace messenger {
 			 * Gets one or more items from storage.
 			 * @param [keys] A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object). An empty list or object will return an empty result object. Pass in `null` to get the entire contents of storage.
 			 */
-			get(keys?: string | string[] | { [key: string]: any }): Promise<{ [key: string]: any }>;
+			get(keys?: string | string[] | {[key: string]: any}): Promise<{[key: string]: any}>;
 			/**
 			 * Gets the amount of space (in bytes) being used by one or more items.
 			 * @param [keys] A single key or list of keys to get the total usage for. An empty list will return 0\. Pass in `null` to get the total usage of all of storage.
@@ -6915,7 +6915,7 @@ declare namespace messenger {
 			 *
 			 * Primitive values such as numbers will serialize as expected. Values with a `typeof` `"object"` and `"function"` will typically serialize to `{}`, with the exception of `Array` (serializes as expected), `Date`, and `Regex` (serialize using their `String` representation).
 			 */
-			set(items: { [key: string]: any }): Promise<void>;
+			set(items: {[key: string]: any}): Promise<void>;
 			/**
 			 * Removes one or more items from storage.
 			 * @param keys A single key or a list of keys for items to remove.
@@ -6927,7 +6927,7 @@ declare namespace messenger {
 			 * Fired when one or more items change.
 			 * @param changes Object mapping each key that changed to its corresponding `storage.StorageChange` for that item.
 			 */
-			onChanged: WebExtEvent<(changes: { [key: string]: StorageChange }) => void>;
+			onChanged: WebExtEvent<(changes: {[key: string]: StorageChange}) => void>;
 		}
 
 		interface StorageAreaSync {
@@ -6935,7 +6935,7 @@ declare namespace messenger {
 			 * Gets one or more items from storage.
 			 * @param [keys] A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object). An empty list or object will return an empty result object. Pass in `null` to get the entire contents of storage.
 			 */
-			get(keys?: string | string[] | { [key: string]: any }): Promise<{ [key: string]: any }>;
+			get(keys?: string | string[] | {[key: string]: any}): Promise<{[key: string]: any}>;
 			/**
 			 * Gets the amount of space (in bytes) being used by one or more items.
 			 * @param [keys] A single key or list of keys to get the total usage for. An empty list will return 0\. Pass in `null` to get the total usage of all of storage.
@@ -6947,7 +6947,7 @@ declare namespace messenger {
 			 *
 			 * Primitive values such as numbers will serialize as expected. Values with a `typeof` `"object"` and `"function"` will typically serialize to `{}`, with the exception of `Array` (serializes as expected), `Date`, and `Regex` (serialize using their `String` representation).
 			 */
-			set(items: { [key: string]: any }): Promise<void>;
+			set(items: {[key: string]: any}): Promise<void>;
 			/**
 			 * Removes one or more items from storage.
 			 * @param keys A single key or a list of keys for items to remove.
@@ -6959,7 +6959,7 @@ declare namespace messenger {
 			 * Fired when one or more items change.
 			 * @param changes Object mapping each key that changed to its corresponding `storage.StorageChange` for that item.
 			 */
-			onChanged: WebExtEvent<(changes: { [key: string]: StorageChange }) => void>;
+			onChanged: WebExtEvent<(changes: {[key: string]: StorageChange}) => void>;
 		}
 
 		/* storage properties */
@@ -6981,7 +6981,7 @@ declare namespace messenger {
 		 * @param areaName The name of the storage area (`"sync"`, `"local"` or `"managed"`) the changes are for.
 		 */
 		const onChanged: WebExtEvent<
-			(changes: { [key: string]: StorageChange }, areaName: string) => void
+			(changes: {[key: string]: StorageChange}, areaName: string) => void
 		>;
 	}
 
@@ -8491,7 +8491,7 @@ declare namespace browser {
 			/**
 			 * A _dictionary object_ defining one or more commands as _name-value_ pairs, the _name_ being the name of the command and the _value_ being a {@link commands.CommandsShortcut}. The _name_ may also be one of the following built-in special shortcuts: * ``_execute_browser_action`` * ``_execute_compose_action`` * ``_execute_message_display_action`` Example: [manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/commands/manifest.json)
 			 */
-			commands?: { [key: string]: _WebExtensionManifestCommands } | undefined;
+			commands?: {[key: string]: _WebExtensionManifestCommands} | undefined;
 			compose_action?: _WebExtensionManifestComposeAction | undefined;
 			message_display_action?: _WebExtensionManifestMessageDisplayAction | undefined;
 			/**
@@ -8500,7 +8500,7 @@ declare namespace browser {
 			theme_experiment?: ThemeExperiment | undefined;
 			/** Needs at least manifest version 3. */
 			declarative_net_request?: _WebExtensionManifestDeclarativeNetRequest | undefined;
-			experiment_apis?: { [key: string]: experiments.ExperimentAPI } | undefined;
+			experiment_apis?: {[key: string]: experiments.ExperimentAPI} | undefined;
 			/** A list of protocol handler definitions. */
 			protocol_handlers?: ProtocolHandler[] | undefined;
 			default_locale?: string | undefined;
@@ -8594,15 +8594,15 @@ declare namespace browser {
 			/**
 			 * A _dictionary object_ with one or more _key-value_ pairs to map new theme image keys to internal Thunderbird CSS image variables. The new image key is usable as an image reference in {@link theme.ThemeType}. Example: [theme_experiment_image.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_image.json)
 			 */
-			images?: { [key: string]: string } | undefined;
+			images?: {[key: string]: string} | undefined;
 			/**
 			 * A _dictionary object_ with one or more _key-value_ pairs to map new theme color keys to internal Thunderbird CSS color variables. The example shown below maps the theme color key ``popup_affordance`` to the CSS color variable --arrowpanel-dimmed. The new color key is usable as a color reference in {@link theme.ThemeType}. [theme_experiment_color.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_color.json)
 			 */
-			colors?: { [key: string]: string } | undefined;
+			colors?: {[key: string]: string} | undefined;
 			/**
 			 * A _dictionary object_ with one or more _key-value_ pairs to map new theme property keys to internal Thunderbird CSS property variables. The new property key is usable as a property reference in {@link theme.ThemeType}. Example: [theme_experiment_property.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_property.json)
 			 */
-			properties?: { [key: string]: string } | undefined;
+			properties?: {[key: string]: string} | undefined;
 		}
 
 		/** Contains the color, image and property settings of a theme. */
@@ -8833,7 +8833,7 @@ declare namespace browser {
 			| {
 					name: ExtensionID;
 					description: string;
-					data: { [key: string]: any };
+					data: {[key: string]: any};
 					type: 'storage';
 			  };
 
@@ -9523,7 +9523,7 @@ declare namespace browser {
 			name: string;
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* addressBooks functions */
 		/** Opens the address book user interface. */
@@ -9660,7 +9660,7 @@ declare namespace browser {
 			};
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* contacts functions */
 		/** Gets all the contacts in the address book with the id ``parentId``. */
@@ -9759,7 +9759,7 @@ declare namespace browser {
 			description?: string | undefined;
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* mailingLists functions */
 		/** Gets all the mailing lists in the address book with id ``parentId``. */
@@ -9910,7 +9910,7 @@ declare namespace browser {
 			/**
 			 * A format options object as used by {@link DateTimeFormat}. Defaults to: [defaultDateFormat.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/cloudFile/defaultDateFormat.js)
 			 */
-			format?: { [key: string]: boolean } | undefined;
+			format?: {[key: string]: boolean} | undefined;
 		}
 
 		interface _UpdateAccountUpdateProperties {
@@ -10828,7 +10828,7 @@ declare namespace browser {
 			| 'junk'
 			| 'outbox';
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* folders functions */
 		/** Creates a new subfolder in the specified folder or at the root of the specified account. */
@@ -10939,7 +10939,7 @@ declare namespace browser {
 			signatureIsPlainText?: boolean | undefined;
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
 		/* identities functions */
 		/**
@@ -11934,7 +11934,7 @@ declare namespace browser {
 			/**
 			 * A _dictionary object_ of part headers as _key-value_ pairs, with the header name as _key_, and an array of headers as _value_
 			 */
-			headers?: { [key: string]: string[] } | undefined;
+			headers?: {[key: string]: string[]} | undefined;
 			/** Name of the part, if it is a file */
 			name?: string | undefined;
 			/** The identifier of this part, used in {@link messages.getAttachmentFile} */
@@ -12055,9 +12055,9 @@ declare namespace browser {
 			unread?: boolean | undefined;
 		}
 
-		export { _delete as delete };
+		export {_delete as delete};
 
-		export { _import as import };
+		export {_import as import};
 
 		interface _UpdateTagUpdateProperties {
 			/** Human-readable tag name. */
@@ -14539,7 +14539,7 @@ declare namespace browser {
 		function clear(notificationId: string): Promise<boolean>;
 
 		/** Retrieves all the notifications. */
-		function getAll(): Promise<{ [key: string]: CreateNotificationOptions }>;
+		function getAll(): Promise<{[key: string]: CreateNotificationOptions}>;
 
 		/**
 		 * Retrieves whether the user has enabled notifications from this app or extension.
@@ -15324,7 +15324,7 @@ declare namespace browser {
 			 * Gets one or more items from storage.
 			 * @param [keys] A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object). An empty list or object will return an empty result object. Pass in `null` to get the entire contents of storage.
 			 */
-			get(keys?: string | string[] | { [key: string]: any }): Promise<{ [key: string]: any }>;
+			get(keys?: string | string[] | {[key: string]: any}): Promise<{[key: string]: any}>;
 			/**
 			 * Gets the amount of space (in bytes) being used by one or more items.
 			 * @param [keys] A single key or list of keys to get the total usage for. An empty list will return 0\. Pass in `null` to get the total usage of all of storage.
@@ -15337,7 +15337,7 @@ declare namespace browser {
 			 *
 			 * Primitive values such as numbers will serialize as expected. Values with a `typeof` `"object"` and `"function"` will typically serialize to `{}`, with the exception of `Array` (serializes as expected), `Date`, and `Regex` (serialize using their `String` representation).
 			 */
-			set(items: { [key: string]: any }): Promise<void>;
+			set(items: {[key: string]: any}): Promise<void>;
 			/**
 			 * Removes one or more items from storage.
 			 * @param keys A single key or a list of keys for items to remove.
@@ -15349,7 +15349,7 @@ declare namespace browser {
 			 * Fired when one or more items change.
 			 * @param changes Object mapping each key that changed to its corresponding `storage.StorageChange` for that item.
 			 */
-			onChanged: WebExtEvent<(changes: { [key: string]: StorageChange }) => void>;
+			onChanged: WebExtEvent<(changes: {[key: string]: StorageChange}) => void>;
 		}
 
 		interface StorageAreaSync {
@@ -15357,7 +15357,7 @@ declare namespace browser {
 			 * Gets one or more items from storage.
 			 * @param [keys] A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object). An empty list or object will return an empty result object. Pass in `null` to get the entire contents of storage.
 			 */
-			get(keys?: string | string[] | { [key: string]: any }): Promise<{ [key: string]: any }>;
+			get(keys?: string | string[] | {[key: string]: any}): Promise<{[key: string]: any}>;
 			/**
 			 * Gets the amount of space (in bytes) being used by one or more items.
 			 * @param [keys] A single key or list of keys to get the total usage for. An empty list will return 0\. Pass in `null` to get the total usage of all of storage.
@@ -15369,7 +15369,7 @@ declare namespace browser {
 			 *
 			 * Primitive values such as numbers will serialize as expected. Values with a `typeof` `"object"` and `"function"` will typically serialize to `{}`, with the exception of `Array` (serializes as expected), `Date`, and `Regex` (serialize using their `String` representation).
 			 */
-			set(items: { [key: string]: any }): Promise<void>;
+			set(items: {[key: string]: any}): Promise<void>;
 			/**
 			 * Removes one or more items from storage.
 			 * @param keys A single key or a list of keys for items to remove.
@@ -15381,7 +15381,7 @@ declare namespace browser {
 			 * Fired when one or more items change.
 			 * @param changes Object mapping each key that changed to its corresponding `storage.StorageChange` for that item.
 			 */
-			onChanged: WebExtEvent<(changes: { [key: string]: StorageChange }) => void>;
+			onChanged: WebExtEvent<(changes: {[key: string]: StorageChange}) => void>;
 		}
 
 		/* storage properties */
@@ -15403,7 +15403,7 @@ declare namespace browser {
 		 * @param areaName The name of the storage area (`"sync"`, `"local"` or `"managed"`) the changes are for.
 		 */
 		const onChanged: WebExtEvent<
-			(changes: { [key: string]: StorageChange }, areaName: string) => void
+			(changes: {[key: string]: StorageChange}, areaName: string) => void
 		>;
 	}
 

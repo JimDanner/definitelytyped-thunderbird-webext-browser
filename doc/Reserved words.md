@@ -24,7 +24,13 @@ The project definitelytyped-firefox-webext-browser, from which this one is deriv
 
 In this form it's no longer a syntax error, and the function is available under its correct name `delete`.
 
-In **WebStorm** it mostly works; the only (minor) drawback is that the `_delete` name is also present in the namespace – the editor gives it as a suggestion after you type `messenger.messages.` . The unattentive programmer might use that version, which isn't really in the API, thus producing code that doesn't work. 
+In **WebStorm** it mostly works; the only (minor) drawback is that the `_delete` name is also present in the namespace – the editor gives it as a suggestion after you type `messenger.messages.` . The unattentive programmer might use that version, which isn't really in the API, thus producing code that doesn't work. *Note*: trying to avoid the addition of the name `_delete` into the namespace by not using that name and exporting an anonymous function,
+
+```ts
+export {function(messageIds: number[], skipTrash?: boolean): Promise<any> as delete};
+```
+
+doesn't work; the export fails.
 
 In **VS Code** it breaks things. For some reason, if anything is explicitly `export`ed from a namespace, all the other things in the namespace are ignored by this editor. So the export statement means that `messenger.messages.list()`, `.get()`, `.move()` and dozens of other things are completely invisible: not suggested (by 'Intellisense') when typing, no documentation on mouse-over, and so on.
 

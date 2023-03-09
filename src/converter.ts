@@ -1141,6 +1141,7 @@ export default class Converter {
         parser: "typescript",
         useTabs: true,
         singleQuote: true,
+        bracketSpacing: false,
         printWidth: 100,
       });
       Writer({path: filename}).write(output);
