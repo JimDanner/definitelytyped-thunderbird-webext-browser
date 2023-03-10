@@ -138,6 +138,14 @@ async function run_download_procedure() {
         await Promise.all(missing_files.map(download));
         console.log('\x1b[33m[DONE]\x1b[m');
     }
+    // delete duplicate files to prevent clashes between Thunderbird and Firefox API
+    // As of TB 111 this concerns browser_action.json and theme.json
+    const tb_filenames = fs.readdirSync(path.join(out_dir, TB_SCHEMA_DIR));
+    tb_filenames.forEach(name => {
+        const file_path = path.join(out_dir, FF_SCHEMA_DIR, snake_case(name));
+        if (fs.existsSync(file_path))
+            fs.unlinkSync(file_path);
+    })
     // create a JSON file of the namespaces and their documentation URLs
     console.log('Writing namespace data to file')
     Writer({path: path.join(out_dir, METAINFO_DIR, 'namespaces.json')})

@@ -1,3 +1,6 @@
+// temporary thing to help WebStorm:
+let globalWebstorm: boolean = false;
+
 import * as fs from 'fs';
 // @ts-ignore
 import {Writer} from 'fstream'; // file writer that also creates the containing directory tree
@@ -59,9 +62,9 @@ const GLOBAL_TYPES = [
   'globalThis.Date',
   'Window',
   'File', // used in the Thunderbird API
-  'AddressBookNode', // FIXME: the schema defines this as an interface, but the program doesn't detect
-                     //  that, emits a warning, and defines a conflicting type AddressBookNode
-                     //  while also correctly putting in the interface declaration
+    // DirectoryEntry is not a global type because it's not in Gecko at the moment;
+    // it is 'used' in the deprecated runtime.getPackageDirectoryEntry()
+    // so it must not be in this list but auto-added as a type alias for any.
 ];
 
 // Types that are considered "simple"
@@ -170,7 +173,15 @@ function commentFromSchema(schema: TypeSchema | NamespaceSchema | NameDesc) {
   if (doclines.length === 0) {
     return '';
   }
-  return toDocComment(doclines.join('\n')) + '\n';
+  // For WebStorm, no wrapped comments, because in a multi-line @deprecated comment,
+  // links to other documentation items stop working on the second and further lines
+  const comment_markdown: string = globalWebstorm ? doclines.join('\n') :
+      format(doclines.join('\n\n'), {
+        parser: "markdown",
+        proseWrap: "always",
+        printWidth: 70,
+      }).replace(/ (\{\S+)\n(\S+}[ .,]?)/gm,' $1 $2\n').slice(0, -1);
+  return toDocComment(comment_markdown) + '\n';
 }
 
 // Iterate over plain objects in nested objects and arrays
@@ -290,7 +301,7 @@ export default class Converter {
 
   convert(headertext: string = '', betweentext: string = '',
           footertext: string = '', webstorm: boolean = false) {
-    this.webstorm = webstorm;
+    globalWebstorm = this.webstorm = webstorm;
     this.exp = webstorm ? '' : 'export ';
     // For each namespace, set it as current, and convert it, which adds directly onto this.out
     for (let namespace of Object.keys(this.namespaces)) {
@@ -1100,7 +1111,15 @@ export default class Converter {
 
     // Turn it into JSDoc comment form
     if (doclines.length > 0) {
-      out += toDocComment(doclines.join('\n\n')) + '\n';
+      // For WebStorm, no wrapped comments, because in a multi-line @deprecated comment,
+      // links to other documentation items stop working on the second and further lines
+      const comment_markdown: string = globalWebstorm ? doclines.join('\n') :
+          format(doclines.join('\n\n'), {
+            parser: "markdown",
+            proseWrap: "always",
+            printWidth: 70,
+          }).replace(/ (\{\S+)\n(\S+}[ .,])/gm,' $1 $2\n').slice(0, -1);
+      out += toDocComment(comment_markdown) + '\n';
     }
 
     // Nested namespace declarations, so each declaration only uses the 'leaf' of the namespace:
@@ -1139,14 +1158,17 @@ export default class Converter {
     try {
       const output: string = format(this.out, {
         parser: "typescript",
-        useTabs: true,
+        bracketSpacing: true,  // {text} is wrong says dtslint, must be { text }
+        // config from the DefinitelyTyped repository:
+        arrowParens: "avoid",
+        printWidth: 120,
         singleQuote: true,
-        bracketSpacing: false,
-        printWidth: 100,
+        tabWidth: 4,
+        trailingComma: "all",
       });
       Writer({path: filename}).write(output);
     } catch(err) {
-      console.debug('[The library \'prettier\' encountered formatting errors]');
+      console.debug("[The library 'prettier' encountered formatting errors]");
       console.debug(err.toString());
       Writer({path: filename}).write(this.out);
     }

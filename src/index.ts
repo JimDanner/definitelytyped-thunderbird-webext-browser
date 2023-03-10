@@ -65,9 +65,12 @@ interface WebExtEvent<TCallback extends (...args: any[]) => any> {
 /**
  * **The root object of the WebExtension API for Thunderbird**
  *
- * Also known as the \`browser\` object. There are differences between the Thunderbird, Firefox, and generic WebExtension APIs.
+ * Also known as the \`browser\` object. There are differences between the Thunderbird,
+ * Firefox, and generic WebExtension APIs.
  *
- * The Thunderbird API is documented at [thunderbird.net](https://webextension-api.thunderbird.net/en/latest/).
+ * The Thunderbird API is documented at
+ * [thunderbird.net](https://webextension-api.thunderbird.net/en/latest/).
+ *
  * @version Thunderbird ${tb_version}
  */
 `
@@ -83,7 +86,11 @@ const INBETWEEN = `
 /**
  * **The root object of the WebExtension API**
  *
- * In Thunderbird extensions, it is [recommended](https://webextension-api.thunderbird.net/en/latest/#thunderbird-webextension-api-documentation) to use \`messenger\` instead of \`browser\`, to remind yourself of the subtle differences between the Thunderbird, Firefox, and generic WebExtension APIs.
+ * In Thunderbird extensions, it is
+ * [recommended](https://webextension-api.thunderbird.net/en/latest/#thunderbird-webextension-api-documentation)
+ * to use \`messenger\` instead of \`browser\`, to remind yourself of the subtle
+ * differences between the Thunderbird, Firefox, and generic WebExtension APIs.
+ *
  * @version Thunderbird ${tb_version}
  */
 `
@@ -105,7 +112,17 @@ converter.setUnsupportedAsOptional();
 console.log('\n\x1b[1mOverride\x1b[m');
 override(converter);
 
+converter.edit('theme', 'types', 'ThemeUpdateInfo', (x) => {
+    x!.properties!.theme!['$ref'] = 'manifest.ThemeType';
+    return x;
+});
+
+
 console.log('\n\x1b[1mConvert\x1b[m');
+console.debug(`[Error messages that are non-breaking:
+ - AddressBookNode is within the parent scope of the place where it's used; no error
+ - requestUpdateCheck is not implemented yet
+ - DirectoryEntry is not implemented and only used in a deprecated function]`);
 converter.convert(HEADER, INBETWEEN, FOOTER, argv.webstorm);
 
 console.log('\n\x1b[1mWrite to file\x1b[m');
