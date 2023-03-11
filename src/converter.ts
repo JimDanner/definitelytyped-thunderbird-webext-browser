@@ -5,12 +5,12 @@ import * as fs from 'fs';
 // @ts-ignore
 import {Writer} from 'fstream'; // file writer that also creates the containing directory tree
 import * as path from 'path';
-const format: (text: string, opts: any) => string = require('prettier').format;
-
 import stripJsonComments from 'strip-json-comments';
 import * as _ from 'lodash';
 
 import {descToMarkdown, toDocComment} from './desc-to-doc';
+
+const format: (text: string, opts: any) => string = require('prettier').format;
 
 // Reserved keywords in typescript
 const RESERVED = [
@@ -827,7 +827,7 @@ export default class Converter {
         func.parameters &&
         func.parameters.find((x) => x.type === 'function' && x.name === func.async);
       if (callback) {
-        func.parameters = func.parameters!.filter((x) => x !== callback);
+        func.parameters = (func.parameters)!.filter((x) => x !== callback);
       }
       returnType = this.convertType(func.returns);
       if (func.returns.optional && !ALREADY_OPTIONAL_RETURNS.includes(returnType))
@@ -840,7 +840,7 @@ export default class Converter {
         func.parameters.find((x) => x.type === 'function' && x.name === func.async);
       if (callback) {
         // Remove callback from parameters as we're gonna handle it as a promise return
-        func.parameters = func.parameters!.filter((x) => x !== callback);
+        func.parameters = (func.parameters)!.filter((x) => x !== callback);
         let parameters = this.convertParameters(
           callback.parameters,
           false,
@@ -887,88 +887,47 @@ export default class Converter {
     // TypeScript forbids these things: after an omitted optional argument, no more are allowed.
     // If the schema says func(arg1?, arg2?) and it means that entering just arg2 is allowed,
     // then for correct TypeScript we must overload func: e.g. func(arg1?, arg2?) and func(arg2),
-    // or alternatively (and equivalently) func(arg1, arg2?) and func(arg2?).
+    // or equivalently, func(arg1, arg2?) and func(arg2?).
     // Similarly, func(arg1?, arg2) must be converted to func(arg1, arg2) and func(arg2).
     // Therefore output multiple function choices if an optional param is followed by anything.
 
-    const must_overload_function: boolean = (func.parameters ?? []).some((par, i) => {
-      return par.optional && i+1 < func.parameters!.length  // some param before the final one is optional
-    });
+    const must_overload_function: boolean = (func.parameters ?? []).length >= 2 &&
+        // some param before the final one is optional => we must create overloads
+        (func.parameters)!.slice(0, -1).some(par => par.optional);
 
     if (must_overload_function) {
       // create the signatures that are needed (as few as possible).
+      // Conceptually: imagine a user who ALWAYS supplies an argument for the final parameter:
+      // create overloads such that they can legally make any choice on the other optional parameters.
       // Algorithm: 1. the final one stays as it is; 2. earlier non-optionals stay non-optional;
-      // 3. each earlier optional param splits the collection into functions with and without it.
-console.debug(`Creating overloads for ${func.name}`);
-      const overloads: TypeSchema[][] = [func.parameters!.map((param, i) => {
-            return {
+      // 3. for each earlier optional param, we add clones of the signatures without that param.
+      const overloads: TypeSchema[][] = [(func.parameters)!.map((param, i) => {
+        // initial signature: all params before the last one are made non-optional
+        return {
               ...param,
-              optional: (i+1 == func.parameters!.length ? param.optional : false)
+              optional: (i+1 == (func.parameters)!.length ? param.optional : false)
             } as TypeSchema
-          })];
-      for (let i: number = 0; i < func.parameters!.length - 1; i++) {
-        if (func.parameters![i].optional) {
+        })];
+      (func.parameters)!.slice(0, -1).forEach(param => {
+        if (param.optional) {
           // add varieties without this optional parameter
           const new_overloads: TypeSchema[][] = overloads.map(signature => {
-            return [...signature].filter(arg => arg.name != func.parameters![i].name);
+            return [...signature].filter(arg => arg.name != param.name);
           });
-console.debug(`Added for parameter ${func.parameters![i].name}: ${new_overloads}`);
           overloads.push(...new_overloads);
         }
-      }
+      });
       for (let signature of overloads) {
         out += this.convertSingleFunction(func.name!, returnType, arrow, classy, {
           ...func,
           parameters: signature,
         });
       }
-      return out;
     }
-
- /*   // Check if "parameters[index]" is optional with at least one required parameter following it
-    let isLeadingOptional = (parameters: TypeSchema[], index: number) => {
-      let firstRequiredIndex = parameters.findIndex((x) => !x.optional);
-      if (firstRequiredIndex === -1) return parameters.length > 1;
-      return firstRequiredIndex > index;
-    };
-
-    // Optional parameters with at least one required parameter following them, marked as non-optional
-    let leadingOptionals: TypeSchema[] = [];
-    // The rest of the parameters
-    let rest = [];
-    for (let [i, param] of (func.parameters || []).entries()) {
-      if (isLeadingOptional(func.parameters!, i)) {
-        leadingOptionals.push(param);
-      } else {
-        rest.push(param);
-      }
+    else {
+      // Output the normal signature
+      out += this.convertSingleFunction(func.name!, returnType, arrow, classy, func);
     }
-*/
-    // Output the normal signature
-    out += this.convertSingleFunction(func.name!, returnType, arrow, classy, func);
-/*
-    // Output signatures for any leading optional parameters
-    for (let i = 0; i < leadingOptionals.length; i++) {
-      let funcWithParams = {
-        ...func,
-        // Get the last i items, and make sure that the last item is optional, then concat with rest of params
-        parameters: leadingOptionals
-          .slice(i)
-          .map((param, paramI) => {
-            return {
-              ...param,
-              optional: paramI > i,
-            } as TypeSchema;
-          })
-          .concat(rest),
-      };
-      out +=
-        '\n' +
-        this.convertSingleFunction(func.name!, returnType, arrow, classy, funcWithParams) +
-        (classy && i !== leadingOptionals.length - 1 ? ';\n' : '');
-    }
-*/
-
     return out;
   }
 
