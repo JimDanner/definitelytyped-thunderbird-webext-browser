@@ -180,7 +180,10 @@ function commentFromSchema(schema: TypeSchema | NamespaceSchema | NameDesc) {
         parser: "markdown",
         proseWrap: "always",
         printWidth: 70,
-      }).replace(/ (\{\S+)\n(\S+}[ .,]?)/gm,' $1 $2\n').slice(0, -1);
+      })
+      .replace(/ (\{\S+)\n(\S+}[ .,]?)/gm,' $1 $2\n')  // {... \n ...}
+      .replace(/^(@\S+)\n/gm, '$1 ')  // @see\n
+      .slice(0, -1);
   return toDocComment(comment_markdown) + '\n';
 }
 
@@ -879,10 +882,50 @@ export default class Converter {
     }
 
     // Create overload signatures for leading optional parameters
-    // Typescript can't handle when e.g. parameter 1 is optional, but parameter 2 isn't
-    // Therefore output multiple function choices where we one by one, strip the optional status
+    // The way WebExtension documentation defines it, a parameter in any position may be optional.
+    // Also, if there are two optional parameters, the user is allowed to omit either one.
+    // TypeScript forbids these things: after an omitted optional argument, no more are allowed.
+    // If the schema says func(arg1?, arg2?) and it means that entering just arg2 is allowed,
+    // then for correct TypeScript we must overload func: e.g. func(arg1?, arg2?) and func(arg2),
+    // or alternatively (and equivalently) func(arg1, arg2?) and func(arg2?).
+    // Similarly, func(arg1?, arg2) must be converted to func(arg1, arg2) and func(arg2).
+    // Therefore output multiple function choices if an optional param is followed by anything.
 
-    // Check if "parameters[index]" is optional with at least one required parameter following it
+    const must_overload_function: boolean = (func.parameters ?? []).some((par, i) => {
+      return par.optional && i+1 < func.parameters!.length  // some param before the final one is optional
+    });
+
+    if (must_overload_function) {
+      // create the signatures that are needed (as few as possible).
+      // Algorithm: 1. the final one stays as it is; 2. earlier non-optionals stay non-optional;
+      // 3. each earlier optional param splits the collection into functions with and without it.
+console.debug(`Creating overloads for ${func.name}`);
+      const overloads: TypeSchema[][] = [func.parameters!.map((param, i) => {
+            return {
+              ...param,
+              optional: (i+1 == func.parameters!.length ? param.optional : false)
+            } as TypeSchema
+          })];
+      for (let i: number = 0; i < func.parameters!.length - 1; i++) {
+        if (func.parameters![i].optional) {
+          // add varieties without this optional parameter
+          const new_overloads: TypeSchema[][] = overloads.map(signature => {
+            return [...signature].filter(arg => arg.name != func.parameters![i].name);
+          });
+console.debug(`Added for parameter ${func.parameters![i].name}: ${new_overloads}`);
+          overloads.push(...new_overloads);
+        }
+      }
+      for (let signature of overloads) {
+        out += this.convertSingleFunction(func.name!, returnType, arrow, classy, {
+          ...func,
+          parameters: signature,
+        });
+      }
+      return out;
+    }
+
+ /*   // Check if "parameters[index]" is optional with at least one required parameter following it
     let isLeadingOptional = (parameters: TypeSchema[], index: number) => {
       let firstRequiredIndex = parameters.findIndex((x) => !x.optional);
       if (firstRequiredIndex === -1) return parameters.length > 1;
@@ -900,12 +943,10 @@ export default class Converter {
         rest.push(param);
       }
     }
-
+*/
     // Output the normal signature
-    out += this.convertSingleFunction(func.name!, returnType, arrow, classy, {
-      ...func,
-      parameters: rest,
-    });
+    out += this.convertSingleFunction(func.name!, returnType, arrow, classy, func);
+/*
     // Output signatures for any leading optional parameters
     for (let i = 0; i < leadingOptionals.length; i++) {
       let funcWithParams = {
@@ -926,6 +967,7 @@ export default class Converter {
         this.convertSingleFunction(func.name!, returnType, arrow, classy, funcWithParams) +
         (classy && i !== leadingOptionals.length - 1 ? ';\n' : '');
     }
+*/
 
     return out;
   }
@@ -1118,7 +1160,10 @@ export default class Converter {
             parser: "markdown",
             proseWrap: "always",
             printWidth: 70,
-          }).replace(/ (\{\S+)\n(\S+}[ .,])/gm,' $1 $2\n').slice(0, -1);
+          })
+          .replace(/ (\{\S+)\n(\S+}[ .,])/gm,' $1 $2\n')
+          .replace(/^(@\S+)\n/gm, '$1 ')  // @see\n
+          .slice(0, -1);
       out += toDocComment(comment_markdown) + '\n';
     }
 

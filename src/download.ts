@@ -43,11 +43,16 @@ const TB_BASE_URL    = 'https://hg.mozilla.org/try-comm-central',
           experiments: 'https://webextension-api.thunderbird.net/en/latest/how-to/experiments.html',
           extensionTypes: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/extensionTypes',
           manifest: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json',
+          types: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/types',
+       },
+      ADDED_APIS: Record<string, string> = {
+          // namespaces that don't have their own JSON file but must be included
+          action: 'https://webextension-api.thunderbird.net/en/latest/browserAction.html',
+             // without action, browserAction is empty (it imports everything from action)
           'privacy.network': 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/network',
           'privacy.services': 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/services',
           'privacy.websites': 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/websites',
-          types: 'https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/types',
-      }
+      };
 
 /** absolute path where this API will be saved */
 const out_dir = path.resolve(API_DIR, argv.tag);
@@ -105,6 +110,7 @@ async function run_download_procedure() {
 
     // Step 3: download any missing API schemas and save a JSON file of namespaces
 
+    // get the list from the documentation webpage
     const api_home_DOM_root = parse(fs.readFileSync(path.join(out_dir, METAINFO_DIR,
         path.basename(tb_documentation)), {encoding: "utf-8"}));
     let tb_namespaces: Record<string, string> = {},
@@ -115,11 +121,12 @@ async function run_download_procedure() {
         else if (tbody_el.parentNode.previousElementSibling.textContent.includes('Firefox'))
             gecko_namespaces = read_table(tbody_el);
     });
+
+    // add the basic (unlisted) APIs to the list
     Object.assign(gecko_namespaces, BASIC_APIS);
     const missing_filenames: string[] = [];
     // check whether we have everything in gecko_namespaces; put missing ones on the list
     Object.keys(gecko_namespaces).forEach(ns => {
-        if (ns.includes('.')) return;  // privacy.network etc. don't have their own files
         let filenm = snake_case(ns)+'.json';
         if (filenm == 'protocol_handlers.json') filenm = 'extension_protocol_handlers.json';
         if (!fs.existsSync(path.join(out_dir, FF_SCHEMA_DIR, filenm)))
@@ -149,7 +156,8 @@ async function run_download_procedure() {
     // create a JSON file of the namespaces and their documentation URLs
     console.log('Writing namespace data to file')
     Writer({path: path.join(out_dir, METAINFO_DIR, 'namespaces.json')})
-        .write(JSON.stringify({...tb_namespaces, ...gecko_namespaces}, null, '\t'))
+        .write(JSON.stringify({...tb_namespaces, ...gecko_namespaces, ...ADDED_APIS},
+            null, '\t'))
 }
 
 /**

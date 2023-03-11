@@ -9,6 +9,7 @@
 import minimist from 'minimist';
 import Converter from './converter';
 import override from './overrides';
+import tb_override from './tb-overrides';
 import fs from 'fs';
 import path from 'path';
 
@@ -102,7 +103,6 @@ const browser;
 
 const FOOTER = '}\n';
 
-
 // Conversion from schemas to .d.ts
 let converter = new Converter([path.resolve(API_DIR, tb_tag, TB_SCHEMA_DIR),
     path.resolve(API_DIR, tb_tag, FF_SCHEMA_DIR)], '', NAMESPACE_ALIASES, namespaces_used);
@@ -111,12 +111,7 @@ converter.setUnsupportedAsOptional();
 
 console.log('\n\x1b[1mOverride\x1b[m');
 override(converter);
-
-converter.edit('theme', 'types', 'ThemeUpdateInfo', (x) => {
-    x!.properties!.theme!['$ref'] = 'manifest.ThemeType';
-    return x;
-});
-
+tb_override(converter);
 
 console.log('\n\x1b[1mConvert\x1b[m');
 console.debug(`[Error messages that are non-breaking:

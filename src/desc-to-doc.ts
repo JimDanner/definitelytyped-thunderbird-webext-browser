@@ -69,6 +69,9 @@ export function descToMarkdown(description: string) {
   // <https: github.com="" thundernest="" sample-extensions="" tree="" master="" theme_experiment="">
   description = description.replace(/<(https::[^>]+)>/, '$1');
 
+  // Replace newlines by <br/> lest toMarkdown see them as meaningless HTML whitespace
+  description = description.replace(/\n/g, '<br/>');
+
   description = toMarkdown(description, toMarkdownOptions);
 
   // a few descriptions contain "<webview>" which is interpreted as an unclosed tag, fix it
