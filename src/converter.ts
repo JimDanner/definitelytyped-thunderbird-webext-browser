@@ -1,4 +1,6 @@
-// temporary thing to help WebStorm:
+// temporary kludge to help WebStorm through some bugs:
+// - no JSDoc shown about namespaces => add them as constants too
+// - {@link ...} in second and further lines of @deprecated comment goes wrong => don't wrap comments
 let globalWebstorm: boolean = false;
 
 import * as fs from 'fs';
@@ -304,7 +306,7 @@ export default class Converter {
 
   convert(headertext: string = '', betweentext: string = '',
           footertext: string = '', webstorm: boolean = false) {
-    globalWebstorm = this.webstorm = webstorm;
+    globalWebstorm = webstorm;
     this.exp = webstorm ? '' : 'export ';
     // For each namespace, set it as current, and convert it, which adds directly onto this.out
     for (let namespace of Object.keys(this.namespaces)) {
@@ -891,26 +893,26 @@ export default class Converter {
     // Similarly, func(arg1?, arg2) must be converted to func(arg1, arg2) and func(arg2).
     // Therefore output multiple function choices if an optional param is followed by anything.
 
-    const must_overload_function: boolean = (func.parameters ?? []).length >= 2 &&
-        // some param before the final one is optional => we must create overloads
-        (func.parameters)!.slice(0, -1).some(par => par.optional);
+    const params = func.parameters ?? [];
+    const must_overload_function: boolean = params.slice(0, -1).some(par => par.optional);
+    // some param before the final one is optional => we must create overloads
 
     if (must_overload_function) {
       // create the signatures that are needed (as few as possible).
       // Conceptually: imagine a user who ALWAYS supplies an argument for the final parameter:
       // create overloads such that they can legally make any choice on the other optional parameters.
-      // Algorithm: 1. the final one stays as it is; 2. earlier non-optionals stay non-optional;
-      // 3. for each earlier optional param, we add clones of the signatures without that param.
-      const overloads: TypeSchema[][] = [(func.parameters)!.map((param, i) => {
+      // Algorithm: 1. the final param stays as it is; 2. earlier non-optionals stay non-optional;
+      // 3. for each earlier optional param, we add cloned signatures without that param.
+      const overloads: TypeSchema[][] = [params.map((param, i) => {
         // initial signature: all params before the last one are made non-optional
         return {
               ...param,
-              optional: (i+1 == (func.parameters)!.length ? param.optional : false)
+              optional: (i+1 == params.length ? param.optional : false)
             } as TypeSchema
         })];
-      (func.parameters)!.slice(0, -1).forEach(param => {
+      params.slice(0, -1).forEach(param => {
         if (param.optional) {
-          // add varieties without this optional parameter
+          // clone each signature, deleting this optional parameter
           const new_overloads: TypeSchema[][] = overloads.map(signature => {
             return [...signature].filter(arg => arg.name != param.name);
           });
@@ -1132,7 +1134,7 @@ export default class Converter {
     const namespace_name_leaf: string = data.namespace.replace(/^.+\./, '');
     // Thunderbird on WebStorm: declare each namespace as a constant, so it has
     // documentation in its tooltip (seems to be a WebStorm bug, not needed elsewhere)
-    if (this.webstorm) {
+    if (globalWebstorm) {
       out += `const ${namespace_name_leaf};\n`
     }
     out += `${this.exp}namespace ${namespace_name_leaf} {\n`;

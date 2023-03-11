@@ -16,8 +16,8 @@ export default function tb_override(converter: Converter) {
     // manifest.ThemeExperiment has a mangled description
     converter.edit('_manifest', 'types', 'ThemeExperiment', (x) => {
         x!.properties!.stylesheet!.description =
-            `URL to a stylesheet introducing additional CSS variables, 
-            extending the theme-able areas of Thunderbird.
+            `URL to a stylesheet introducing additional CSS variables, extending
+            the theme-able areas of Thunderbird.
             
             The <code>theme_experiment</code> add-on in our
             [example repository](https://github.com/thundernest/sample-extensions/tree/master/theme_experiment)
@@ -25,13 +25,11 @@ export default function tb_override(converter: Converter) {
             CSS color variable:
             <literalinclude>includes/theme/theme_experiment_style.css<lang>CSS</lang></literalinclude>.
             
-            The following <em>manifest.json</em> file maps the <value>--chat-button-color</value>
-            CSS color variable to the theme color key <value>exp_chat_button</value> and uses it
-            to set a color for the chat button:
+            The following <em>manifest.json</em> file maps the <value>--chat-button-color</value> CSS
+            color variable to the theme color key <value>exp_chat_button</value> and uses it to
+            set a color for the chat button:
             <literalinclude>includes/theme/theme_experiment_manifest.json<lang>JSON</lang></literalinclude>`;
         return x;
     });
-
-
 
 }

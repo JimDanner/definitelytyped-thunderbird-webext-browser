@@ -8,7 +8,7 @@ function delete(messageIds: number[], skipTrash?: boolean): Promise<any>; // Typ
 This would be a syntax error because of the reserved keyword. In the Firefox API, such cases do not occur; in Thunderbird, there are various properties called `delete` or `import`.
 
 ## Solutions
-For each solution, I have tried to ascertain whether it works in VS Code and in WebStorm.
+For each solution, I have tried to ascertain whether it works in VS Code and in WebStorm. *TL;DR*: only solution 4 works.
 
 ### 1. Define under different name + export under right name
 The project definitelytyped-firefox-webext-browser, from which this one is derived, deals with reserved words in the following way.
@@ -24,13 +24,7 @@ The project definitelytyped-firefox-webext-browser, from which this one is deriv
 
 In this form it's no longer a syntax error, and the function is available under its correct name `delete`.
 
-In **WebStorm** it mostly works; the only (minor) drawback is that the `_delete` name is also present in the namespace – the editor gives it as a suggestion after you type `messenger.messages.` . The unattentive programmer might use that version, which isn't really in the API, thus producing code that doesn't work. *Note*: trying to avoid the addition of the name `_delete` into the namespace by not using that name and exporting an anonymous function,
-
-```ts
-export {function(messageIds: number[], skipTrash?: boolean): Promise<any> as delete};
-```
-
-doesn't work; the export fails.
+In **WebStorm** it mostly works (though `_delete` is also in the namespace, and keeping it away by exporting an anonymous function as `delete` doesn't work).
 
 In **VS Code** it breaks things. For some reason, if anything is explicitly `export`ed from a namespace, all the other things in the namespace are ignored by this editor. So the export statement means that `messenger.messages.list()`, `.get()`, `.move()` and dozens of other things are completely invisible: not suggested (by 'Intellisense') when typing, no documentation on mouse-over, and so on.
 
@@ -66,14 +60,9 @@ but this fails because it tries to put an entity named `delete` in the current n
 **Conclusion**: This doesn't work.
 
 ### 4. Solution 1 + exporting every item
-If we create an `export` statement for everything we need in the IDE, then VS Code will have everything available. In itself this probably works, but it is a lot of coding to get it right. What exactly are the items that require such a statement? We will do it for the things listed in the `convertNamespace` function below the comment *Convert everything*:
+If we create an `export` statement for everything we need in the IDE, then VS Code will have everything available.
 
-* Types: with keyword `type` or `interface`, implemented in the `covertType`, `convertTypes` and `convertSingleEvent` methods. 
-* Properties: `const`, implemented in `convertProperties` and `convertEvent`
-* Functions: `function`, implemented in `convertSingleFunction` (and we'll not export the original one with the underscore name)
-* Namespaces: `namespace`, mainly because nested namespaces like `messenger.addressBooks.provider` would be made invisible by the export of items in the parent namespace.
-
-So we put `export` in front of each of them (when we're not creating it for WebStorm).
+So we put `export` in front of every declaration.
 
 **WebStorm**: works OK (and we can create a version without the export keywords)
 
@@ -81,4 +70,10 @@ So we put `export` in front of each of them (when we're not creating it for WebS
 
 **Conclusion**: We will use this.
 
+*Implementation note*: What exactly are the items that require such a statement? We will do it for the things listed in the `convertNamespace` function below the comment *Convert everything*:
+
+* Types: with keyword `type` or `interface`, implemented in the `covertType`, `convertTypes` and `convertSingleEvent` methods.
+* Properties: `const`, implemented in `convertProperties` and `convertEvent`
+* Functions: `function`, implemented in `convertSingleFunction` (and we'll not export the original one with the underscore name)
+* Namespaces: `namespace`, mainly because nested namespaces like `messenger.addressBooks.provider` would be made invisible by the export of items in the parent namespace.
 

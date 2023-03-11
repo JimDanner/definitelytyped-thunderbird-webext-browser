@@ -15,9 +15,12 @@ interface WebExtEvent<TCallback extends (...args: any[]) => any> {
 /**
  * **The root object of the WebExtension API for Thunderbird**
  *
- * Also known as the `browser` object. There are differences between the Thunderbird, Firefox, and generic WebExtension APIs.
+ * Also known as the `browser` object. There are differences between the Thunderbird,
+ * Firefox, and generic WebExtension APIs.
  *
- * The Thunderbird API is documented at [thunderbird.net](https://webextension-api.thunderbird.net/en/latest/).
+ * The Thunderbird API is documented at
+ * [thunderbird.net](https://webextension-api.thunderbird.net/en/latest/).
+ *
  * @version Thunderbird 109.0
  */
 
@@ -25,7 +28,6 @@ const messenger;
 declare namespace messenger {
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json
      */
     const _manifest;
@@ -44,13 +46,15 @@ declare namespace messenger {
             default_title?: string | undefined;
             /** The paths to one or more icons for the action button. */
             default_icon?: IconPath | undefined;
-            /** Specifies icons to use for dark and light themes */
+            /**
+             * Specifies dark and light icons to be used with themes. The ``light`` icon is used on dark backgrounds and vice versa. **Note:** The default theme uses the ``default_icon`` for light backgrounds (if specified).
+             */
             theme_icons?: ThemeIcons[] | undefined;
             /** The html document to be opened as a popup when the user clicks on the action button. */
             default_popup?: string | undefined;
             /** Enable browser styles. See the MDN documentation on browser styles  for more information. */
             browser_style?: boolean | undefined;
-            /** Defines the location the browserAction will appear by default. The default location is navbar. */
+            /** Defines the location the action button will appear. The default location is ``maintoolbar``. */
             default_area?: _ActionManifestDefaultArea | undefined;
             /**
              * Defines the windows, the action button should appear in. Defaults to showing it only in the ``normal`` Thunderbird window, but can also be shown in the ``messageDisplay`` window.
@@ -67,7 +71,11 @@ declare namespace messenger {
             chrome_settings_overrides?: _WebExtensionManifestChromeSettingsOverrides | undefined;
             cloud_file?: _WebExtensionManifestCloudFile | undefined;
             /**
-             * A _dictionary object_ defining one or more commands as _name-value_ pairs, the _name_ being the name of the command and the _value_ being a {@link commands.CommandsShortcut}. The _name_ may also be one of the following built-in special shortcuts: * ``_execute_browser_action`` * ``_execute_compose_action`` * ``_execute_message_display_action`` Example: [manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/commands/manifest.json)
+             * A _dictionary object_ defining one or more commands as _name-value_ pairs, the _name_ being the name of the command and the _value_ being a {@link commands.CommandsShortcut}. The _name_ may also be one of the following built-in special shortcuts:
+             * * ``_execute_browser_action``
+             * * ``_execute_compose_action``
+             * * ``_execute_message_display_action``
+             * Example: [manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/commands/manifest.json)
              */
             commands?: { [key: string]: _WebExtensionManifestCommands } | undefined;
             compose_action?: _WebExtensionManifestComposeAction | undefined;
@@ -163,7 +171,19 @@ declare namespace messenger {
          */
         interface ThemeExperiment {
             /**
-             * URL to a stylesheet introducing additional CSS variables, extending the theme-able areas of Thunderbird. The `theme_experiment add-on in our example repository <https: github.com="" thundernest="" sample-extensions="" tree="" master="" theme_experiment="">`__ is using the stylesheet shown below, to add the ``--chat-button-color`` CSS color variable: [theme_experiment_style.css](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_style.css)The following _manifest.json_ file maps the --chat-button-color CSS color variable to the theme color key ``exp_chat_button`` and uses it to set a color for the chat button: [theme_experiment_manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_manifest.json)</https:>
+             * URL to a stylesheet introducing additional CSS variables,
+             * extending the theme-able areas of Thunderbird.
+             *
+             * The `theme_experiment` add-on in our
+             * [example repository](https://github.com/thundernest/sample-extensions/tree/master/theme_experiment)
+             * is using the stylesheet shown below, to add the `--chat-button-color`
+             * CSS color variable:
+             * [theme_experiment_style.css](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_style.css).
+             *
+             * The following _manifest.json_ file maps the ``--chat-button-color``
+             * CSS color variable to the theme color key ``exp_chat_button`` and uses it
+             * to set a color for the chat button:
+             * [theme_experiment_manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_manifest.json)
              */
             stylesheet?: ExtensionURL | undefined;
             /**
@@ -443,14 +463,8 @@ declare namespace messenger {
             | 'nativeMessaging'
             | 'webNavigation';
 
-        /** Defines the location the browserAction will appear by default. The default location is navbar. */
-        type _ActionManifestDefaultArea =
-            | 'maintoolbar'
-            | 'tabstoolbar'
-            | 'navbar'
-            | 'menupanel'
-            | 'tabstrip'
-            | 'personaltoolbar';
+        /** Defines the location the action button will appear. The default location is ``maintoolbar``. */
+        type _ActionManifestDefaultArea = 'maintoolbar' | 'tabstoolbar';
 
         type _ActionManifestDefaultWindows = 'normal' | 'messageDisplay';
 
@@ -698,8 +712,7 @@ declare namespace messenger {
             | 'identity'
             | 'alarms'
             | 'storage'
-            | 'unlimitedStorage'
-            | 'theme';
+            | 'unlimitedStorage';
 
         type _OptionalPermissionNoPrompt =
             | 'menus.overrideContext'
@@ -718,7 +731,7 @@ declare namespace messenger {
             /** Additional images added to the header area and displayed behind the ``theme_frame`` image. */
             additional_backgrounds?: ImageDataOrExtensionURL[] | undefined;
             /**
-             * @deprecated Unsupported images property, use 'theme.images.theme_frame', this alias is ignored in Firefox >= 70.
+             * @deprecated Unsupported images property, use ``theme.images.theme_frame``, this alias is ignored in Thunderbird >= 70.
              */
             headerURL?: ImageDataOrExtensionURL | undefined;
             /** Foreground image on the header area. */
@@ -732,7 +745,7 @@ declare namespace messenger {
             /** Background color of the selected tab. Defaults to the color specified by ``toolbar``. */
             tab_selected?: ThemeColor | undefined;
             /**
-             * @deprecated Unsupported colors property, use 'theme.colors.frame', this alias is ignored in Firefox >= 70.
+             * @deprecated Unsupported colors property, use ``theme.colors.frame``, this alias is ignored in Thunderbird >= 70.
              */
             accentcolor?: ThemeColor | undefined;
             /** The background color of the header area. */
@@ -740,7 +753,7 @@ declare namespace messenger {
             /** The background color of the header area when the window is inactive. */
             frame_inactive?: ThemeColor | undefined;
             /**
-             * @deprecated Unsupported color property, use 'theme.colors.tab_background_text', this alias is ignored in Firefox >= 70.
+             * @deprecated Unsupported color property, use ``theme.colors.tab_background_text``, this alias is ignored in Thunderbird >= 70.
              */
             textcolor?: ThemeColor | undefined;
             /** The text color of the unselected tabs. */
@@ -755,7 +768,9 @@ declare namespace messenger {
             tab_line?: ThemeColor | undefined;
             /** The background color of the toolbars. Also used as default value for ``tab_selected``. */
             toolbar?: ThemeColor | undefined;
-            /** This color property is an alias of 'bookmark_text'. */
+            /**
+             * The text color in the main Thunderbird toolbar. Also used as default value for ``icons`` and ``tab_text``.
+             */
             toolbar_text?: ThemeColor | undefined;
             /** Not used in Thunderbird. */
             bookmark_text?: ThemeColor | undefined;
@@ -767,7 +782,7 @@ declare namespace messenger {
             toolbar_field_border?: ThemeColor | undefined;
             /**
              * Not used in Thunderbird.
-             * @deprecated This color property is ignored in Firefox >= 89.
+             * @deprecated This color property is ignored in >= 89.
              */
             toolbar_field_separator?: ThemeColor | undefined;
             /** The color of the line separating the top of the toolbar from the region above. */
@@ -820,7 +835,6 @@ declare namespace messenger {
             toolbar_field_highlight?: ThemeColor | undefined;
             /** The color used to draw text that's currently selected in the search field. */
             toolbar_field_highlight_text?: ThemeColor | undefined;
-            ntp_card_background?: ThemeColor | undefined;
         }
 
         type _ThemeTypeAdditionalBackgroundsAlignment =
@@ -837,37 +851,15 @@ declare namespace messenger {
             | 'left top'
             | 'right bottom'
             | 'right center'
-            | 'right top'
-            | 'bottom'
-            | 'center'
-            | 'left'
-            | 'right'
-            | 'top'
-            | 'center bottom'
-            | 'center center'
-            | 'center top'
-            | 'left bottom'
-            | 'left center'
-            | 'left top'
-            | 'right bottom'
-            | 'right center'
             | 'right top';
 
-        type _ThemeTypeAdditionalBackgroundsTiling =
-            | 'no-repeat'
-            | 'repeat'
-            | 'repeat-x'
-            | 'repeat-y'
-            | 'no-repeat'
-            | 'repeat'
-            | 'repeat-x'
-            | 'repeat-y';
+        type _ThemeTypeAdditionalBackgroundsTiling = 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y';
 
         /** If set, overrides the general theme (context menus, toolbars, content area). */
-        type _ThemeTypeColorScheme = 'light' | 'dark' | 'auto' | 'auto' | 'light' | 'dark' | 'system';
+        type _ThemeTypeColorScheme = 'light' | 'dark' | 'auto';
 
         /** If set, overrides the color scheme for the content area. */
-        type _ThemeTypeContentColorScheme = 'light' | 'dark' | 'auto' | 'auto' | 'light' | 'dark' | 'system';
+        type _ThemeTypeContentColorScheme = 'light' | 'dark' | 'auto';
 
         /**
          * A _dictionary object_ with one or more _key-value_ pairs to map property values to theme property keys. The following built-in theme property keys are supported:
@@ -968,9 +960,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `accountsRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/accounts.html
      */
     const accounts;
@@ -1047,9 +1037,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `addressBooks`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.html
      */
     const addressBooks;
@@ -1129,9 +1117,7 @@ declare namespace messenger {
 
         /**
          * Permissions: `addressBooks`
-         *
          * Not allowed in: Content scripts, Devtools pages
-         *
          * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.provider.html
          */
         const provider;
@@ -1148,6 +1134,8 @@ declare namespace messenger {
                 id?: string | undefined;
             }
 
+            type AddressBookNode = any;
+
             interface _AddressBooks_providerOnSearchRequestEvent<
                 TCallback = (node: AddressBookNode, searchString: string, query?: string) => void,
             > {
@@ -1158,7 +1146,11 @@ declare namespace messenger {
 
             /* addressBooks.provider events */
             /**
-             * Registering this listener will create and list a read-only address book in Thunderbird's address book window, similar to LDAP address books. When selecting this address book, users will first see no contacts, but they can search for them, which will fire this event. Contacts returned by the listener callback will be displayed as contact cards in the address book. Several listeners can be registered, to create multiple address books. The event also fires for each registered listener (for each created read-only address book), when users type something into the mail composer's _To:_ field, or into similar fields like the calendar meeting attendees field. Contacts returned by the listener callback will be added to the autocomplete results in the dropdown of that field. Example: [onSearchRequest.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/addressBooks/onSearchRequest.js)
+             * Registering this listener will create and list a read-only address book in Thunderbird's address book window, similar to LDAP address books. When selecting this address book, users will first see no contacts, but they can search for them, which will fire this event. Contacts returned by the listener callback will be displayed as contact cards in the address book. Several listeners can be registered, to create multiple address books.
+             *
+             * The event also fires for each registered listener (for each created read-only address book), when users type something into the mail composer's _To:_ field, or into similar fields like the calendar meeting attendees field. Contacts returned by the listener callback will be added to the autocomplete results in the dropdown of that field.
+             *
+             * Example: [onSearchRequest.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/addressBooks/onSearchRequest.js)
              * @param [searchString] The search text that the user entered. Not available when invoked from the advanced address book search dialog.
              * @param [query] The boolean query expression corresponding to the search. **Note:** This parameter may change in future releases of Thunderbird.
              */
@@ -1168,9 +1160,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `addressBooks`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/contacts.html
      */
     const contacts;
@@ -1232,15 +1222,15 @@ declare namespace messenger {
 
         /**
          * Gets all contacts matching ``queryInfo`` in the address book with the id ``parentId``.
-         * @param queryInfo Either a _string_ with one or more space-separated terms to search for, or a complex {@link contacts.QueryInfo} search query.
-         */
-        function quickSearch(queryInfo: string | QueryInfo): Promise<ContactNode[]>;
-        /**
-         * Gets all contacts matching ``queryInfo`` in the address book with the id ``parentId``.
          * @param parentId The id of the address book to search. If not specified, all address books are searched.
          * @param queryInfo Either a _string_ with one or more space-separated terms to search for, or a complex {@link contacts.QueryInfo} search query.
          */
         function quickSearch(parentId: string, queryInfo: string | QueryInfo): Promise<ContactNode[]>;
+        /**
+         * Gets all contacts matching ``queryInfo`` in the address book with the id ``parentId``.
+         * @param queryInfo Either a _string_ with one or more space-separated terms to search for, or a complex {@link contacts.QueryInfo} search query.
+         */
+        function quickSearch(queryInfo: string | QueryInfo): Promise<ContactNode[]>;
 
         /** Gets a single contact. */
         function get(id: string): Promise<ContactNode>;
@@ -1253,10 +1243,15 @@ declare namespace messenger {
 
         /**
          * Adds a new contact to the address book with the id ``parentId``.
-         * @param [id] Assigns the contact an id. If an existing contact has this id, an exception is thrown. **Note:** Deprecated, the card's id should be specified in the vCard string instead.
+         * @param id Assigns the contact an id. If an existing contact has this id, an exception is thrown. **Note:** Deprecated, the card's id should be specified in the vCard string instead.
          * @param properties The properties object for the new contact. If it includes a ``vCard`` member, all specified legacy properties  are ignored and the new contact will be based on the provided vCard string. If a UID is specified in the vCard string, which is already used by another contact, an exception is thrown. **Note:** Using individual properties is deprecated, use the ``vCard`` member instead.
          */
-        function create(parentId: string, id?: string, properties: ContactProperties): Promise<string>;
+        function create(parentId: string, id: string, properties: ContactProperties): Promise<string>;
+        /**
+         * Adds a new contact to the address book with the id ``parentId``.
+         * @param properties The properties object for the new contact. If it includes a ``vCard`` member, all specified legacy properties  are ignored and the new contact will be based on the provided vCard string. If a UID is specified in the vCard string, which is already used by another contact, an exception is thrown. **Note:** Using individual properties is deprecated, use the ``vCard`` member instead.
+         */
+        function create(parentId: string, properties: ContactProperties): Promise<string>;
 
         /**
          * Updates a contact.
@@ -1282,9 +1277,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `addressBooks`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/mailingLists.html
      */
     const mailingLists;
@@ -1372,22 +1365,515 @@ declare namespace messenger {
     }
 
     /**
-     * Manifest keys: `action`, `browser_action`, `action`, `browser_action`
-     *
-     * Not supported on manifest versions above 2.
-     *
+     * Use an action to put a button in the mail window toolbar. In addition to its icon, an action button can also have a tooltip, a badge, and a popup.
+     * Manifest keys: `action`, `browser_action`
+     * Needs at least manifest version 3.
      * Not allowed in: Content scripts, Devtools pages
-     *
+     * @see https://webextension-api.thunderbird.net/en/latest/browserAction.html
+     */
+    const action;
+    namespace action {
+        /* action types */
+        /**
+         * An array of four integers in the range [0,255] that make up the RGBA color. For example, opaque red is ``[255, 0, 0, 255]``.
+         */
+        type ColorArray = [number, number, number, number];
+
+        /**
+         * Pixel data for an image. Must be an {@link ImageData} object (for example, from a {@link Canvas} element).
+         */
+        type ImageDataType = ImageData;
+
+        /**
+         * A _dictionary object_ to specify multiple {@link ImageData} objects in different sizes, so the icon does not have to be scaled for a device with a different pixel density. Each entry is a _name-value_ pair with _value_ being an {@link ImageData} object, and _name_ its size. Example: [ImageDataDictionary.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/ImageDataDictionary.json)See the MDN documentation about choosing icon sizes  for more information on this.
+         */
+        interface ImageDataDictionary {
+            [key: number]: ImageDataType;
+        }
+
+        /** Information sent when an action button is clicked. */
+        interface OnClickData {
+            /** An array of keyboard modifiers that were held while the menu item was clicked. */
+            modifiers: _OnClickDataModifiers[];
+            /** An integer value of button by which menu item was clicked. */
+            button?: number | undefined;
+        }
+
+        type _OnClickDataModifiers = 'Shift' | 'Alt' | 'Command' | 'Ctrl' | 'MacCtrl';
+
+        interface _SetTitleDetails {
+            /**
+             * A string the action button should display as its label and when moused over. Cleared by setting it to ``null`` or an empty string (title defined the manifest will be used).
+             */
+            title: string | null;
+            /** Sets the title only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetTitleDetails {
+            /**
+             * Specifies for which tab the title should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetLabelDetails {
+            /**
+             * A string the action button should use as its label, overriding the defined title. Can be set to an empty string to not display any label at all. If the containing toolbar is configured to display text only, its title will be used. Cleared by setting it to ``null``.
+             */
+            label: string | null;
+            /** Sets the label only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetLabelDetails {
+            /**
+             * Specifies for which tab the label should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetIconDetails {
+            /** The image data for one or more icons for the action button. */
+            imageData?: ImageDataType | ImageDataDictionary | undefined;
+            /** The paths to one or more icons for the action button. */
+            path?: _manifest.IconPath | undefined;
+            /** Sets the icon only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetPopupDetails {
+            /**
+             * The html file to show in a popup. Can be set to an empty string to not open a popup. Cleared by setting it to ``null`` (popup value defined the manifest will be used).
+             */
+            popup: string | null;
+            /** Sets the popup only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetPopupDetails {
+            /**
+             * Specifies for which tab the popup document should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetBadgeTextDetails {
+            /**
+             * Any number of characters can be passed, but only about four can fit in the space. Cleared by setting it to ``null`` or an empty string.
+             */
+            text: string | null;
+            /** Sets the badge text only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetBadgeTextDetails {
+            /**
+             * Specifies for which tab the badge text should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetBadgeBackgroundColorDetails {
+            /** The color to use as background in the badge. Cleared by setting it to ``null`` or an empty string. */
+            color: string | ColorArray | null;
+            /** Sets the background color for the badge only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetBadgeBackgroundColorDetails {
+            /**
+             * Specifies for which tab the badge background color should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _IsEnabledDetails {
+            /**
+             * Specifies for which tab the state should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        /* action functions */
+        /** Sets the title of the action button. Is used as tooltip and as the label. */
+        function setTitle(details: _SetTitleDetails): Promise<void>;
+
+        /** Gets the title of the action button. */
+        function getTitle(details: _GetTitleDetails): Promise<string>;
+
+        /**
+         * Sets the label of the action button. Can be used to set different values for the tooltip (defined by the title) and the label. Additionally, the label can be set to an empty string, not showing any label at all.
+         */
+        function setLabel(details: _SetLabelDetails): Promise<void>;
+
+        /** Gets the label of the action button. */
+        function getLabel(details: _GetLabelDetails): Promise<string>;
+
+        /**
+         * Sets the icon for the action button. Either the ``path`` or the ``imageData`` property must be specified.
+         */
+        function setIcon(details: _SetIconDetails): Promise<void>;
+
+        /** Sets the html document to be opened as a popup when the user clicks on the action button. */
+        function setPopup(details: _SetPopupDetails): Promise<void>;
+
+        /** Gets the html document set as the popup for this action button. */
+        function getPopup(details: _GetPopupDetails): Promise<string>;
+
+        /** Sets the badge text for the action button. The badge is displayed on top of the icon. */
+        function setBadgeText(details: _SetBadgeTextDetails): Promise<void>;
+
+        /** Gets the badge text of the action button. */
+        function getBadgeText(details: _GetBadgeTextDetails): Promise<string>;
+
+        /** Sets the background color for the badge. */
+        function setBadgeBackgroundColor(details: _SetBadgeBackgroundColorDetails): Promise<void>;
+
+        /** Gets the badge background color of the action button. */
+        function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
+
+        /**
+         * Enables the action button for a tab. By default, an action button is enabled.
+         * @param [tabId] The id of the tab for which you want to modify the action button.
+         */
+        function enable(tabId?: number): Promise<void>;
+
+        /**
+         * Disables the action button for a tab.
+         * @param [tabId] The id of the tab for which you want to modify the action button.
+         */
+        function disable(tabId?: number): Promise<void>;
+
+        /** Checks whether the action button is enabled. */
+        function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
+
+        /** Opens the action's popup window in the active window. */
+        function openPopup(): Promise<boolean>;
+
+        /* action events */
+        /**
+         * Fired when an action button is clicked. This event will not fire if the action has a popup. This is a user input event handler. For asynchronous listeners some restrictions  apply.
+         */
+        const onClicked: WebExtEvent<(tab: tabs.Tab, info?: OnClickData) => void>;
+    }
+
+    /**
+     * Manifest keys: `action`, `browser_action`
+     * Not supported on manifest versions above 2.
+     * Not allowed in: Content scripts, Devtools pages
      * @see https://webextension-api.thunderbird.net/en/latest/browserAction.html
      */
     const browserAction;
-    namespace browserAction {}
+    namespace browserAction {
+        /* browserAction types */
+        /**
+         * An array of four integers in the range [0,255] that make up the RGBA color. For example, opaque red is ``[255, 0, 0, 255]``.
+         */
+        type ColorArray = [number, number, number, number];
+
+        /**
+         * Pixel data for an image. Must be an {@link ImageData} object (for example, from a {@link Canvas} element).
+         */
+        type ImageDataType = ImageData;
+
+        /**
+         * A _dictionary object_ to specify multiple {@link ImageData} objects in different sizes, so the icon does not have to be scaled for a device with a different pixel density. Each entry is a _name-value_ pair with _value_ being an {@link ImageData} object, and _name_ its size. Example: [ImageDataDictionary.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/ImageDataDictionary.json)See the MDN documentation about choosing icon sizes  for more information on this.
+         */
+        interface ImageDataDictionary {
+            [key: number]: ImageDataType;
+        }
+
+        /** Information sent when an action button is clicked. */
+        interface OnClickData {
+            /** An array of keyboard modifiers that were held while the menu item was clicked. */
+            modifiers: _OnClickDataModifiers[];
+            /** An integer value of button by which menu item was clicked. */
+            button?: number | undefined;
+        }
+
+        type _OnClickDataModifiers = 'Shift' | 'Alt' | 'Command' | 'Ctrl' | 'MacCtrl';
+
+        interface _SetTitleDetails {
+            /**
+             * A string the action button should display as its label and when moused over. Cleared by setting it to ``null`` or an empty string (title defined the manifest will be used).
+             */
+            title: string | null;
+            /** Sets the title only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetTitleDetails {
+            /**
+             * Specifies for which tab the title should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetLabelDetails {
+            /**
+             * A string the action button should use as its label, overriding the defined title. Can be set to an empty string to not display any label at all. If the containing toolbar is configured to display text only, its title will be used. Cleared by setting it to ``null``.
+             */
+            label: string | null;
+            /** Sets the label only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetLabelDetails {
+            /**
+             * Specifies for which tab the label should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetIconDetails {
+            /** The image data for one or more icons for the action button. */
+            imageData?: ImageDataType | ImageDataDictionary | undefined;
+            /** The paths to one or more icons for the action button. */
+            path?: _manifest.IconPath | undefined;
+            /** Sets the icon only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetPopupDetails {
+            /**
+             * The html file to show in a popup. Can be set to an empty string to not open a popup. Cleared by setting it to ``null`` (popup value defined the manifest will be used).
+             */
+            popup: string | null;
+            /** Sets the popup only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetPopupDetails {
+            /**
+             * Specifies for which tab the popup document should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetBadgeTextDetails {
+            /**
+             * Any number of characters can be passed, but only about four can fit in the space. Cleared by setting it to ``null`` or an empty string.
+             */
+            text: string | null;
+            /** Sets the badge text only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetBadgeTextDetails {
+            /**
+             * Specifies for which tab the badge text should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetBadgeBackgroundColorDetails {
+            /** The color to use as background in the badge. Cleared by setting it to ``null`` or an empty string. */
+            color: string | ColorArray | null;
+            /** Sets the background color for the badge only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetBadgeBackgroundColorDetails {
+            /**
+             * Specifies for which tab the badge background color should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _IsEnabledDetails {
+            /**
+             * Specifies for which tab the state should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        /* browserAction functions */
+        /** Sets the title of the action button. Is used as tooltip and as the label. */
+        function setTitle(details: _SetTitleDetails): Promise<void>;
+
+        /** Gets the title of the action button. */
+        function getTitle(details: _GetTitleDetails): Promise<string>;
+
+        /**
+         * Sets the label of the action button. Can be used to set different values for the tooltip (defined by the title) and the label. Additionally, the label can be set to an empty string, not showing any label at all.
+         */
+        function setLabel(details: _SetLabelDetails): Promise<void>;
+
+        /** Gets the label of the action button. */
+        function getLabel(details: _GetLabelDetails): Promise<string>;
+
+        /**
+         * Sets the icon for the action button. Either the ``path`` or the ``imageData`` property must be specified.
+         */
+        function setIcon(details: _SetIconDetails): Promise<void>;
+
+        /** Sets the html document to be opened as a popup when the user clicks on the action button. */
+        function setPopup(details: _SetPopupDetails): Promise<void>;
+
+        /** Gets the html document set as the popup for this action button. */
+        function getPopup(details: _GetPopupDetails): Promise<string>;
+
+        /** Sets the badge text for the action button. The badge is displayed on top of the icon. */
+        function setBadgeText(details: _SetBadgeTextDetails): Promise<void>;
+
+        /** Gets the badge text of the action button. */
+        function getBadgeText(details: _GetBadgeTextDetails): Promise<string>;
+
+        /** Sets the background color for the badge. */
+        function setBadgeBackgroundColor(details: _SetBadgeBackgroundColorDetails): Promise<void>;
+
+        /** Gets the badge background color of the action button. */
+        function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
+
+        /**
+         * Enables the action button for a tab. By default, an action button is enabled.
+         * @param [tabId] The id of the tab for which you want to modify the action button.
+         */
+        function enable(tabId?: number): Promise<void>;
+
+        /**
+         * Disables the action button for a tab.
+         * @param [tabId] The id of the tab for which you want to modify the action button.
+         */
+        function disable(tabId?: number): Promise<void>;
+
+        /** Checks whether the action button is enabled. */
+        function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
+
+        /** Opens the action's popup window in the active window. */
+        function openPopup(): Promise<boolean>;
+
+        /* browserAction events */
+        /**
+         * Fired when an action button is clicked. This event will not fire if the action has a popup. This is a user input event handler. For asynchronous listeners some restrictions  apply.
+         */
+        const onClicked: WebExtEvent<(tab: tabs.Tab, info?: OnClickData) => void>;
+    }
 
     /**
      * Manifest keys: `cloud_file`
-     *
      * Not allowed in: Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/cloudFile.html
      */
     const cloudFile;
@@ -1602,11 +2088,8 @@ declare namespace messenger {
 
     /**
      * Use the commands API to add keyboard shortcuts that trigger actions in your extension, for example opening one of the action popups or sending a command to the extension.
-     *
      * Manifest keys: `commands`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/commands.html
      */
     const commands;
@@ -1659,7 +2142,6 @@ declare namespace messenger {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/compose.html
      */
     const compose;
@@ -1879,38 +2361,80 @@ declare namespace messenger {
 
         /* compose functions */
         /**
-         * Open a new message compose window. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
-         */
-        function beginNew(): Promise<tabs.Tab>;
-        /**
-         * Open a new message compose window. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * Open a new message compose window.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
          * @param messageId If specified, the message or template to edit as a new message.
          */
         function beginNew(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
         /**
-         * Open a new message compose window. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * Open a new message compose window.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
          */
-        function beginNew(details: ComposeDetails): Promise<tabs.Tab>;
+        function beginNew(details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
-         * Open a new message compose window replying to a given message. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * Open a new message compose window replying to a given message.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
          * @param messageId The message to reply to, as retrieved using other APIs.
          */
         function beginReply(
             messageId: number,
-            replyType?: _BeginReplyReplyType,
+            replyType: _BeginReplyReplyType,
             details?: ComposeDetails,
         ): Promise<tabs.Tab>;
+        /**
+         * Open a new message compose window replying to a given message.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * @param messageId The message to reply to, as retrieved using other APIs.
+         */
+        function beginReply(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
-         * Open a new message compose window forwarding a given message. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * Open a new message compose window forwarding a given message.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
          * @param messageId The message to forward, as retrieved using other APIs.
          */
         function beginForward(
             messageId: number,
-            forwardType?: _BeginForwardForwardType,
+            forwardType: _BeginForwardForwardType,
             details?: ComposeDetails,
         ): Promise<tabs.Tab>;
+        /**
+         * Open a new message compose window forwarding a given message.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * @param messageId The message to forward, as retrieved using other APIs.
+         */
+        function beginForward(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
          * Fetches the current state of a compose window. Currently only a limited amount of information is available, more will be added in later versions.
@@ -1918,7 +2442,9 @@ declare namespace messenger {
         function getComposeDetails(tabId: number): Promise<ComposeDetails>;
 
         /**
-         * Updates the compose window. Only fields that are to be changed should be specified. Currently only a limited amount of information can be set, more will be added in later versions. **Note:** The compose format of an existing compose window cannot be changed. Since Thunderbird 98, setting conflicting values for ``details.body``, ``details.plainTextBody`` or ``details.isPlaintext`` no longer throw an exception, instead the compose window chooses the matching ``details.body`` or ``details.plainTextBody`` value and ignores the other.
+         * Updates the compose window. Only fields that are to be changed should be specified. Currently only a limited amount of information can be set, more will be added in later versions.
+         *
+         * **Note:** The compose format of an existing compose window cannot be changed. Since Thunderbird 98, setting conflicting values for ``details.body``, ``details.plainTextBody`` or ``details.isPlaintext`` no longer throw an exception, instead the compose window chooses the matching ``details.body`` or ``details.plainTextBody`` value and ignores the other.
          */
         function setComposeDetails(tabId: number, details: ComposeDetails): Promise<any>;
 
@@ -2015,11 +2541,8 @@ declare namespace messenger {
 
     /**
      * Use a composeAction to put a button in the message composition toolbars. In addition to its icon, a composeAction button can also have a tooltip, a badge, and a popup.
-     *
      * Manifest keys: `compose_action`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/composeAction.html
      */
     const composeAction;
@@ -2271,9 +2794,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `compose`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/composeScripts.html
      */
     const composeScripts;
@@ -2300,9 +2821,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `messagesModify`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayScripts.html
      */
     const messageDisplayScripts;
@@ -2329,9 +2848,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `accountsRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/folders.html
      */
     const folders;
@@ -2434,9 +2951,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `accountsRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/identities.html
      */
     const identities;
@@ -2510,7 +3025,6 @@ declare namespace messenger {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/mailTabs.html
      */
     const mailTabs;
@@ -2683,13 +3197,13 @@ declare namespace messenger {
 
         /**
          * Modifies the properties of a mail tab. Properties that are not specified in ``updateProperties`` are not modified.
-         */
-        function update(updateProperties: _UpdateUpdateProperties): Promise<any>;
-        /**
-         * Modifies the properties of a mail tab. Properties that are not specified in ``updateProperties`` are not modified.
          * @param tabId Defaults to the active tab of the current window.
          */
         function update(tabId: number, updateProperties: _UpdateUpdateProperties): Promise<any>;
+        /**
+         * Modifies the properties of a mail tab. Properties that are not specified in ``updateProperties`` are not modified.
+         */
+        function update(updateProperties: _UpdateUpdateProperties): Promise<any>;
 
         /**
          * Lists the selected messages in the current folder.
@@ -2699,23 +3213,25 @@ declare namespace messenger {
 
         /**
          * Selects none, one or multiple messages.
-         * @param messageIds The IDs of the messages, which should be selected. The mailTab will switch to the folder of the selected messages. Throws if they belong to different folders. Array can be empty to deselect any currently selected message.
-         */
-        function setSelectedMessages(messageIds: number[]): Promise<any>;
-        /**
-         * Selects none, one or multiple messages.
          * @param tabId Defaults to the active tab of the current window.
          * @param messageIds The IDs of the messages, which should be selected. The mailTab will switch to the folder of the selected messages. Throws if they belong to different folders. Array can be empty to deselect any currently selected message.
          */
         function setSelectedMessages(tabId: number, messageIds: number[]): Promise<any>;
+        /**
+         * Selects none, one or multiple messages.
+         * @param messageIds The IDs of the messages, which should be selected. The mailTab will switch to the folder of the selected messages. Throws if they belong to different folders. Array can be empty to deselect any currently selected message.
+         */
+        function setSelectedMessages(messageIds: number[]): Promise<any>;
 
-        /** Sets the Quick Filter user interface based on the options specified. */
-        function setQuickFilter(properties: _SetQuickFilterProperties): Promise<any>;
         /**
          * Sets the Quick Filter user interface based on the options specified.
          * @param tabId Defaults to the active tab of the current window.
          */
-        function setQuickFilter(tabId: number, properties: _SetQuickFilterProperties): Promise<any>;
+        function setQuickFilter(
+            tabId: number,
+            properties: _SetQuickFilterProperties,
+        ): Promise<any>; /** Sets the Quick Filter user interface based on the options specified. */
+        function setQuickFilter(properties: _SetQuickFilterProperties): Promise<any>;
 
         /* mailTabs events */
         /** Fired when the displayed folder changes in any mail tab. */
@@ -2727,9 +3243,7 @@ declare namespace messenger {
 
     /**
      * The menus API allows to add items to Thunderbirds menus. You can choose what types of objects your context menu additions apply to, such as images, hyperlinks, and pages.
-     *
      * Permissions: `menus`, `menus`
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/menus.html
      */
     const menus;
@@ -3059,9 +3573,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `messagesRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/messageDisplay.html
      */
     const messageDisplay;
@@ -3124,11 +3636,8 @@ declare namespace messenger {
 
     /**
      * Use a messageDisplayAction to put a button in the message display toolbar. In addition to its icon, a messageDisplayAction button can also have a tooltip, a badge, and a popup.
-     *
      * Manifest keys: `message_display_action`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayAction.html
      */
     const messageDisplayAction;
@@ -3382,9 +3891,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `messagesRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/messages.html
      */
     const messages;
@@ -3603,7 +4110,9 @@ declare namespace messenger {
         function getFull(messageId: number): Promise<MessagePart>;
 
         /**
-         * Returns the unmodified source of a message as a binary string , which is a simple series of 8-bit values. Throws if the message could not be read, for example due to network issues. If the message contains non-ASCII characters, the body parts in the binary string cannot be read directly and must be decoded according to their character sets. Use {@link messages.getFull} to get the correctly decoded parts. Manually decoding the raw message is probably too error-prone, especially if the message contains MIME parts with different character set encodings or attachments. To get a readable version of the raw message as it appears in Thunderbird's message source view, it may be sufficient to decode the message according to the character set specified in its main content-type  header (example: ``text/html; charset=UTF-8``) using the following function (see MDN for supported input encodings ): [decodeBinaryString.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/decodeBinaryString.js)
+         * Returns the unmodified source of a message as a binary string , which is a simple series of 8-bit values. Throws if the message could not be read, for example due to network issues. If the message contains non-ASCII characters, the body parts in the binary string cannot be read directly and must be decoded according to their character sets. Use {@link messages.getFull} to get the correctly decoded parts. Manually decoding the raw message is probably too error-prone, especially if the message contains MIME parts with different character set encodings or attachments.
+         *
+         * To get a readable version of the raw message as it appears in Thunderbird's message source view, it may be sufficient to decode the message according to the character set specified in its main content-type  header (example: ``text/html; charset=UTF-8``) using the following function (see MDN for supported input encodings ): [decodeBinaryString.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/decodeBinaryString.js)
          */
         function getRaw(messageId: number): Promise<string>;
 
@@ -3638,7 +4147,8 @@ declare namespace messenger {
         function copy(messageIds: number[], destination: folders.MailFolder): Promise<any>;
 
         /**
-         * Deletes messages permanently, or moves them to the trash folder (honoring the account's deletion behavior settings). Deleting external messages will throw an _ExtensionError_. The ``skipTrash`` parameter allows immediate permanent deletion, bypassing the trash folder. **Note**: Consider using {@link messages.move} to manually move messages to the account's trash folder, instead of requesting the overly powerful permission to actually delete messages. The account's trash folder can be extracted as follows: [getTrash.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/getTrash.js)
+         * Deletes messages permanently, or moves them to the trash folder (honoring the account's deletion behavior settings). Deleting external messages will throw an _ExtensionError_. The ``skipTrash`` parameter allows immediate permanent deletion, bypassing the trash folder.
+         * **Note**: Consider using {@link messages.move} to manually move messages to the account's trash folder, instead of requesting the overly powerful permission to actually delete messages. The account's trash folder can be extracted as follows: [getTrash.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/getTrash.js)
          * @param messageIds The IDs of the messages to delete.
          * @param [skipTrash] If true, the message will be deleted permanently, regardless of the account's deletion behavior settings.
          */
@@ -3703,7 +4213,6 @@ declare namespace messenger {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/spacesToolbar.html
      */
     const spacesToolbar;
@@ -3765,9 +4274,7 @@ declare namespace messenger {
 
     /**
      * The tabs API supports creating, modifying and interacting with tabs in Thunderbird windows.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/tabs.html
      */
     const tabs;
@@ -4021,15 +4528,15 @@ declare namespace messenger {
 
         /**
          * Modifies the properties of a tab. Properties that are not specified in ``updateProperties`` are not modified.
-         * @param updateProperties Properties which should to be updated.
-         */
-        function update(updateProperties: _UpdateUpdateProperties): Promise<Tab>;
-        /**
-         * Modifies the properties of a tab. Properties that are not specified in ``updateProperties`` are not modified.
          * @param tabId Defaults to the selected tab of the current window.
          * @param updateProperties Properties which should to be updated.
          */
         function update(tabId: number, updateProperties: _UpdateUpdateProperties): Promise<Tab>;
+        /**
+         * Modifies the properties of a tab. Properties that are not specified in ``updateProperties`` are not modified.
+         * @param updateProperties Properties which should to be updated.
+         */
+        function update(updateProperties: _UpdateUpdateProperties): Promise<Tab>;
 
         /**
          * Moves one or more tabs to a new position within its window, or to a new window. Note that tabs can only be moved to and from windows of type ``normal``.
@@ -4037,15 +4544,12 @@ declare namespace messenger {
          */
         function move(tabIds: number | number[], moveProperties: _MoveMoveProperties): Promise<Tab | Tab[]>;
 
-        /** Reload a tab. */
-        function reload(): Promise<void>;
         /**
          * Reload a tab.
          * @param tabId The ID of the tab to reload; defaults to the selected tab of the current window.
          */
-        function reload(tabId: number, reloadProperties?: _ReloadReloadProperties): Promise<void>;
-        /** Reload a tab. */
-        function reload(reloadProperties: _ReloadReloadProperties): Promise<void>;
+        function reload(tabId: number, reloadProperties?: _ReloadReloadProperties): Promise<void>; /** Reload a tab. */
+        function reload(reloadProperties?: _ReloadReloadProperties): Promise<void>;
 
         /**
          * Closes one or more tabs.
@@ -4055,39 +4559,39 @@ declare namespace messenger {
 
         /**
          * Injects JavaScript code into a page. For details, see the programmatic injection  section of the content scripts doc.
-         * @param details Details of the script to run.
-         */
-        function executeScript(details: extensionTypes.InjectDetails): Promise<any[]>;
-        /**
-         * Injects JavaScript code into a page. For details, see the programmatic injection  section of the content scripts doc.
          * @param tabId The ID of the tab in which to run the script; defaults to the active tab of the current window.
          * @param details Details of the script to run.
          */
         function executeScript(tabId: number, details: extensionTypes.InjectDetails): Promise<any[]>;
-
         /**
-         * Injects CSS into a page. For details, see the programmatic injection  section of the content scripts doc.
-         * @param details Details of the CSS text to insert.
+         * Injects JavaScript code into a page. For details, see the programmatic injection  section of the content scripts doc.
+         * @param details Details of the script to run.
          */
-        function insertCSS(details: extensionTypes.InjectDetails): Promise<void>;
+        function executeScript(details: extensionTypes.InjectDetails): Promise<any[]>;
+
         /**
          * Injects CSS into a page. For details, see the programmatic injection  section of the content scripts doc.
          * @param tabId The ID of the tab in which to insert the CSS; defaults to the active tab of the current window.
          * @param details Details of the CSS text to insert.
          */
         function insertCSS(tabId: number, details: extensionTypes.InjectDetails): Promise<void>;
-
         /**
-         * Removes injected CSS from a page. For details, see the programmatic injection  section of the content scripts doc.
-         * @param details Details of the CSS text to remove.
+         * Injects CSS into a page. For details, see the programmatic injection  section of the content scripts doc.
+         * @param details Details of the CSS text to insert.
          */
-        function removeCSS(details: extensionTypes.InjectDetails): Promise<void>;
+        function insertCSS(details: extensionTypes.InjectDetails): Promise<void>;
+
         /**
          * Removes injected CSS from a page. For details, see the programmatic injection  section of the content scripts doc.
          * @param tabId The ID of the tab from which to remove the injected CSS; defaults to the active tab of the current window.
          * @param details Details of the CSS text to remove.
          */
         function removeCSS(tabId: number, details: extensionTypes.InjectDetails): Promise<void>;
+        /**
+         * Removes injected CSS from a page. For details, see the programmatic injection  section of the content scripts doc.
+         * @param details Details of the CSS text to remove.
+         */
+        function removeCSS(details: extensionTypes.InjectDetails): Promise<void>;
 
         /* tabs events */
         /**
@@ -4125,9 +4629,7 @@ declare namespace messenger {
 
     /**
      * The theme API allows for customization of Thunderbird's visual elements.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/theme.html
      */
     const theme;
@@ -4136,7 +4638,7 @@ declare namespace messenger {
         /** Info provided in the onUpdated listener. */
         interface ThemeUpdateInfo {
             /** The new theme after update */
-            theme: object;
+            theme: _manifest.ThemeType;
             /** The id of the window the theme has been applied to */
             windowId?: number | undefined;
         }
@@ -4150,15 +4652,15 @@ declare namespace messenger {
 
         /**
          * Make complete updates to the theme. Resolves when the update has completed.
-         * @param details The properties of the theme to update.
-         */
-        function update(details: _manifest.ThemeType): void;
-        /**
-         * Make complete updates to the theme. Resolves when the update has completed.
          * @param windowId The id of the window to update. No id updates all windows.
          * @param details The properties of the theme to update.
          */
         function update(windowId: number, details: _manifest.ThemeType): void;
+        /**
+         * Make complete updates to the theme. Resolves when the update has completed.
+         * @param details The properties of the theme to update.
+         */
+        function update(details: _manifest.ThemeType): void;
 
         /**
          * Removes the updates made to the theme.
@@ -4166,37 +4668,7 @@ declare namespace messenger {
          */
         function reset(windowId?: number): void;
 
-        /**
-         * Returns the current theme for the specified window or the last focused window.
-         * @param [windowId] The window for which we want the theme.
-         */
-        function getCurrent(windowId?: number): Promise<any>;
-
-        /**
-         * Make complete updates to the theme. Resolves when the update has completed.
-         * @param details The properties of the theme to update.
-         */
-        function update(details: _manifest.ThemeType): Promise<any>;
-        /**
-         * Make complete updates to the theme. Resolves when the update has completed.
-         * @param windowId The id of the window to update. No id updates all windows.
-         * @param details The properties of the theme to update.
-         */
-        function update(windowId: number, details: _manifest.ThemeType): Promise<any>;
-
-        /**
-         * Removes the updates made to the theme.
-         * @param [windowId] The id of the window to reset. No id resets all windows.
-         */
-        function reset(windowId?: number): Promise<any>;
-
         /* theme events */
-        /**
-         * Fired when a new theme has been applied
-         * @param updateInfo Details of the theme update
-         */
-        const onUpdated: WebExtEvent<(updateInfo: ThemeUpdateInfo) => void>;
-
         /**
          * Fired when a new theme has been applied
          * @param updateInfo Details of the theme update
@@ -4206,9 +4678,7 @@ declare namespace messenger {
 
     /**
      * The windows API supports creating, modifying and interacting with Thunderbird windows.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/windows.html
      */
     const windows;
@@ -4397,11 +4867,8 @@ declare namespace messenger {
 
     /**
      * Use the `messenger.browserSettings` API to control global settings of the browser.
-     *
      * Permissions: `browserSettings`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/browserSettings
      */
     const browserSettings;
@@ -4487,11 +4954,8 @@ declare namespace messenger {
 
     /**
      * Offers the ability to write to the clipboard. Reading is not supported because the clipboard can already be read through the standard web platform APIs.
-     *
      * Permissions: `clipboardWrite`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/clipboard
      */
     const clipboard;
@@ -4510,9 +4974,7 @@ declare namespace messenger {
 
     /**
      * Not supported on manifest versions above 2.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/contentScripts
      */
     const contentScripts;
@@ -4555,11 +5017,8 @@ declare namespace messenger {
 
     /**
      * Use the `messenger.cookies` API to query and modify cookies, and to be notified when they change.
-     *
      * Permissions: `cookies`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/cookies
      */
     const cookies;
@@ -4803,11 +5262,8 @@ declare namespace messenger {
 
     /**
      * Asynchronous DNS API
-     *
      * Permissions: `dns`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/dns
      */
     const dns;
@@ -4845,9 +5301,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `downloads`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/downloads
      */
     const downloads;
@@ -5185,9 +5639,7 @@ declare namespace messenger {
 
     /**
      * The `messenger.events` namespace contains common types used by APIs dispatching events to notify you when something interesting happens.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/events
      */
     const events;
@@ -5315,7 +5767,6 @@ declare namespace messenger {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/how-to/experiments.html
      */
     const experiments;
@@ -5357,7 +5808,6 @@ declare namespace messenger {
 
     /**
      * The `messenger.extension` API has utilities that can be used by any extension page. It includes support for exchanging messages between an extension and its content scripts or between extensions, as described in detail in Message Passing.
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/extension
      */
     const extension;
@@ -5461,9 +5911,7 @@ declare namespace messenger {
 
     /**
      * The `messenger.extensionTypes` API contains type declarations for WebExtensions.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/extensionTypes
      */
     const extensionTypes;
@@ -5559,7 +6007,6 @@ declare namespace messenger {
 
     /**
      * Use the `messenger.i18n` infrastructure to implement internationalization across your whole app or extension.
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n
      */
     const i18n;
@@ -5616,11 +6063,8 @@ declare namespace messenger {
 
     /**
      * Use the messenger.identity API to get OAuth2 access tokens.
-     *
      * Permissions: `identity`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/identity
      */
     const identity;
@@ -5703,11 +6147,8 @@ declare namespace messenger {
 
     /**
      * Use the `messenger.idle` API to detect when the machine's idle state changes.
-     *
      * Permissions: `idle`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/idle
      */
     const idle;
@@ -5737,9 +6178,7 @@ declare namespace messenger {
 
     /**
      * The `messenger.management` API provides ways to manage the list of extensions that are installed and running.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/management
      */
     const management;
@@ -5876,9 +6315,7 @@ declare namespace messenger {
 
     /**
      * Permissions: `notifications`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/notifications
      */
     const notifications;
@@ -5976,15 +6413,15 @@ declare namespace messenger {
         /* notifications functions */
         /**
          * Creates and displays a notification.
-         * @param options Contents of the notification.
-         */
-        function create(options: CreateNotificationOptions): Promise<string>;
-        /**
-         * Creates and displays a notification.
          * @param notificationId Identifier of the notification. If it is empty, this method generates an id. If it matches an existing notification, this method first clears that notification before proceeding with the create operation.
          * @param options Contents of the notification.
          */
         function create(notificationId: string, options: CreateNotificationOptions): Promise<string>;
+        /**
+         * Creates and displays a notification.
+         * @param options Contents of the notification.
+         */
+        function create(options: CreateNotificationOptions): Promise<string>;
 
         /**
          * Updates an existing notification.
@@ -6052,7 +6489,6 @@ declare namespace messenger {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/permissions
      */
     const permissions;
@@ -6095,11 +6531,8 @@ declare namespace messenger {
 
     /**
      * PKCS#11 module management API
-     *
      * Permissions: `pkcs11`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/pkcs11
      */
     const pkcs11;
@@ -6130,20 +6563,15 @@ declare namespace messenger {
 
     /**
      * Permissions: `privacy`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy
      */
     const privacy;
     namespace privacy {
         /**
          * Use the `messenger.privacy` API to control usage of the features in the browser that can affect a user's privacy.
-         *
          * Permissions: `privacy`
-         *
          * Not allowed in: Content scripts, Devtools pages
-         *
          * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/network
          */
         const network;
@@ -6206,11 +6634,8 @@ declare namespace messenger {
 
         /**
          * Use the `messenger.privacy` API to control usage of the features in the browser that can affect a user's privacy.
-         *
          * Permissions: `privacy`
-         *
          * Not allowed in: Content scripts, Devtools pages
-         *
          * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/services
          */
         const services;
@@ -6224,11 +6649,8 @@ declare namespace messenger {
 
         /**
          * Use the `messenger.privacy` API to control usage of the features in the browser that can affect a user's privacy.
-         *
          * Permissions: `privacy`
-         *
          * Not allowed in: Content scripts, Devtools pages
-         *
          * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/websites
          */
         const websites;
@@ -6304,11 +6726,8 @@ declare namespace messenger {
 
     /**
      * Provides access to global proxy settings for Firefox and proxy event listeners to handle dynamic proxy implementations.
-     *
      * Permissions: `proxy`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/proxy
      */
     const proxy;
@@ -6408,7 +6827,6 @@ declare namespace messenger {
 
     /**
      * Use the `messenger.runtime` API to retrieve the background page, return details about the manifest, and listen for and respond to events in the app or extension lifecycle. You can also use this API to convert the relative path of URLs to fully-qualified URLs.
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime
      */
     const runtime;
@@ -6610,11 +7028,6 @@ declare namespace messenger {
 
         /**
          * Attempts to connect to connect listeners within an extension/app (such as the background page), or other extensions/apps. This is useful for content scripts connecting to their extension processes, inter-app/extension communication, and web messaging. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via `tabs.connect`.
-         * @returns Port through which messages can be sent and received. The port's `runtime.Port onDisconnect` event is fired if the extension/app does not exist.
-         */
-        function connect(): Port;
-        /**
-         * Attempts to connect to connect listeners within an extension/app (such as the background page), or other extensions/apps. This is useful for content scripts connecting to their extension processes, inter-app/extension communication, and web messaging. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via `tabs.connect`.
          * @param extensionId The ID of the extension or app to connect to. If omitted, a connection will be attempted with your own extension. Required if sending messages from a web page for web messaging.
          * @returns Port through which messages can be sent and received. The port's `runtime.Port onDisconnect` event is fired if the extension/app does not exist.
          */
@@ -6623,7 +7036,7 @@ declare namespace messenger {
          * Attempts to connect to connect listeners within an extension/app (such as the background page), or other extensions/apps. This is useful for content scripts connecting to their extension processes, inter-app/extension communication, and web messaging. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via `tabs.connect`.
          * @returns Port through which messages can be sent and received. The port's `runtime.Port onDisconnect` event is fired if the extension/app does not exist.
          */
-        function connect(connectInfo: _ConnectConnectInfo): Port;
+        function connect(connectInfo?: _ConnectConnectInfo): Port;
 
         /**
          * Connects to a native application in the host machine.
@@ -6636,13 +7049,13 @@ declare namespace messenger {
 
         /**
          * Sends a single message to event listeners within your extension/app or a different extension/app. Similar to `runtime.connect` but only sends a single message, with an optional response. If sending to your extension, the `runtime.onMessage` event will be fired in each page, or `runtime.onMessageExternal`, if a different extension. Note that extensions cannot send messages to content scripts using this method. To send messages to content scripts, use `tabs.sendMessage`.
-         */
-        function sendMessage(message: any, options?: _SendMessageOptions): Promise<any>;
-        /**
-         * Sends a single message to event listeners within your extension/app or a different extension/app. Similar to `runtime.connect` but only sends a single message, with an optional response. If sending to your extension, the `runtime.onMessage` event will be fired in each page, or `runtime.onMessageExternal`, if a different extension. Note that extensions cannot send messages to content scripts using this method. To send messages to content scripts, use `tabs.sendMessage`.
          * @param extensionId The ID of the extension/app to send the message to. If omitted, the message will be sent to your own extension/app. Required if sending messages from a web page for web messaging.
          */
         function sendMessage(extensionId: string, message: any, options?: _SendMessageOptions): Promise<any>;
+        /**
+         * Sends a single message to event listeners within your extension/app or a different extension/app. Similar to `runtime.connect` but only sends a single message, with an optional response. If sending to your extension, the `runtime.onMessage` event will be fired in each page, or `runtime.onMessageExternal`, if a different extension. Note that extensions cannot send messages to content scripts using this method. To send messages to content scripts, use `tabs.sendMessage`.
+         */
+        function sendMessage(message: any, options?: _SendMessageOptions): Promise<any>;
 
         /**
          * Send a single message to a native application.
@@ -6740,9 +7153,7 @@ declare namespace messenger {
 
     /**
      * Use the `messenger.storage` API to store, retrieve, and track changes to user data.
-     *
      * Permissions: `storage`
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage
      */
     const storage;
@@ -6843,9 +7254,7 @@ declare namespace messenger {
 
     /**
      * Contains types used by other schemas.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/types
      */
     const types;
@@ -6948,11 +7357,8 @@ declare namespace messenger {
 
     /**
      * Manifest keys: `user_scripts`, `user_scripts`
-     *
      * Not supported on manifest versions above 2.
-     *
      * Not allowed in: Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/userScripts
      */
     const userScripts;
@@ -7022,11 +7428,8 @@ declare namespace messenger {
 
     /**
      * Use the `messenger.webNavigation` API to receive notifications about the status of navigation requests in-flight.
-     *
      * Permissions: `webNavigation`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webNavigation
      */
     const webNavigation;
@@ -7400,11 +7803,8 @@ declare namespace messenger {
 
     /**
      * Use the `messenger.webRequest` API to observe and analyze traffic and to intercept, block, or modify requests in-flight.
-     *
      * Permissions: `webRequest`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest
      */
     const webRequest;
@@ -8233,7 +8633,11 @@ declare namespace messenger {
 /**
  * **The root object of the WebExtension API**
  *
- * In Thunderbird extensions, it is [recommended](https://webextension-api.thunderbird.net/en/latest/#thunderbird-webextension-api-documentation) to use `messenger` instead of `browser`, to remind yourself of the subtle differences between the Thunderbird, Firefox, and generic WebExtension APIs.
+ * In Thunderbird extensions, it is
+ * [recommended](https://webextension-api.thunderbird.net/en/latest/#thunderbird-webextension-api-documentation)
+ * to use `messenger` instead of `browser`, to remind yourself of the subtle
+ * differences between the Thunderbird, Firefox, and generic WebExtension APIs.
+ *
  * @version Thunderbird 109.0
  */
 
@@ -8241,7 +8645,6 @@ const browser;
 declare namespace browser {
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json
      */
     const _manifest;
@@ -8260,13 +8663,15 @@ declare namespace browser {
             default_title?: string | undefined;
             /** The paths to one or more icons for the action button. */
             default_icon?: IconPath | undefined;
-            /** Specifies icons to use for dark and light themes */
+            /**
+             * Specifies dark and light icons to be used with themes. The ``light`` icon is used on dark backgrounds and vice versa. **Note:** The default theme uses the ``default_icon`` for light backgrounds (if specified).
+             */
             theme_icons?: ThemeIcons[] | undefined;
             /** The html document to be opened as a popup when the user clicks on the action button. */
             default_popup?: string | undefined;
             /** Enable browser styles. See the MDN documentation on browser styles  for more information. */
             browser_style?: boolean | undefined;
-            /** Defines the location the browserAction will appear by default. The default location is navbar. */
+            /** Defines the location the action button will appear. The default location is ``maintoolbar``. */
             default_area?: _ActionManifestDefaultArea | undefined;
             /**
              * Defines the windows, the action button should appear in. Defaults to showing it only in the ``normal`` Thunderbird window, but can also be shown in the ``messageDisplay`` window.
@@ -8283,7 +8688,11 @@ declare namespace browser {
             chrome_settings_overrides?: _WebExtensionManifestChromeSettingsOverrides | undefined;
             cloud_file?: _WebExtensionManifestCloudFile | undefined;
             /**
-             * A _dictionary object_ defining one or more commands as _name-value_ pairs, the _name_ being the name of the command and the _value_ being a {@link commands.CommandsShortcut}. The _name_ may also be one of the following built-in special shortcuts: * ``_execute_browser_action`` * ``_execute_compose_action`` * ``_execute_message_display_action`` Example: [manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/commands/manifest.json)
+             * A _dictionary object_ defining one or more commands as _name-value_ pairs, the _name_ being the name of the command and the _value_ being a {@link commands.CommandsShortcut}. The _name_ may also be one of the following built-in special shortcuts:
+             * * ``_execute_browser_action``
+             * * ``_execute_compose_action``
+             * * ``_execute_message_display_action``
+             * Example: [manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/commands/manifest.json)
              */
             commands?: { [key: string]: _WebExtensionManifestCommands } | undefined;
             compose_action?: _WebExtensionManifestComposeAction | undefined;
@@ -8379,7 +8788,19 @@ declare namespace browser {
          */
         interface ThemeExperiment {
             /**
-             * URL to a stylesheet introducing additional CSS variables, extending the theme-able areas of Thunderbird. The `theme_experiment add-on in our example repository <https: github.com="" thundernest="" sample-extensions="" tree="" master="" theme_experiment="">`__ is using the stylesheet shown below, to add the ``--chat-button-color`` CSS color variable: [theme_experiment_style.css](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_style.css)The following _manifest.json_ file maps the --chat-button-color CSS color variable to the theme color key ``exp_chat_button`` and uses it to set a color for the chat button: [theme_experiment_manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_manifest.json)</https:>
+             * URL to a stylesheet introducing additional CSS variables,
+             * extending the theme-able areas of Thunderbird.
+             *
+             * The `theme_experiment` add-on in our
+             * [example repository](https://github.com/thundernest/sample-extensions/tree/master/theme_experiment)
+             * is using the stylesheet shown below, to add the `--chat-button-color`
+             * CSS color variable:
+             * [theme_experiment_style.css](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_style.css).
+             *
+             * The following _manifest.json_ file maps the ``--chat-button-color``
+             * CSS color variable to the theme color key ``exp_chat_button`` and uses it
+             * to set a color for the chat button:
+             * [theme_experiment_manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_manifest.json)
              */
             stylesheet?: ExtensionURL | undefined;
             /**
@@ -8659,14 +9080,8 @@ declare namespace browser {
             | 'nativeMessaging'
             | 'webNavigation';
 
-        /** Defines the location the browserAction will appear by default. The default location is navbar. */
-        type _ActionManifestDefaultArea =
-            | 'maintoolbar'
-            | 'tabstoolbar'
-            | 'navbar'
-            | 'menupanel'
-            | 'tabstrip'
-            | 'personaltoolbar';
+        /** Defines the location the action button will appear. The default location is ``maintoolbar``. */
+        type _ActionManifestDefaultArea = 'maintoolbar' | 'tabstoolbar';
 
         type _ActionManifestDefaultWindows = 'normal' | 'messageDisplay';
 
@@ -8914,8 +9329,7 @@ declare namespace browser {
             | 'identity'
             | 'alarms'
             | 'storage'
-            | 'unlimitedStorage'
-            | 'theme';
+            | 'unlimitedStorage';
 
         type _OptionalPermissionNoPrompt =
             | 'menus.overrideContext'
@@ -8934,7 +9348,7 @@ declare namespace browser {
             /** Additional images added to the header area and displayed behind the ``theme_frame`` image. */
             additional_backgrounds?: ImageDataOrExtensionURL[] | undefined;
             /**
-             * @deprecated Unsupported images property, use 'theme.images.theme_frame', this alias is ignored in Firefox >= 70.
+             * @deprecated Unsupported images property, use ``theme.images.theme_frame``, this alias is ignored in Thunderbird >= 70.
              */
             headerURL?: ImageDataOrExtensionURL | undefined;
             /** Foreground image on the header area. */
@@ -8948,7 +9362,7 @@ declare namespace browser {
             /** Background color of the selected tab. Defaults to the color specified by ``toolbar``. */
             tab_selected?: ThemeColor | undefined;
             /**
-             * @deprecated Unsupported colors property, use 'theme.colors.frame', this alias is ignored in Firefox >= 70.
+             * @deprecated Unsupported colors property, use ``theme.colors.frame``, this alias is ignored in Thunderbird >= 70.
              */
             accentcolor?: ThemeColor | undefined;
             /** The background color of the header area. */
@@ -8956,7 +9370,7 @@ declare namespace browser {
             /** The background color of the header area when the window is inactive. */
             frame_inactive?: ThemeColor | undefined;
             /**
-             * @deprecated Unsupported color property, use 'theme.colors.tab_background_text', this alias is ignored in Firefox >= 70.
+             * @deprecated Unsupported color property, use ``theme.colors.tab_background_text``, this alias is ignored in Thunderbird >= 70.
              */
             textcolor?: ThemeColor | undefined;
             /** The text color of the unselected tabs. */
@@ -8971,7 +9385,9 @@ declare namespace browser {
             tab_line?: ThemeColor | undefined;
             /** The background color of the toolbars. Also used as default value for ``tab_selected``. */
             toolbar?: ThemeColor | undefined;
-            /** This color property is an alias of 'bookmark_text'. */
+            /**
+             * The text color in the main Thunderbird toolbar. Also used as default value for ``icons`` and ``tab_text``.
+             */
             toolbar_text?: ThemeColor | undefined;
             /** Not used in Thunderbird. */
             bookmark_text?: ThemeColor | undefined;
@@ -8983,7 +9399,7 @@ declare namespace browser {
             toolbar_field_border?: ThemeColor | undefined;
             /**
              * Not used in Thunderbird.
-             * @deprecated This color property is ignored in Firefox >= 89.
+             * @deprecated This color property is ignored in >= 89.
              */
             toolbar_field_separator?: ThemeColor | undefined;
             /** The color of the line separating the top of the toolbar from the region above. */
@@ -9036,7 +9452,6 @@ declare namespace browser {
             toolbar_field_highlight?: ThemeColor | undefined;
             /** The color used to draw text that's currently selected in the search field. */
             toolbar_field_highlight_text?: ThemeColor | undefined;
-            ntp_card_background?: ThemeColor | undefined;
         }
 
         type _ThemeTypeAdditionalBackgroundsAlignment =
@@ -9053,37 +9468,15 @@ declare namespace browser {
             | 'left top'
             | 'right bottom'
             | 'right center'
-            | 'right top'
-            | 'bottom'
-            | 'center'
-            | 'left'
-            | 'right'
-            | 'top'
-            | 'center bottom'
-            | 'center center'
-            | 'center top'
-            | 'left bottom'
-            | 'left center'
-            | 'left top'
-            | 'right bottom'
-            | 'right center'
             | 'right top';
 
-        type _ThemeTypeAdditionalBackgroundsTiling =
-            | 'no-repeat'
-            | 'repeat'
-            | 'repeat-x'
-            | 'repeat-y'
-            | 'no-repeat'
-            | 'repeat'
-            | 'repeat-x'
-            | 'repeat-y';
+        type _ThemeTypeAdditionalBackgroundsTiling = 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y';
 
         /** If set, overrides the general theme (context menus, toolbars, content area). */
-        type _ThemeTypeColorScheme = 'light' | 'dark' | 'auto' | 'auto' | 'light' | 'dark' | 'system';
+        type _ThemeTypeColorScheme = 'light' | 'dark' | 'auto';
 
         /** If set, overrides the color scheme for the content area. */
-        type _ThemeTypeContentColorScheme = 'light' | 'dark' | 'auto' | 'auto' | 'light' | 'dark' | 'system';
+        type _ThemeTypeContentColorScheme = 'light' | 'dark' | 'auto';
 
         /**
          * A _dictionary object_ with one or more _key-value_ pairs to map property values to theme property keys. The following built-in theme property keys are supported:
@@ -9184,9 +9577,7 @@ declare namespace browser {
 
     /**
      * Permissions: `accountsRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/accounts.html
      */
     const accounts;
@@ -9263,9 +9654,7 @@ declare namespace browser {
 
     /**
      * Permissions: `addressBooks`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.html
      */
     const addressBooks;
@@ -9345,9 +9734,7 @@ declare namespace browser {
 
         /**
          * Permissions: `addressBooks`
-         *
          * Not allowed in: Content scripts, Devtools pages
-         *
          * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.provider.html
          */
         const provider;
@@ -9364,6 +9751,8 @@ declare namespace browser {
                 id?: string | undefined;
             }
 
+            type AddressBookNode = any;
+
             interface _AddressBooks_providerOnSearchRequestEvent<
                 TCallback = (node: AddressBookNode, searchString: string, query?: string) => void,
             > {
@@ -9374,7 +9763,11 @@ declare namespace browser {
 
             /* addressBooks.provider events */
             /**
-             * Registering this listener will create and list a read-only address book in Thunderbird's address book window, similar to LDAP address books. When selecting this address book, users will first see no contacts, but they can search for them, which will fire this event. Contacts returned by the listener callback will be displayed as contact cards in the address book. Several listeners can be registered, to create multiple address books. The event also fires for each registered listener (for each created read-only address book), when users type something into the mail composer's _To:_ field, or into similar fields like the calendar meeting attendees field. Contacts returned by the listener callback will be added to the autocomplete results in the dropdown of that field. Example: [onSearchRequest.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/addressBooks/onSearchRequest.js)
+             * Registering this listener will create and list a read-only address book in Thunderbird's address book window, similar to LDAP address books. When selecting this address book, users will first see no contacts, but they can search for them, which will fire this event. Contacts returned by the listener callback will be displayed as contact cards in the address book. Several listeners can be registered, to create multiple address books.
+             *
+             * The event also fires for each registered listener (for each created read-only address book), when users type something into the mail composer's _To:_ field, or into similar fields like the calendar meeting attendees field. Contacts returned by the listener callback will be added to the autocomplete results in the dropdown of that field.
+             *
+             * Example: [onSearchRequest.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/addressBooks/onSearchRequest.js)
              * @param [searchString] The search text that the user entered. Not available when invoked from the advanced address book search dialog.
              * @param [query] The boolean query expression corresponding to the search. **Note:** This parameter may change in future releases of Thunderbird.
              */
@@ -9384,9 +9777,7 @@ declare namespace browser {
 
     /**
      * Permissions: `addressBooks`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/contacts.html
      */
     const contacts;
@@ -9448,15 +9839,15 @@ declare namespace browser {
 
         /**
          * Gets all contacts matching ``queryInfo`` in the address book with the id ``parentId``.
-         * @param queryInfo Either a _string_ with one or more space-separated terms to search for, or a complex {@link contacts.QueryInfo} search query.
-         */
-        function quickSearch(queryInfo: string | QueryInfo): Promise<ContactNode[]>;
-        /**
-         * Gets all contacts matching ``queryInfo`` in the address book with the id ``parentId``.
          * @param parentId The id of the address book to search. If not specified, all address books are searched.
          * @param queryInfo Either a _string_ with one or more space-separated terms to search for, or a complex {@link contacts.QueryInfo} search query.
          */
         function quickSearch(parentId: string, queryInfo: string | QueryInfo): Promise<ContactNode[]>;
+        /**
+         * Gets all contacts matching ``queryInfo`` in the address book with the id ``parentId``.
+         * @param queryInfo Either a _string_ with one or more space-separated terms to search for, or a complex {@link contacts.QueryInfo} search query.
+         */
+        function quickSearch(queryInfo: string | QueryInfo): Promise<ContactNode[]>;
 
         /** Gets a single contact. */
         function get(id: string): Promise<ContactNode>;
@@ -9469,10 +9860,15 @@ declare namespace browser {
 
         /**
          * Adds a new contact to the address book with the id ``parentId``.
-         * @param [id] Assigns the contact an id. If an existing contact has this id, an exception is thrown. **Note:** Deprecated, the card's id should be specified in the vCard string instead.
+         * @param id Assigns the contact an id. If an existing contact has this id, an exception is thrown. **Note:** Deprecated, the card's id should be specified in the vCard string instead.
          * @param properties The properties object for the new contact. If it includes a ``vCard`` member, all specified legacy properties  are ignored and the new contact will be based on the provided vCard string. If a UID is specified in the vCard string, which is already used by another contact, an exception is thrown. **Note:** Using individual properties is deprecated, use the ``vCard`` member instead.
          */
-        function create(parentId: string, id?: string, properties: ContactProperties): Promise<string>;
+        function create(parentId: string, id: string, properties: ContactProperties): Promise<string>;
+        /**
+         * Adds a new contact to the address book with the id ``parentId``.
+         * @param properties The properties object for the new contact. If it includes a ``vCard`` member, all specified legacy properties  are ignored and the new contact will be based on the provided vCard string. If a UID is specified in the vCard string, which is already used by another contact, an exception is thrown. **Note:** Using individual properties is deprecated, use the ``vCard`` member instead.
+         */
+        function create(parentId: string, properties: ContactProperties): Promise<string>;
 
         /**
          * Updates a contact.
@@ -9498,9 +9894,7 @@ declare namespace browser {
 
     /**
      * Permissions: `addressBooks`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/mailingLists.html
      */
     const mailingLists;
@@ -9588,22 +9982,515 @@ declare namespace browser {
     }
 
     /**
-     * Manifest keys: `action`, `browser_action`, `action`, `browser_action`
-     *
-     * Not supported on manifest versions above 2.
-     *
+     * Use an action to put a button in the mail window toolbar. In addition to its icon, an action button can also have a tooltip, a badge, and a popup.
+     * Manifest keys: `action`, `browser_action`
+     * Needs at least manifest version 3.
      * Not allowed in: Content scripts, Devtools pages
-     *
+     * @see https://webextension-api.thunderbird.net/en/latest/browserAction.html
+     */
+    const action;
+    namespace action {
+        /* action types */
+        /**
+         * An array of four integers in the range [0,255] that make up the RGBA color. For example, opaque red is ``[255, 0, 0, 255]``.
+         */
+        type ColorArray = [number, number, number, number];
+
+        /**
+         * Pixel data for an image. Must be an {@link ImageData} object (for example, from a {@link Canvas} element).
+         */
+        type ImageDataType = ImageData;
+
+        /**
+         * A _dictionary object_ to specify multiple {@link ImageData} objects in different sizes, so the icon does not have to be scaled for a device with a different pixel density. Each entry is a _name-value_ pair with _value_ being an {@link ImageData} object, and _name_ its size. Example: [ImageDataDictionary.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/ImageDataDictionary.json)See the MDN documentation about choosing icon sizes  for more information on this.
+         */
+        interface ImageDataDictionary {
+            [key: number]: ImageDataType;
+        }
+
+        /** Information sent when an action button is clicked. */
+        interface OnClickData {
+            /** An array of keyboard modifiers that were held while the menu item was clicked. */
+            modifiers: _OnClickDataModifiers[];
+            /** An integer value of button by which menu item was clicked. */
+            button?: number | undefined;
+        }
+
+        type _OnClickDataModifiers = 'Shift' | 'Alt' | 'Command' | 'Ctrl' | 'MacCtrl';
+
+        interface _SetTitleDetails {
+            /**
+             * A string the action button should display as its label and when moused over. Cleared by setting it to ``null`` or an empty string (title defined the manifest will be used).
+             */
+            title: string | null;
+            /** Sets the title only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetTitleDetails {
+            /**
+             * Specifies for which tab the title should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetLabelDetails {
+            /**
+             * A string the action button should use as its label, overriding the defined title. Can be set to an empty string to not display any label at all. If the containing toolbar is configured to display text only, its title will be used. Cleared by setting it to ``null``.
+             */
+            label: string | null;
+            /** Sets the label only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetLabelDetails {
+            /**
+             * Specifies for which tab the label should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetIconDetails {
+            /** The image data for one or more icons for the action button. */
+            imageData?: ImageDataType | ImageDataDictionary | undefined;
+            /** The paths to one or more icons for the action button. */
+            path?: _manifest.IconPath | undefined;
+            /** Sets the icon only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetPopupDetails {
+            /**
+             * The html file to show in a popup. Can be set to an empty string to not open a popup. Cleared by setting it to ``null`` (popup value defined the manifest will be used).
+             */
+            popup: string | null;
+            /** Sets the popup only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetPopupDetails {
+            /**
+             * Specifies for which tab the popup document should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetBadgeTextDetails {
+            /**
+             * Any number of characters can be passed, but only about four can fit in the space. Cleared by setting it to ``null`` or an empty string.
+             */
+            text: string | null;
+            /** Sets the badge text only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetBadgeTextDetails {
+            /**
+             * Specifies for which tab the badge text should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetBadgeBackgroundColorDetails {
+            /** The color to use as background in the badge. Cleared by setting it to ``null`` or an empty string. */
+            color: string | ColorArray | null;
+            /** Sets the background color for the badge only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetBadgeBackgroundColorDetails {
+            /**
+             * Specifies for which tab the badge background color should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _IsEnabledDetails {
+            /**
+             * Specifies for which tab the state should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        /* action functions */
+        /** Sets the title of the action button. Is used as tooltip and as the label. */
+        function setTitle(details: _SetTitleDetails): Promise<void>;
+
+        /** Gets the title of the action button. */
+        function getTitle(details: _GetTitleDetails): Promise<string>;
+
+        /**
+         * Sets the label of the action button. Can be used to set different values for the tooltip (defined by the title) and the label. Additionally, the label can be set to an empty string, not showing any label at all.
+         */
+        function setLabel(details: _SetLabelDetails): Promise<void>;
+
+        /** Gets the label of the action button. */
+        function getLabel(details: _GetLabelDetails): Promise<string>;
+
+        /**
+         * Sets the icon for the action button. Either the ``path`` or the ``imageData`` property must be specified.
+         */
+        function setIcon(details: _SetIconDetails): Promise<void>;
+
+        /** Sets the html document to be opened as a popup when the user clicks on the action button. */
+        function setPopup(details: _SetPopupDetails): Promise<void>;
+
+        /** Gets the html document set as the popup for this action button. */
+        function getPopup(details: _GetPopupDetails): Promise<string>;
+
+        /** Sets the badge text for the action button. The badge is displayed on top of the icon. */
+        function setBadgeText(details: _SetBadgeTextDetails): Promise<void>;
+
+        /** Gets the badge text of the action button. */
+        function getBadgeText(details: _GetBadgeTextDetails): Promise<string>;
+
+        /** Sets the background color for the badge. */
+        function setBadgeBackgroundColor(details: _SetBadgeBackgroundColorDetails): Promise<void>;
+
+        /** Gets the badge background color of the action button. */
+        function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
+
+        /**
+         * Enables the action button for a tab. By default, an action button is enabled.
+         * @param [tabId] The id of the tab for which you want to modify the action button.
+         */
+        function enable(tabId?: number): Promise<void>;
+
+        /**
+         * Disables the action button for a tab.
+         * @param [tabId] The id of the tab for which you want to modify the action button.
+         */
+        function disable(tabId?: number): Promise<void>;
+
+        /** Checks whether the action button is enabled. */
+        function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
+
+        /** Opens the action's popup window in the active window. */
+        function openPopup(): Promise<boolean>;
+
+        /* action events */
+        /**
+         * Fired when an action button is clicked. This event will not fire if the action has a popup. This is a user input event handler. For asynchronous listeners some restrictions  apply.
+         */
+        const onClicked: WebExtEvent<(tab: tabs.Tab, info?: OnClickData) => void>;
+    }
+
+    /**
+     * Manifest keys: `action`, `browser_action`
+     * Not supported on manifest versions above 2.
+     * Not allowed in: Content scripts, Devtools pages
      * @see https://webextension-api.thunderbird.net/en/latest/browserAction.html
      */
     const browserAction;
-    namespace browserAction {}
+    namespace browserAction {
+        /* browserAction types */
+        /**
+         * An array of four integers in the range [0,255] that make up the RGBA color. For example, opaque red is ``[255, 0, 0, 255]``.
+         */
+        type ColorArray = [number, number, number, number];
+
+        /**
+         * Pixel data for an image. Must be an {@link ImageData} object (for example, from a {@link Canvas} element).
+         */
+        type ImageDataType = ImageData;
+
+        /**
+         * A _dictionary object_ to specify multiple {@link ImageData} objects in different sizes, so the icon does not have to be scaled for a device with a different pixel density. Each entry is a _name-value_ pair with _value_ being an {@link ImageData} object, and _name_ its size. Example: [ImageDataDictionary.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/ImageDataDictionary.json)See the MDN documentation about choosing icon sizes  for more information on this.
+         */
+        interface ImageDataDictionary {
+            [key: number]: ImageDataType;
+        }
+
+        /** Information sent when an action button is clicked. */
+        interface OnClickData {
+            /** An array of keyboard modifiers that were held while the menu item was clicked. */
+            modifiers: _OnClickDataModifiers[];
+            /** An integer value of button by which menu item was clicked. */
+            button?: number | undefined;
+        }
+
+        type _OnClickDataModifiers = 'Shift' | 'Alt' | 'Command' | 'Ctrl' | 'MacCtrl';
+
+        interface _SetTitleDetails {
+            /**
+             * A string the action button should display as its label and when moused over. Cleared by setting it to ``null`` or an empty string (title defined the manifest will be used).
+             */
+            title: string | null;
+            /** Sets the title only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetTitleDetails {
+            /**
+             * Specifies for which tab the title should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetLabelDetails {
+            /**
+             * A string the action button should use as its label, overriding the defined title. Can be set to an empty string to not display any label at all. If the containing toolbar is configured to display text only, its title will be used. Cleared by setting it to ``null``.
+             */
+            label: string | null;
+            /** Sets the label only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetLabelDetails {
+            /**
+             * Specifies for which tab the label should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetIconDetails {
+            /** The image data for one or more icons for the action button. */
+            imageData?: ImageDataType | ImageDataDictionary | undefined;
+            /** The paths to one or more icons for the action button. */
+            path?: _manifest.IconPath | undefined;
+            /** Sets the icon only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetPopupDetails {
+            /**
+             * The html file to show in a popup. Can be set to an empty string to not open a popup. Cleared by setting it to ``null`` (popup value defined the manifest will be used).
+             */
+            popup: string | null;
+            /** Sets the popup only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetPopupDetails {
+            /**
+             * Specifies for which tab the popup document should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetBadgeTextDetails {
+            /**
+             * Any number of characters can be passed, but only about four can fit in the space. Cleared by setting it to ``null`` or an empty string.
+             */
+            text: string | null;
+            /** Sets the badge text only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetBadgeTextDetails {
+            /**
+             * Specifies for which tab the badge text should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _SetBadgeBackgroundColorDetails {
+            /** The color to use as background in the badge. Cleared by setting it to ``null`` or an empty string. */
+            color: string | ColorArray | null;
+            /** Sets the background color for the badge only for the given tab. */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _GetBadgeBackgroundColorDetails {
+            /**
+             * Specifies for which tab the badge background color should be retrieved. If no tab is specified, the global label is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        interface _IsEnabledDetails {
+            /**
+             * Specifies for which tab the state should be retrieved. If no tab is specified, the global value is retrieved.
+             */
+            tabId?: number | undefined;
+            /**
+             * Will throw an error if used.
+             * @deprecated Unsupported on Firefox at this time.
+             */
+            windowId?: number | undefined;
+        }
+
+        /* browserAction functions */
+        /** Sets the title of the action button. Is used as tooltip and as the label. */
+        function setTitle(details: _SetTitleDetails): Promise<void>;
+
+        /** Gets the title of the action button. */
+        function getTitle(details: _GetTitleDetails): Promise<string>;
+
+        /**
+         * Sets the label of the action button. Can be used to set different values for the tooltip (defined by the title) and the label. Additionally, the label can be set to an empty string, not showing any label at all.
+         */
+        function setLabel(details: _SetLabelDetails): Promise<void>;
+
+        /** Gets the label of the action button. */
+        function getLabel(details: _GetLabelDetails): Promise<string>;
+
+        /**
+         * Sets the icon for the action button. Either the ``path`` or the ``imageData`` property must be specified.
+         */
+        function setIcon(details: _SetIconDetails): Promise<void>;
+
+        /** Sets the html document to be opened as a popup when the user clicks on the action button. */
+        function setPopup(details: _SetPopupDetails): Promise<void>;
+
+        /** Gets the html document set as the popup for this action button. */
+        function getPopup(details: _GetPopupDetails): Promise<string>;
+
+        /** Sets the badge text for the action button. The badge is displayed on top of the icon. */
+        function setBadgeText(details: _SetBadgeTextDetails): Promise<void>;
+
+        /** Gets the badge text of the action button. */
+        function getBadgeText(details: _GetBadgeTextDetails): Promise<string>;
+
+        /** Sets the background color for the badge. */
+        function setBadgeBackgroundColor(details: _SetBadgeBackgroundColorDetails): Promise<void>;
+
+        /** Gets the badge background color of the action button. */
+        function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
+
+        /**
+         * Enables the action button for a tab. By default, an action button is enabled.
+         * @param [tabId] The id of the tab for which you want to modify the action button.
+         */
+        function enable(tabId?: number): Promise<void>;
+
+        /**
+         * Disables the action button for a tab.
+         * @param [tabId] The id of the tab for which you want to modify the action button.
+         */
+        function disable(tabId?: number): Promise<void>;
+
+        /** Checks whether the action button is enabled. */
+        function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
+
+        /** Opens the action's popup window in the active window. */
+        function openPopup(): Promise<boolean>;
+
+        /* browserAction events */
+        /**
+         * Fired when an action button is clicked. This event will not fire if the action has a popup. This is a user input event handler. For asynchronous listeners some restrictions  apply.
+         */
+        const onClicked: WebExtEvent<(tab: tabs.Tab, info?: OnClickData) => void>;
+    }
 
     /**
      * Manifest keys: `cloud_file`
-     *
      * Not allowed in: Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/cloudFile.html
      */
     const cloudFile;
@@ -9818,11 +10705,8 @@ declare namespace browser {
 
     /**
      * Use the commands API to add keyboard shortcuts that trigger actions in your extension, for example opening one of the action popups or sending a command to the extension.
-     *
      * Manifest keys: `commands`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/commands.html
      */
     const commands;
@@ -9875,7 +10759,6 @@ declare namespace browser {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/compose.html
      */
     const compose;
@@ -10095,38 +10978,80 @@ declare namespace browser {
 
         /* compose functions */
         /**
-         * Open a new message compose window. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
-         */
-        function beginNew(): Promise<tabs.Tab>;
-        /**
-         * Open a new message compose window. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * Open a new message compose window.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
          * @param messageId If specified, the message or template to edit as a new message.
          */
         function beginNew(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
         /**
-         * Open a new message compose window. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * Open a new message compose window.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
          */
-        function beginNew(details: ComposeDetails): Promise<tabs.Tab>;
+        function beginNew(details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
-         * Open a new message compose window replying to a given message. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * Open a new message compose window replying to a given message.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
          * @param messageId The message to reply to, as retrieved using other APIs.
          */
         function beginReply(
             messageId: number,
-            replyType?: _BeginReplyReplyType,
+            replyType: _BeginReplyReplyType,
             details?: ComposeDetails,
         ): Promise<tabs.Tab>;
+        /**
+         * Open a new message compose window replying to a given message.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * @param messageId The message to reply to, as retrieved using other APIs.
+         */
+        function beginReply(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
-         * Open a new message compose window forwarding a given message. **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used. **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value. **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * Open a new message compose window forwarding a given message.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
          * @param messageId The message to forward, as retrieved using other APIs.
          */
         function beginForward(
             messageId: number,
-            forwardType?: _BeginForwardForwardType,
+            forwardType: _BeginForwardForwardType,
             details?: ComposeDetails,
         ): Promise<tabs.Tab>;
+        /**
+         * Open a new message compose window forwarding a given message.
+         *
+         * **Note:** The compose format can be set by ``details.isPlainText`` or by specifying only one of ``details.body`` or ``details.plainTextBody``. Otherwise the default compose format of the selected identity is used.
+         *
+         * **Note:** Specifying ``details.body`` and ``details.plainTextBody`` without also specifying ``details.isPlainText`` threw an exception in Thunderbird up to version 97\. Since Thunderbird 98, this combination creates a compose window with the compose format of the selected identity, using the matching ``details.body`` or ``details.plainTextBody`` value.
+         *
+         * **Note:** If no identity is specified, this function is using the default identity and not the identity of the referenced message.
+         * @param messageId The message to forward, as retrieved using other APIs.
+         */
+        function beginForward(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
          * Fetches the current state of a compose window. Currently only a limited amount of information is available, more will be added in later versions.
@@ -10134,7 +11059,9 @@ declare namespace browser {
         function getComposeDetails(tabId: number): Promise<ComposeDetails>;
 
         /**
-         * Updates the compose window. Only fields that are to be changed should be specified. Currently only a limited amount of information can be set, more will be added in later versions. **Note:** The compose format of an existing compose window cannot be changed. Since Thunderbird 98, setting conflicting values for ``details.body``, ``details.plainTextBody`` or ``details.isPlaintext`` no longer throw an exception, instead the compose window chooses the matching ``details.body`` or ``details.plainTextBody`` value and ignores the other.
+         * Updates the compose window. Only fields that are to be changed should be specified. Currently only a limited amount of information can be set, more will be added in later versions.
+         *
+         * **Note:** The compose format of an existing compose window cannot be changed. Since Thunderbird 98, setting conflicting values for ``details.body``, ``details.plainTextBody`` or ``details.isPlaintext`` no longer throw an exception, instead the compose window chooses the matching ``details.body`` or ``details.plainTextBody`` value and ignores the other.
          */
         function setComposeDetails(tabId: number, details: ComposeDetails): Promise<any>;
 
@@ -10231,11 +11158,8 @@ declare namespace browser {
 
     /**
      * Use a composeAction to put a button in the message composition toolbars. In addition to its icon, a composeAction button can also have a tooltip, a badge, and a popup.
-     *
      * Manifest keys: `compose_action`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/composeAction.html
      */
     const composeAction;
@@ -10487,9 +11411,7 @@ declare namespace browser {
 
     /**
      * Permissions: `compose`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/composeScripts.html
      */
     const composeScripts;
@@ -10516,9 +11438,7 @@ declare namespace browser {
 
     /**
      * Permissions: `messagesModify`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayScripts.html
      */
     const messageDisplayScripts;
@@ -10545,9 +11465,7 @@ declare namespace browser {
 
     /**
      * Permissions: `accountsRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/folders.html
      */
     const folders;
@@ -10650,9 +11568,7 @@ declare namespace browser {
 
     /**
      * Permissions: `accountsRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/identities.html
      */
     const identities;
@@ -10726,7 +11642,6 @@ declare namespace browser {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/mailTabs.html
      */
     const mailTabs;
@@ -10899,13 +11814,13 @@ declare namespace browser {
 
         /**
          * Modifies the properties of a mail tab. Properties that are not specified in ``updateProperties`` are not modified.
-         */
-        function update(updateProperties: _UpdateUpdateProperties): Promise<any>;
-        /**
-         * Modifies the properties of a mail tab. Properties that are not specified in ``updateProperties`` are not modified.
          * @param tabId Defaults to the active tab of the current window.
          */
         function update(tabId: number, updateProperties: _UpdateUpdateProperties): Promise<any>;
+        /**
+         * Modifies the properties of a mail tab. Properties that are not specified in ``updateProperties`` are not modified.
+         */
+        function update(updateProperties: _UpdateUpdateProperties): Promise<any>;
 
         /**
          * Lists the selected messages in the current folder.
@@ -10915,23 +11830,25 @@ declare namespace browser {
 
         /**
          * Selects none, one or multiple messages.
-         * @param messageIds The IDs of the messages, which should be selected. The mailTab will switch to the folder of the selected messages. Throws if they belong to different folders. Array can be empty to deselect any currently selected message.
-         */
-        function setSelectedMessages(messageIds: number[]): Promise<any>;
-        /**
-         * Selects none, one or multiple messages.
          * @param tabId Defaults to the active tab of the current window.
          * @param messageIds The IDs of the messages, which should be selected. The mailTab will switch to the folder of the selected messages. Throws if they belong to different folders. Array can be empty to deselect any currently selected message.
          */
         function setSelectedMessages(tabId: number, messageIds: number[]): Promise<any>;
+        /**
+         * Selects none, one or multiple messages.
+         * @param messageIds The IDs of the messages, which should be selected. The mailTab will switch to the folder of the selected messages. Throws if they belong to different folders. Array can be empty to deselect any currently selected message.
+         */
+        function setSelectedMessages(messageIds: number[]): Promise<any>;
 
-        /** Sets the Quick Filter user interface based on the options specified. */
-        function setQuickFilter(properties: _SetQuickFilterProperties): Promise<any>;
         /**
          * Sets the Quick Filter user interface based on the options specified.
          * @param tabId Defaults to the active tab of the current window.
          */
-        function setQuickFilter(tabId: number, properties: _SetQuickFilterProperties): Promise<any>;
+        function setQuickFilter(
+            tabId: number,
+            properties: _SetQuickFilterProperties,
+        ): Promise<any>; /** Sets the Quick Filter user interface based on the options specified. */
+        function setQuickFilter(properties: _SetQuickFilterProperties): Promise<any>;
 
         /* mailTabs events */
         /** Fired when the displayed folder changes in any mail tab. */
@@ -10943,9 +11860,7 @@ declare namespace browser {
 
     /**
      * The menus API allows to add items to Thunderbirds menus. You can choose what types of objects your context menu additions apply to, such as images, hyperlinks, and pages.
-     *
      * Permissions: `menus`, `menus`
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/menus.html
      */
     const menus;
@@ -11275,9 +12190,7 @@ declare namespace browser {
 
     /**
      * Permissions: `messagesRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/messageDisplay.html
      */
     const messageDisplay;
@@ -11340,11 +12253,8 @@ declare namespace browser {
 
     /**
      * Use a messageDisplayAction to put a button in the message display toolbar. In addition to its icon, a messageDisplayAction button can also have a tooltip, a badge, and a popup.
-     *
      * Manifest keys: `message_display_action`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayAction.html
      */
     const messageDisplayAction;
@@ -11598,9 +12508,7 @@ declare namespace browser {
 
     /**
      * Permissions: `messagesRead`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/messages.html
      */
     const messages;
@@ -11819,7 +12727,9 @@ declare namespace browser {
         function getFull(messageId: number): Promise<MessagePart>;
 
         /**
-         * Returns the unmodified source of a message as a binary string , which is a simple series of 8-bit values. Throws if the message could not be read, for example due to network issues. If the message contains non-ASCII characters, the body parts in the binary string cannot be read directly and must be decoded according to their character sets. Use {@link messages.getFull} to get the correctly decoded parts. Manually decoding the raw message is probably too error-prone, especially if the message contains MIME parts with different character set encodings or attachments. To get a readable version of the raw message as it appears in Thunderbird's message source view, it may be sufficient to decode the message according to the character set specified in its main content-type  header (example: ``text/html; charset=UTF-8``) using the following function (see MDN for supported input encodings ): [decodeBinaryString.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/decodeBinaryString.js)
+         * Returns the unmodified source of a message as a binary string , which is a simple series of 8-bit values. Throws if the message could not be read, for example due to network issues. If the message contains non-ASCII characters, the body parts in the binary string cannot be read directly and must be decoded according to their character sets. Use {@link messages.getFull} to get the correctly decoded parts. Manually decoding the raw message is probably too error-prone, especially if the message contains MIME parts with different character set encodings or attachments.
+         *
+         * To get a readable version of the raw message as it appears in Thunderbird's message source view, it may be sufficient to decode the message according to the character set specified in its main content-type  header (example: ``text/html; charset=UTF-8``) using the following function (see MDN for supported input encodings ): [decodeBinaryString.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/decodeBinaryString.js)
          */
         function getRaw(messageId: number): Promise<string>;
 
@@ -11854,7 +12764,8 @@ declare namespace browser {
         function copy(messageIds: number[], destination: folders.MailFolder): Promise<any>;
 
         /**
-         * Deletes messages permanently, or moves them to the trash folder (honoring the account's deletion behavior settings). Deleting external messages will throw an _ExtensionError_. The ``skipTrash`` parameter allows immediate permanent deletion, bypassing the trash folder. **Note**: Consider using {@link messages.move} to manually move messages to the account's trash folder, instead of requesting the overly powerful permission to actually delete messages. The account's trash folder can be extracted as follows: [getTrash.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/getTrash.js)
+         * Deletes messages permanently, or moves them to the trash folder (honoring the account's deletion behavior settings). Deleting external messages will throw an _ExtensionError_. The ``skipTrash`` parameter allows immediate permanent deletion, bypassing the trash folder.
+         * **Note**: Consider using {@link messages.move} to manually move messages to the account's trash folder, instead of requesting the overly powerful permission to actually delete messages. The account's trash folder can be extracted as follows: [getTrash.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/getTrash.js)
          * @param messageIds The IDs of the messages to delete.
          * @param [skipTrash] If true, the message will be deleted permanently, regardless of the account's deletion behavior settings.
          */
@@ -11919,7 +12830,6 @@ declare namespace browser {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/spacesToolbar.html
      */
     const spacesToolbar;
@@ -11981,9 +12891,7 @@ declare namespace browser {
 
     /**
      * The tabs API supports creating, modifying and interacting with tabs in Thunderbird windows.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/tabs.html
      */
     const tabs;
@@ -12237,15 +13145,15 @@ declare namespace browser {
 
         /**
          * Modifies the properties of a tab. Properties that are not specified in ``updateProperties`` are not modified.
-         * @param updateProperties Properties which should to be updated.
-         */
-        function update(updateProperties: _UpdateUpdateProperties): Promise<Tab>;
-        /**
-         * Modifies the properties of a tab. Properties that are not specified in ``updateProperties`` are not modified.
          * @param tabId Defaults to the selected tab of the current window.
          * @param updateProperties Properties which should to be updated.
          */
         function update(tabId: number, updateProperties: _UpdateUpdateProperties): Promise<Tab>;
+        /**
+         * Modifies the properties of a tab. Properties that are not specified in ``updateProperties`` are not modified.
+         * @param updateProperties Properties which should to be updated.
+         */
+        function update(updateProperties: _UpdateUpdateProperties): Promise<Tab>;
 
         /**
          * Moves one or more tabs to a new position within its window, or to a new window. Note that tabs can only be moved to and from windows of type ``normal``.
@@ -12253,15 +13161,12 @@ declare namespace browser {
          */
         function move(tabIds: number | number[], moveProperties: _MoveMoveProperties): Promise<Tab | Tab[]>;
 
-        /** Reload a tab. */
-        function reload(): Promise<void>;
         /**
          * Reload a tab.
          * @param tabId The ID of the tab to reload; defaults to the selected tab of the current window.
          */
-        function reload(tabId: number, reloadProperties?: _ReloadReloadProperties): Promise<void>;
-        /** Reload a tab. */
-        function reload(reloadProperties: _ReloadReloadProperties): Promise<void>;
+        function reload(tabId: number, reloadProperties?: _ReloadReloadProperties): Promise<void>; /** Reload a tab. */
+        function reload(reloadProperties?: _ReloadReloadProperties): Promise<void>;
 
         /**
          * Closes one or more tabs.
@@ -12271,39 +13176,39 @@ declare namespace browser {
 
         /**
          * Injects JavaScript code into a page. For details, see the programmatic injection  section of the content scripts doc.
-         * @param details Details of the script to run.
-         */
-        function executeScript(details: extensionTypes.InjectDetails): Promise<any[]>;
-        /**
-         * Injects JavaScript code into a page. For details, see the programmatic injection  section of the content scripts doc.
          * @param tabId The ID of the tab in which to run the script; defaults to the active tab of the current window.
          * @param details Details of the script to run.
          */
         function executeScript(tabId: number, details: extensionTypes.InjectDetails): Promise<any[]>;
-
         /**
-         * Injects CSS into a page. For details, see the programmatic injection  section of the content scripts doc.
-         * @param details Details of the CSS text to insert.
+         * Injects JavaScript code into a page. For details, see the programmatic injection  section of the content scripts doc.
+         * @param details Details of the script to run.
          */
-        function insertCSS(details: extensionTypes.InjectDetails): Promise<void>;
+        function executeScript(details: extensionTypes.InjectDetails): Promise<any[]>;
+
         /**
          * Injects CSS into a page. For details, see the programmatic injection  section of the content scripts doc.
          * @param tabId The ID of the tab in which to insert the CSS; defaults to the active tab of the current window.
          * @param details Details of the CSS text to insert.
          */
         function insertCSS(tabId: number, details: extensionTypes.InjectDetails): Promise<void>;
-
         /**
-         * Removes injected CSS from a page. For details, see the programmatic injection  section of the content scripts doc.
-         * @param details Details of the CSS text to remove.
+         * Injects CSS into a page. For details, see the programmatic injection  section of the content scripts doc.
+         * @param details Details of the CSS text to insert.
          */
-        function removeCSS(details: extensionTypes.InjectDetails): Promise<void>;
+        function insertCSS(details: extensionTypes.InjectDetails): Promise<void>;
+
         /**
          * Removes injected CSS from a page. For details, see the programmatic injection  section of the content scripts doc.
          * @param tabId The ID of the tab from which to remove the injected CSS; defaults to the active tab of the current window.
          * @param details Details of the CSS text to remove.
          */
         function removeCSS(tabId: number, details: extensionTypes.InjectDetails): Promise<void>;
+        /**
+         * Removes injected CSS from a page. For details, see the programmatic injection  section of the content scripts doc.
+         * @param details Details of the CSS text to remove.
+         */
+        function removeCSS(details: extensionTypes.InjectDetails): Promise<void>;
 
         /* tabs events */
         /**
@@ -12341,9 +13246,7 @@ declare namespace browser {
 
     /**
      * The theme API allows for customization of Thunderbird's visual elements.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/theme.html
      */
     const theme;
@@ -12352,7 +13255,7 @@ declare namespace browser {
         /** Info provided in the onUpdated listener. */
         interface ThemeUpdateInfo {
             /** The new theme after update */
-            theme: object;
+            theme: _manifest.ThemeType;
             /** The id of the window the theme has been applied to */
             windowId?: number | undefined;
         }
@@ -12366,15 +13269,15 @@ declare namespace browser {
 
         /**
          * Make complete updates to the theme. Resolves when the update has completed.
-         * @param details The properties of the theme to update.
-         */
-        function update(details: _manifest.ThemeType): void;
-        /**
-         * Make complete updates to the theme. Resolves when the update has completed.
          * @param windowId The id of the window to update. No id updates all windows.
          * @param details The properties of the theme to update.
          */
         function update(windowId: number, details: _manifest.ThemeType): void;
+        /**
+         * Make complete updates to the theme. Resolves when the update has completed.
+         * @param details The properties of the theme to update.
+         */
+        function update(details: _manifest.ThemeType): void;
 
         /**
          * Removes the updates made to the theme.
@@ -12382,37 +13285,7 @@ declare namespace browser {
          */
         function reset(windowId?: number): void;
 
-        /**
-         * Returns the current theme for the specified window or the last focused window.
-         * @param [windowId] The window for which we want the theme.
-         */
-        function getCurrent(windowId?: number): Promise<any>;
-
-        /**
-         * Make complete updates to the theme. Resolves when the update has completed.
-         * @param details The properties of the theme to update.
-         */
-        function update(details: _manifest.ThemeType): Promise<any>;
-        /**
-         * Make complete updates to the theme. Resolves when the update has completed.
-         * @param windowId The id of the window to update. No id updates all windows.
-         * @param details The properties of the theme to update.
-         */
-        function update(windowId: number, details: _manifest.ThemeType): Promise<any>;
-
-        /**
-         * Removes the updates made to the theme.
-         * @param [windowId] The id of the window to reset. No id resets all windows.
-         */
-        function reset(windowId?: number): Promise<any>;
-
         /* theme events */
-        /**
-         * Fired when a new theme has been applied
-         * @param updateInfo Details of the theme update
-         */
-        const onUpdated: WebExtEvent<(updateInfo: ThemeUpdateInfo) => void>;
-
         /**
          * Fired when a new theme has been applied
          * @param updateInfo Details of the theme update
@@ -12422,9 +13295,7 @@ declare namespace browser {
 
     /**
      * The windows API supports creating, modifying and interacting with Thunderbird windows.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/windows.html
      */
     const windows;
@@ -12613,11 +13484,8 @@ declare namespace browser {
 
     /**
      * Use the `browser.browserSettings` API to control global settings of the browser.
-     *
      * Permissions: `browserSettings`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/browserSettings
      */
     const browserSettings;
@@ -12703,11 +13571,8 @@ declare namespace browser {
 
     /**
      * Offers the ability to write to the clipboard. Reading is not supported because the clipboard can already be read through the standard web platform APIs.
-     *
      * Permissions: `clipboardWrite`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/clipboard
      */
     const clipboard;
@@ -12726,9 +13591,7 @@ declare namespace browser {
 
     /**
      * Not supported on manifest versions above 2.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/contentScripts
      */
     const contentScripts;
@@ -12771,11 +13634,8 @@ declare namespace browser {
 
     /**
      * Use the `browser.cookies` API to query and modify cookies, and to be notified when they change.
-     *
      * Permissions: `cookies`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/cookies
      */
     const cookies;
@@ -13019,11 +13879,8 @@ declare namespace browser {
 
     /**
      * Asynchronous DNS API
-     *
      * Permissions: `dns`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/dns
      */
     const dns;
@@ -13061,9 +13918,7 @@ declare namespace browser {
 
     /**
      * Permissions: `downloads`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/downloads
      */
     const downloads;
@@ -13401,9 +14256,7 @@ declare namespace browser {
 
     /**
      * The `browser.events` namespace contains common types used by APIs dispatching events to notify you when something interesting happens.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/events
      */
     const events;
@@ -13531,7 +14384,6 @@ declare namespace browser {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://webextension-api.thunderbird.net/en/latest/how-to/experiments.html
      */
     const experiments;
@@ -13573,7 +14425,6 @@ declare namespace browser {
 
     /**
      * The `browser.extension` API has utilities that can be used by any extension page. It includes support for exchanging messages between an extension and its content scripts or between extensions, as described in detail in Message Passing.
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/extension
      */
     const extension;
@@ -13677,9 +14528,7 @@ declare namespace browser {
 
     /**
      * The `browser.extensionTypes` API contains type declarations for WebExtensions.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/extensionTypes
      */
     const extensionTypes;
@@ -13775,7 +14624,6 @@ declare namespace browser {
 
     /**
      * Use the `browser.i18n` infrastructure to implement internationalization across your whole app or extension.
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n
      */
     const i18n;
@@ -13832,11 +14680,8 @@ declare namespace browser {
 
     /**
      * Use the browser.identity API to get OAuth2 access tokens.
-     *
      * Permissions: `identity`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/identity
      */
     const identity;
@@ -13919,11 +14764,8 @@ declare namespace browser {
 
     /**
      * Use the `browser.idle` API to detect when the machine's idle state changes.
-     *
      * Permissions: `idle`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/idle
      */
     const idle;
@@ -13953,9 +14795,7 @@ declare namespace browser {
 
     /**
      * The `browser.management` API provides ways to manage the list of extensions that are installed and running.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/management
      */
     const management;
@@ -14092,9 +14932,7 @@ declare namespace browser {
 
     /**
      * Permissions: `notifications`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/notifications
      */
     const notifications;
@@ -14192,15 +15030,15 @@ declare namespace browser {
         /* notifications functions */
         /**
          * Creates and displays a notification.
-         * @param options Contents of the notification.
-         */
-        function create(options: CreateNotificationOptions): Promise<string>;
-        /**
-         * Creates and displays a notification.
          * @param notificationId Identifier of the notification. If it is empty, this method generates an id. If it matches an existing notification, this method first clears that notification before proceeding with the create operation.
          * @param options Contents of the notification.
          */
         function create(notificationId: string, options: CreateNotificationOptions): Promise<string>;
+        /**
+         * Creates and displays a notification.
+         * @param options Contents of the notification.
+         */
+        function create(options: CreateNotificationOptions): Promise<string>;
 
         /**
          * Updates an existing notification.
@@ -14268,7 +15106,6 @@ declare namespace browser {
 
     /**
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/permissions
      */
     const permissions;
@@ -14311,11 +15148,8 @@ declare namespace browser {
 
     /**
      * PKCS#11 module management API
-     *
      * Permissions: `pkcs11`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/pkcs11
      */
     const pkcs11;
@@ -14346,20 +15180,15 @@ declare namespace browser {
 
     /**
      * Permissions: `privacy`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy
      */
     const privacy;
     namespace privacy {
         /**
          * Use the `browser.privacy` API to control usage of the features in the browser that can affect a user's privacy.
-         *
          * Permissions: `privacy`
-         *
          * Not allowed in: Content scripts, Devtools pages
-         *
          * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/network
          */
         const network;
@@ -14422,11 +15251,8 @@ declare namespace browser {
 
         /**
          * Use the `browser.privacy` API to control usage of the features in the browser that can affect a user's privacy.
-         *
          * Permissions: `privacy`
-         *
          * Not allowed in: Content scripts, Devtools pages
-         *
          * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/services
          */
         const services;
@@ -14440,11 +15266,8 @@ declare namespace browser {
 
         /**
          * Use the `browser.privacy` API to control usage of the features in the browser that can affect a user's privacy.
-         *
          * Permissions: `privacy`
-         *
          * Not allowed in: Content scripts, Devtools pages
-         *
          * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/privacy/websites
          */
         const websites;
@@ -14520,11 +15343,8 @@ declare namespace browser {
 
     /**
      * Provides access to global proxy settings for Firefox and proxy event listeners to handle dynamic proxy implementations.
-     *
      * Permissions: `proxy`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/proxy
      */
     const proxy;
@@ -14624,7 +15444,6 @@ declare namespace browser {
 
     /**
      * Use the `browser.runtime` API to retrieve the background page, return details about the manifest, and listen for and respond to events in the app or extension lifecycle. You can also use this API to convert the relative path of URLs to fully-qualified URLs.
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime
      */
     const runtime;
@@ -14826,11 +15645,6 @@ declare namespace browser {
 
         /**
          * Attempts to connect to connect listeners within an extension/app (such as the background page), or other extensions/apps. This is useful for content scripts connecting to their extension processes, inter-app/extension communication, and web messaging. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via `tabs.connect`.
-         * @returns Port through which messages can be sent and received. The port's `runtime.Port onDisconnect` event is fired if the extension/app does not exist.
-         */
-        function connect(): Port;
-        /**
-         * Attempts to connect to connect listeners within an extension/app (such as the background page), or other extensions/apps. This is useful for content scripts connecting to their extension processes, inter-app/extension communication, and web messaging. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via `tabs.connect`.
          * @param extensionId The ID of the extension or app to connect to. If omitted, a connection will be attempted with your own extension. Required if sending messages from a web page for web messaging.
          * @returns Port through which messages can be sent and received. The port's `runtime.Port onDisconnect` event is fired if the extension/app does not exist.
          */
@@ -14839,7 +15653,7 @@ declare namespace browser {
          * Attempts to connect to connect listeners within an extension/app (such as the background page), or other extensions/apps. This is useful for content scripts connecting to their extension processes, inter-app/extension communication, and web messaging. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via `tabs.connect`.
          * @returns Port through which messages can be sent and received. The port's `runtime.Port onDisconnect` event is fired if the extension/app does not exist.
          */
-        function connect(connectInfo: _ConnectConnectInfo): Port;
+        function connect(connectInfo?: _ConnectConnectInfo): Port;
 
         /**
          * Connects to a native application in the host machine.
@@ -14852,13 +15666,13 @@ declare namespace browser {
 
         /**
          * Sends a single message to event listeners within your extension/app or a different extension/app. Similar to `runtime.connect` but only sends a single message, with an optional response. If sending to your extension, the `runtime.onMessage` event will be fired in each page, or `runtime.onMessageExternal`, if a different extension. Note that extensions cannot send messages to content scripts using this method. To send messages to content scripts, use `tabs.sendMessage`.
-         */
-        function sendMessage(message: any, options?: _SendMessageOptions): Promise<any>;
-        /**
-         * Sends a single message to event listeners within your extension/app or a different extension/app. Similar to `runtime.connect` but only sends a single message, with an optional response. If sending to your extension, the `runtime.onMessage` event will be fired in each page, or `runtime.onMessageExternal`, if a different extension. Note that extensions cannot send messages to content scripts using this method. To send messages to content scripts, use `tabs.sendMessage`.
          * @param extensionId The ID of the extension/app to send the message to. If omitted, the message will be sent to your own extension/app. Required if sending messages from a web page for web messaging.
          */
         function sendMessage(extensionId: string, message: any, options?: _SendMessageOptions): Promise<any>;
+        /**
+         * Sends a single message to event listeners within your extension/app or a different extension/app. Similar to `runtime.connect` but only sends a single message, with an optional response. If sending to your extension, the `runtime.onMessage` event will be fired in each page, or `runtime.onMessageExternal`, if a different extension. Note that extensions cannot send messages to content scripts using this method. To send messages to content scripts, use `tabs.sendMessage`.
+         */
+        function sendMessage(message: any, options?: _SendMessageOptions): Promise<any>;
 
         /**
          * Send a single message to a native application.
@@ -14956,9 +15770,7 @@ declare namespace browser {
 
     /**
      * Use the `browser.storage` API to store, retrieve, and track changes to user data.
-     *
      * Permissions: `storage`
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage
      */
     const storage;
@@ -15059,9 +15871,7 @@ declare namespace browser {
 
     /**
      * Contains types used by other schemas.
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/types
      */
     const types;
@@ -15164,11 +15974,8 @@ declare namespace browser {
 
     /**
      * Manifest keys: `user_scripts`, `user_scripts`
-     *
      * Not supported on manifest versions above 2.
-     *
      * Not allowed in: Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/userScripts
      */
     const userScripts;
@@ -15238,11 +16045,8 @@ declare namespace browser {
 
     /**
      * Use the `browser.webNavigation` API to receive notifications about the status of navigation requests in-flight.
-     *
      * Permissions: `webNavigation`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webNavigation
      */
     const webNavigation;
@@ -15616,11 +16420,8 @@ declare namespace browser {
 
     /**
      * Use the `browser.webRequest` API to observe and analyze traffic and to intercept, block, or modify requests in-flight.
-     *
      * Permissions: `webRequest`
-     *
      * Not allowed in: Content scripts, Devtools pages
-     *
      * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest
      */
     const webRequest;
