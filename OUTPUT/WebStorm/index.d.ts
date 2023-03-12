@@ -171,8 +171,8 @@ declare namespace messenger {
          */
         interface ThemeExperiment {
             /**
-             * URL to a stylesheet introducing additional CSS variables,
-             * extending the theme-able areas of Thunderbird.
+             * URL to a stylesheet introducing additional CSS variables, extending
+             * the theme-able areas of Thunderbird.
              *
              * The `theme_experiment` add-on in our
              * [example repository](https://github.com/thundernest/sample-extensions/tree/master/theme_experiment)
@@ -180,9 +180,9 @@ declare namespace messenger {
              * CSS color variable:
              * [theme_experiment_style.css](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_style.css).
              *
-             * The following _manifest.json_ file maps the ``--chat-button-color``
-             * CSS color variable to the theme color key ``exp_chat_button`` and uses it
-             * to set a color for the chat button:
+             * The following _manifest.json_ file maps the ``--chat-button-color`` CSS
+             * color variable to the theme color key ``exp_chat_button`` and uses it to
+             * set a color for the chat button:
              * [theme_experiment_manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_manifest.json)
              */
             stylesheet?: ExtensionURL | undefined;
@@ -8788,8 +8788,8 @@ declare namespace browser {
          */
         interface ThemeExperiment {
             /**
-             * URL to a stylesheet introducing additional CSS variables,
-             * extending the theme-able areas of Thunderbird.
+             * URL to a stylesheet introducing additional CSS variables, extending
+             * the theme-able areas of Thunderbird.
              *
              * The `theme_experiment` add-on in our
              * [example repository](https://github.com/thundernest/sample-extensions/tree/master/theme_experiment)
@@ -8797,9 +8797,9 @@ declare namespace browser {
              * CSS color variable:
              * [theme_experiment_style.css](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_style.css).
              *
-             * The following _manifest.json_ file maps the ``--chat-button-color``
-             * CSS color variable to the theme color key ``exp_chat_button`` and uses it
-             * to set a color for the chat button:
+             * The following _manifest.json_ file maps the ``--chat-button-color`` CSS
+             * color variable to the theme color key ``exp_chat_button`` and uses it to
+             * set a color for the chat button:
              * [theme_experiment_manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/theme/theme_experiment_manifest.json)
              */
             stylesheet?: ExtensionURL | undefined;

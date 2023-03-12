@@ -18,7 +18,7 @@ or **nested**, like
 
 ```ts
 declare namespace browser {
-    declare namespace accounts {
+    namespace accounts {
         
     }
 }
@@ -37,11 +37,11 @@ WebStorm isn't the only one with quirks: VSCode obliterates everything that shar
 
 ```ts
 declare namespace browser {
-	export interface Settings {darkmode: boolean};
+    export interface Settings {darkmode: boolean};
     function reboot(x: number): void;
-	/** Some documentation for browser.accounts */
-    declare namespace accounts {
-        
+    /** Some documentation for browser.accounts */
+    namespace accounts {
+        ...
     }
 }
 ```
