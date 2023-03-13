@@ -1,11 +1,11 @@
 # DefinitelyTyped Thunderbird WebExt Browser
 
-Script to generate type definitions and documentation for the development of WebExtension add-ons for Mozilla Thunderbird. The generated files can be used in [IDE](## "integrated development environment")s like VS Code and WebStorm.
+Script to generate type definitions and documentation for the development of WebExtension add-ons for Mozilla Thunderbird. The generated files can be used in [IDE](## "integrated development environment")s like VS Code and WebStorm. They are available for installation as `@types/thunderbird-webext-browser`.
 
 This generator is derived from [definitelytyped-firefox-webext-browser](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser), a generator for the type definitions for development of Firefox add-ons, made by [Jasmin Bom](https://github.com/jsmnbom).
 
 ## Usage
-*You should only need to do this if you wanna update the definitions; to just use them, download the resulting definition file from the OUTPUT directory. See [below](#4-use-the-definitions-or-submit-them-to-definitelytyped) for usage.*
+*You should only need to do this if you wanna update the definitions; to just use them, download the resulting definition file from the OUTPUT directory (see [below](#4-use-the-definitions-or-submit-them-to-definitelytyped) for usage) or install the definition package `@types/thunderbird-webext-browser` in the manner provided by your development environment.*
 
 ### 1. Clone, install, and compile to JavaScript
 On a machine that has node.js and npm, download the project files. For example,
@@ -31,11 +31,13 @@ The generator uses type information and documentation contained in JSON files fr
 
 Go to [the source code site](https://hg.mozilla.org/try-comm-central/tags) and copy the *tag* of the version you choose – this would be `THUNDERBIRD_102_7_2_RELEASE` if you plan to develop add-ons for Thunderbird 102.7.2, or `default` to get the latest version that's under development.
 
-#### Notice: one part of this generator is version-dependent
+<details>
+<summary><b>Notice: one part of this generator is version-dependent</b> (click arow for details)</summary>
 
-The script [src/overrides.ts](https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts) corrects shortcomings of the downloaded JSON files – they have some duplication, they don't always show the correct return type for functions, and they list some mandatory function parameters as optional. Thus, **whenever the APIs change, overrides.ts must also be updated**. The current file was updated for version THUNDERBIRD_109_0b4_RELEASE (see [the file itself](https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts#L1) to verify the current version).
+The scripts `src/overrides.ts` and `tb-overrides.ts` correct shortcomings of the downloaded JSON files – they have some duplication, they don't always show the correct return type for functions, and they list some mandatory function parameters as optional. Thus, **whenever the APIs change, the overrides scripts must also be updated**. The current files were updated for version THUNDERBIRD_109_0b4_RELEASE (see [the source code](https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts#L1) to verify the current version).
 
 If that differs a lot from the version you're generating for, there may be imperfections in the result.
+</details>
 
 Next, tell the program to start downloading:
 
@@ -80,13 +82,16 @@ How you install the definition file `index.d.ts` in your IDE depends on the IDE.
 * in WebStorm you go to the settings, Languages & Frameworks, JavaScript, Libraries, click on Add... and choose the framework type *Custom*, click the + icon and attach the file.
 * in Visual Studio Code, you add the `index.d.ts` file in the root of your project, and also put a file named `jsconfig.json` there (you can leave that file empty).
 
-When the `@types` repository, also known as [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped), has accepted the thunderbird-webext-browser package (I've submitted a [pull request](https://github.com/DefinitelyTyped/DefinitelyTyped/pull/64692)), IDEs can install it from that repository as `@types/thunderbird-webext-browser`.
+The definitions [are also in](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/thunderbird-webext-browser) the `@types` repository, also known as [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped), so a development environment can install it from that repository as `@types/thunderbird-webext-browser`.
 
-The repository will then accept updates in the form of pull requests. For sending PRs to DefinitelyTyped you need to include why you changed. For simple updates (Thunderbird version changes), this can be easily generated and uploaded to gist using the included script (requires the gist tool and that you are logged in):
+<details><summary><b>Submitting updates</b> (click the arrow for details)</summary>
+The DefinitelyTyped repository will accept updates in the form of pull requests. For sending PRs to DefinitelyTyped you need to include why you changed. For simple updates (Thunderbird version changes), this can be easily generated and uploaded to gist using the included script (requires the gist tool and that you are logged in):
 
 ```shell
 diffgen THUNDERBIRD_91_8_0_RELEASE THUNDERBIRD_102_7_2_RELEASE
 ```
+
+</details>
 
 ## Technical notes
 There are several differences between this generator and [the one for Firefox WebExtensions declaration files](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser) on which it is based. That was necessary because the Thunderbird JSON schemas are distributed between Thunderbird and Firefox source code; the Thunderbird schemas have some quirks that those for Firefox don't have; and the API has items like `browser.messages.delete()` whose names are reserved words in JavaScript, leading to tough problems with the TypeScript language (basically a form of JavaScript) in which the declarations are written.
