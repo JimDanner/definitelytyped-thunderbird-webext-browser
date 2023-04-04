@@ -841,6 +841,9 @@ export default class Converter {
         func.parameters &&
         func.parameters.find((x) => x.type === 'function' && x.name === func.async);
       if (callback) {
+        // TODO: see if we can deal with 'optional returns' in promises, like with identities.get()
+        //  and accounts.get(). Should show as return value Promise<MailAccount> | Promise<null> ?
+        //  Alternatively, add all those cases to tb-overrides.ts
         // Remove callback from parameters as we're gonna handle it as a promise return
         func.parameters = (func.parameters)!.filter((x) => x !== callback);
         let parameters = this.convertParameters(

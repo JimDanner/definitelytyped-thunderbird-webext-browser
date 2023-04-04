@@ -51,3 +51,36 @@ then the namespace `browser.accounts` and the function `browser.reboot` are show
 This creates problems when a namespace has a function called like a reserved word, like `messenger.messages.delete()`. The generator creates a function in that namespace called `_delete` and then has a statement `export {_delete as delete}` so the reserved word doesn't need to be used. But it means VS Code doesn't recognize any of the other stuff in that namespace. In Firefox this doesn't happen, in Thunderbird it does.
 
 Conclusion: creating a fully nested system of namespaces is marginally beneficial on VSCode, and practically necessary on WebStorm. We just need to make sure there's never an `export` statement side-by-side with other items in the same container.
+
+## Limitations of TypeScript for WebExtensions
+Perfect correspondence between WebExtension definitions and TypeScript declarations seems impossible. For a function with _an optional parameter before the final one_, WebExtensions allows omission of only that optional parameter, and TypeScript doesn't. For example with [tabs.setZoomSettings](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/setZoomSettings):
+
+```ts
+browser.tabs.setZoomSettings(tabId?: number, zoomSettings: ZoomSettings): Promise<void>
+```
+
+This is not allowed in TypeScript, and the declaration files solve it by overloading the declaration:
+
+```ts
+function setZoomSettings(tabId: number, zoomSettings: ZoomSettings): Promise<void>;
+function setZoomSettings(zoomSettings: ZoomSettings): Promise<void>;
+```
+
+However, that makes the linter `dtslint` unhappy when _the two parameters are of the same type_. For the function [tabs.setZoom](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/setZoom) that has signature
+
+```ts
+browser.tabs.setZoom(tabId?: number, zoomFactor: number): Promise<void>
+```
+
+the overload
+
+```ts
+function setZoom(tabId: number, zoomFactor: number): Promise<void>;
+function setZoom(zoomFactor: number): Promise<void>;
+```
+
+gives a linting error
+
+> ERROR: 3221:37  unified-signatures  These overloads can be combined into one signature with an optional parameter.
+
+Combining them into a single signature (with the first parameter required and the second optional) would not be useful for the purposes of a `.d.ts` file, such as helpful argument naming and mouse-over documentation. It seems the "TypeScript declaration file" syntax is out of its depth here.
