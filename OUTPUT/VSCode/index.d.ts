@@ -1218,7 +1218,7 @@ declare namespace messenger {
          * object should included the account's folders.
          * Defaults to `true`.
          */
-        export function get(accountId: string, includeFolders?: boolean): Promise<MailAccount>;
+        export function get(accountId: string, includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Returns the default account, or `null` if it is not defined.
@@ -1227,7 +1227,7 @@ declare namespace messenger {
          * object should included the account's folders.
          * Defaults to `true`.
          */
-        export function getDefault(includeFolders?: boolean): Promise<MailAccount>;
+        export function getDefault(includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Sets the default identity for an account.
@@ -3824,7 +3824,7 @@ declare namespace messenger {
          * Returns details of the requested identity, or `null` if it doesn't
          * exist.
          */
-        export function get(identityId: string): Promise<MailIdentity>;
+        export function get(identityId: string): Promise<MailIdentity | null>;
 
         /** Create a new identity in the specified account. */
         export function create(accountId: string, details: MailIdentity): Promise<MailIdentity>;
@@ -4058,7 +4058,7 @@ declare namespace messenger {
          * Get the properties of the active mail tab, if the active tab is a mail
          * tab. Returns undefined otherwise.
          */
-        export function getCurrent(): Promise<MailTab>;
+        export function getCurrent(): Promise<MailTab | undefined>;
 
         /**
          * Modifies the properties of a mail tab. Properties that are not
@@ -5851,7 +5851,7 @@ declare namespace messenger {
          * undefined if called from a non-tab context (for example: a background
          * page or popup view).
          */
-        export function getCurrent(): Promise<Tab>;
+        export function getCurrent(): Promise<Tab | undefined>;
 
         /**
          * Connects to the content script(s) in the specified tab. The
@@ -12615,7 +12615,7 @@ declare namespace browser {
          * object should included the account's folders.
          * Defaults to `true`.
          */
-        export function get(accountId: string, includeFolders?: boolean): Promise<MailAccount>;
+        export function get(accountId: string, includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Returns the default account, or `null` if it is not defined.
@@ -12624,7 +12624,7 @@ declare namespace browser {
          * object should included the account's folders.
          * Defaults to `true`.
          */
-        export function getDefault(includeFolders?: boolean): Promise<MailAccount>;
+        export function getDefault(includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Sets the default identity for an account.
@@ -15221,7 +15221,7 @@ declare namespace browser {
          * Returns details of the requested identity, or `null` if it doesn't
          * exist.
          */
-        export function get(identityId: string): Promise<MailIdentity>;
+        export function get(identityId: string): Promise<MailIdentity | null>;
 
         /** Create a new identity in the specified account. */
         export function create(accountId: string, details: MailIdentity): Promise<MailIdentity>;
@@ -15455,7 +15455,7 @@ declare namespace browser {
          * Get the properties of the active mail tab, if the active tab is a mail
          * tab. Returns undefined otherwise.
          */
-        export function getCurrent(): Promise<MailTab>;
+        export function getCurrent(): Promise<MailTab | undefined>;
 
         /**
          * Modifies the properties of a mail tab. Properties that are not
@@ -17248,7 +17248,7 @@ declare namespace browser {
          * undefined if called from a non-tab context (for example: a background
          * page or popup view).
          */
-        export function getCurrent(): Promise<Tab>;
+        export function getCurrent(): Promise<Tab | undefined>;
 
         /**
          * Connects to the content script(s) in the specified tab. The

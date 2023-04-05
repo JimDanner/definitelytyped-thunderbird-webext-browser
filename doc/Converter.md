@@ -47,6 +47,39 @@ It calls the methods of Converter:
 
 Inserted a check in `edit`, `remove` and `add` to avoid crashes from trying to change non-existing properties (commit 383dbf6967). 
 
+### Optional promises
+Callbacks in the schemas are converted to promises, because the callbacks are from Chrome, but Firefox and Thunderbird implement them with promises. Some callbacks in the schemas have 'optional' arguments. To be clear: not the callback is optional (it usually is, which means the user is not obliged to 'consume' the promise), but the callback's argument. This means Thunderbird may choose not to return a value; the promise may resolve to `undefined` or `null`.
+
+In fact, this [is often untrue](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21) according to MSN and Thunderbird API documentation. So I've gone to the trouble of looking it up for all twenty or so individual cases (*sigh...*).  The override files add a flag 'by hand' to have the possible other value added in, so the return value becomes something like
+
+```ts
+Promise<MailAccount | null>
+```
+
+Here's the list of functions with callbacks with an optional parameter according to the schemas:
+
+* **Thunderbird API**, actually may return `null`:
+  * `accounts.get`
+  * `accounts.getDefault`
+  * `identities.get`
+* actually may return `undefined`:
+  * `mailTabs.getCurrent`
+  * `tabs.getCurrent`
+* listed as optional but the documentation says nothing about it:
+  * `contacts.getPhoto`
+  * `tabs.create`, `.duplicate`, `.update`, `.executeScript`
+  * `windows.create`
+* **Firefox API**, actually may return `null`:
+  * `cookies.get` and `.remove`
+  * `runtime.getBackgroundPage` (to be added by the Firefox types maintainer)
+* actually may return `undefined`:
+  * `alarms.get`
+* listed as optional but the documentation says nothing about it:
+  * `cookies.set`
+  * `downloads.getFileIcon`
+  * `identity.getAuthToken` (not implemented) and `.launchWebAuthFlow`
+  * `webNavigation.getFrame` and `.getAllFrames`
+
 ## Convert
 After override, the `.convert()` method runs on the object.
 

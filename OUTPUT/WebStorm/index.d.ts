@@ -1001,13 +1001,13 @@ declare namespace messenger {
          * Returns details of the requested account, or ``null`` if it doesn't exist.
          * @param [includeFolders] Specifies whether the returned {@link accounts.MailAccount} object should included the account's folders. Defaults to ``true``.
          */
-        function get(accountId: string, includeFolders?: boolean): Promise<MailAccount>;
+        function get(accountId: string, includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Returns the default account, or ``null`` if it is not defined.
          * @param [includeFolders] Specifies whether the returned {@link accounts.MailAccount} object should included the account's folders. Defaults to ``true``.
          */
-        function getDefault(includeFolders?: boolean): Promise<MailAccount>;
+        function getDefault(includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Sets the default identity for an account.
@@ -2990,7 +2990,7 @@ declare namespace messenger {
         function list(accountId?: string): Promise<MailIdentity[]>;
 
         /** Returns details of the requested identity, or ``null`` if it doesn't exist. */
-        function get(identityId: string): Promise<MailIdentity>;
+        function get(identityId: string): Promise<MailIdentity | null>;
 
         /** Create a new identity in the specified account. */
         function create(accountId: string, details: MailIdentity): Promise<MailIdentity>;
@@ -3192,7 +3192,7 @@ declare namespace messenger {
         /**
          * Get the properties of the active mail tab, if the active tab is a mail tab. Returns undefined otherwise.
          */
-        function getCurrent(): Promise<MailTab>;
+        function getCurrent(): Promise<MailTab | undefined>;
 
         /**
          * Modifies the properties of a mail tab. Properties that are not specified in ``updateProperties`` are not modified.
@@ -4497,7 +4497,7 @@ declare namespace messenger {
         /**
          * Gets the tab that this script call is being made from. May be undefined if called from a non-tab context (for example: a background page or popup view).
          */
-        function getCurrent(): Promise<Tab>;
+        function getCurrent(): Promise<Tab | undefined>;
 
         /**
          * Connects to the content script(s) in the specified tab. The runtime.onConnect  event is fired in each content script running in the specified tab for the current extension. For more details, see Content Script Messaging .
@@ -9618,13 +9618,13 @@ declare namespace browser {
          * Returns details of the requested account, or ``null`` if it doesn't exist.
          * @param [includeFolders] Specifies whether the returned {@link accounts.MailAccount} object should included the account's folders. Defaults to ``true``.
          */
-        function get(accountId: string, includeFolders?: boolean): Promise<MailAccount>;
+        function get(accountId: string, includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Returns the default account, or ``null`` if it is not defined.
          * @param [includeFolders] Specifies whether the returned {@link accounts.MailAccount} object should included the account's folders. Defaults to ``true``.
          */
-        function getDefault(includeFolders?: boolean): Promise<MailAccount>;
+        function getDefault(includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Sets the default identity for an account.
@@ -11607,7 +11607,7 @@ declare namespace browser {
         function list(accountId?: string): Promise<MailIdentity[]>;
 
         /** Returns details of the requested identity, or ``null`` if it doesn't exist. */
-        function get(identityId: string): Promise<MailIdentity>;
+        function get(identityId: string): Promise<MailIdentity | null>;
 
         /** Create a new identity in the specified account. */
         function create(accountId: string, details: MailIdentity): Promise<MailIdentity>;
@@ -11809,7 +11809,7 @@ declare namespace browser {
         /**
          * Get the properties of the active mail tab, if the active tab is a mail tab. Returns undefined otherwise.
          */
-        function getCurrent(): Promise<MailTab>;
+        function getCurrent(): Promise<MailTab | undefined>;
 
         /**
          * Modifies the properties of a mail tab. Properties that are not specified in ``updateProperties`` are not modified.
@@ -13114,7 +13114,7 @@ declare namespace browser {
         /**
          * Gets the tab that this script call is being made from. May be undefined if called from a non-tab context (for example: a background page or popup view).
          */
-        function getCurrent(): Promise<Tab>;
+        function getCurrent(): Promise<Tab | undefined>;
 
         /**
          * Connects to the content script(s) in the specified tab. The runtime.onConnect  event is fired in each content script running in the specified tab for the current extension. For more details, see Content Script Messaging .
