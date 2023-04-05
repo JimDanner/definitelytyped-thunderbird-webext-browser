@@ -82,8 +82,14 @@ Here's the list of functions whose callbacks have an optional parameter accordin
 * listed as optional but the documentation says nothing about that:
   * `cookies.set`
   * `downloads.getFileIcon`
-  * `identity.getAuthToken` (not implemented) and `.launchWebAuthFlow`
+  * `identity.launchWebAuthFlow`
   * `webNavigation.getFrame` and `.getAllFrames`
+
+**Firefox API** (the parts _not_ used in Thunderbird)
+* listed as optional but the documentation says nothing about that:
+  * `devtools.inspectedWindow.eval`
+  * `tabs.create`, `.duplicate`, `.update`, `.executeScript`, `.getCurrent`
+  * `windows.create`
 
 ## Convert
 After override, the `.convert()` method runs on the object.
