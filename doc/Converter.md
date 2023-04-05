@@ -48,33 +48,38 @@ It calls the methods of Converter:
 Inserted a check in `edit`, `remove` and `add` to avoid crashes from trying to change non-existing properties (commit 383dbf6967). 
 
 ### Optional promises
-Callbacks in the schemas are converted to promises, because the callbacks are from Chrome, but Firefox and Thunderbird implement them with promises. Some callbacks in the schemas have 'optional' arguments. To be clear: not the callback is optional (it usually is, which means the user is not obliged to 'consume' the promise), but the callback's argument. This means Thunderbird may choose not to return a value; the promise may resolve to `undefined` or `null`.
+The converter changes callbacks in the schemas to promises, because the schemas are derived from Chrome's WebExtensions API which uses callbacks, but Firefox and Thunderbird implement them with promises. Some callbacks in the schemas have 'optional' arguments. To be clear: not only the callback is optional (as it usually is, meaning the user is not obliged to 'consume' the promise), but so is _the callback's argument_. This means Thunderbird may choose not to return a value; the promise may resolve to `undefined` or `null`.
 
-In fact, this [is often untrue](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21) according to MSN and Thunderbird API documentation. So I've gone to the trouble of looking it up for all twenty or so individual cases (*sigh...*).  The override files add a flag 'by hand' to have the possible other value added in, so the return value becomes something like
+But in fact, [this is often untrue](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21) according to MDN and Thunderbird API documentation. If we trust the 'optional' flag in the schema, we get it wrong more often than right. 
+
+So I've gone to the trouble of looking it up in the online documentation for all twenty-or-so individual cases (*sigh...*). For those cases where a nullish value is really allowed, the override scripts [overrides.ts](..%2Fsrc%2Foverrides.ts) and [tb-overrides.ts](..%2Fsrc%2Ftb-overrides.ts) add a flag 'by hand' that tells the converter to insert the alternative possibility, making the return value something like
 
 ```ts
-Promise<MailAccount | null>
+Promise<MailAccount|null>
 ```
 
-Here's the list of functions with callbacks with an optional parameter according to the schemas:
+Here's the list of functions whose callbacks have an optional parameter according to the schemas:
 
-* **Thunderbird API**, actually may return `null`:
+**Thunderbird API**
+* actually may return `null`:
   * `accounts.get`
   * `accounts.getDefault`
   * `identities.get`
 * actually may return `undefined`:
   * `mailTabs.getCurrent`
   * `tabs.getCurrent`
-* listed as optional but the documentation says nothing about it:
+* listed as optional but the documentation says nothing about that:
   * `contacts.getPhoto`
   * `tabs.create`, `.duplicate`, `.update`, `.executeScript`
   * `windows.create`
-* **Firefox API**, actually may return `null`:
+
+**Firefox API** (the parts used in Thunderbird)
+* actually may return `null`:
   * `cookies.get` and `.remove`
   * `runtime.getBackgroundPage` (to be added by the Firefox types maintainer)
 * actually may return `undefined`:
   * `alarms.get`
-* listed as optional but the documentation says nothing about it:
+* listed as optional but the documentation says nothing about that:
   * `cookies.set`
   * `downloads.getFileIcon`
   * `identity.getAuthToken` (not implemented) and `.launchWebAuthFlow`
