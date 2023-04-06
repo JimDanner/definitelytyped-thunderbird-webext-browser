@@ -50,7 +50,7 @@ Inserted a check in `edit`, `remove` and `add` to avoid crashes from trying to c
 ### Optional promises
 The converter changes callbacks in the schemas to promises, because the schemas are derived from Chrome's WebExtensions API which uses callbacks, but Firefox and Thunderbird implement them with promises. Some callbacks in the schemas have 'optional' arguments. To be clear: not only the callback is optional (as it usually is, meaning the user is not obliged to 'consume' the promise), but so is _the callback's argument_. This means Thunderbird may choose not to return a value; the promise may resolve to `undefined` or `null`.
 
-But in fact, [this is often untrue](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21) according to MDN and Thunderbird API documentation. If we trust the 'optional' flag in the schema, we get it wrong more often than right. 
+But in fact, [this is often untrue](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21) according to MDN and Thunderbird API documentation. If we trust the 'optional' flag in the schema, we get it wrong more often than right. And it also occurs the other way around: a function whose promise can contain `null` being in the schema with a required callback parameter.
 
 So I've gone to the trouble of looking it up in the online documentation for all thirty-or-so individual cases (*sigh...*). For those cases where a nullish value is really allowed, the override scripts [overrides.ts](..%2Fsrc%2Foverrides.ts) and [tb-overrides.ts](..%2Fsrc%2Ftb-overrides.ts) add a flag 'by hand' that tells the converter to insert the alternative possibility, making the return value something like
 
@@ -90,6 +90,30 @@ Here's the list of functions whose callbacks have an optional parameter accordin
   * `devtools.inspectedWindow.eval`
   * `tabs.create`, `.duplicate`, `.update`, `.executeScript`, `.getCurrent`
   * `windows.create`
+
+And here's a list of functions with callbacks that have **no optional parameter** but **can actually return null or undefined**:
+* `identities.getDefault` can return `null` according to documentation
+* `accounts.getDefaultIdentity` can return `null` according to documentation
+
+A **better way** of writing a schema is demonstrated by the `messageDisplay.json` file. It lists the callback for the function `messageDisplay.getDisplayedMessage` with parameter type 
+
+```json
+"choices": [
+  {
+    "$ref": "messages.MessageHeader"
+  },
+  {
+    "type": "null"
+  }
+]
+```
+
+which translates seemlessly to the correct function signature,
+
+```ts
+function getDisplayedMessage(tabId: number): Promise<messages.MessageHeader | null>
+```
+
 
 ## Convert
 After override, the `.convert()` method runs on the object.
