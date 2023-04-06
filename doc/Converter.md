@@ -52,7 +52,7 @@ The converter changes callbacks in the schemas to promises, because the schemas 
 
 But in fact, [this is often untrue](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21) according to MDN and Thunderbird API documentation. If we trust the 'optional' flag in the schema, we get it wrong more often than right. 
 
-So I've gone to the trouble of looking it up in the online documentation for all twenty-or-so individual cases (*sigh...*). For those cases where a nullish value is really allowed, the override scripts [overrides.ts](..%2Fsrc%2Foverrides.ts) and [tb-overrides.ts](..%2Fsrc%2Ftb-overrides.ts) add a flag 'by hand' that tells the converter to insert the alternative possibility, making the return value something like
+So I've gone to the trouble of looking it up in the online documentation for all thirty-or-so individual cases (*sigh...*). For those cases where a nullish value is really allowed, the override scripts [overrides.ts](..%2Fsrc%2Foverrides.ts) and [tb-overrides.ts](..%2Fsrc%2Ftb-overrides.ts) add a flag 'by hand' that tells the converter to insert the alternative possibility, making the return value something like
 
 ```ts
 Promise<MailAccount|null>

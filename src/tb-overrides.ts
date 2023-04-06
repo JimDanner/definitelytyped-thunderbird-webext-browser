@@ -37,26 +37,20 @@ export default function tb_override(converter: Converter) {
     // But in most cases that seems to be an error in the schemas, not backed by the online
     // documentation - see https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21
     // In cases where the docs really say it, add null or undefined.
+    function addNullOption(fnc: TypeSchema) {
+        fnc.parameters!.slice(-1)[0].converterPromiseOptionalNull = true;
+        return fnc;
+    }
+    function addUndefinedOption(fnc: TypeSchema) {
+        fnc.parameters!.slice(-1)[0].converterPromiseOptional = true;
+        return fnc;
+    }
     // Documentation says the promise can really hold the value null:
-    converter.edit('accounts', 'functions', 'get', (fnc) => {
-        fnc.parameters!.slice(-1)[0].converterPromiseOptionalNull = true;
-        return fnc;
-    });
-    converter.edit('accounts', 'functions', 'getDefault', (fnc) => {
-        fnc.parameters!.slice(-1)[0].converterPromiseOptionalNull = true;
-        return fnc;
-    });
-    converter.edit('identities', 'functions', 'get', (fnc) => {
-        fnc.parameters!.slice(-1)[0].converterPromiseOptionalNull = true;
-        return fnc;
-    });
+    converter.edit('accounts', 'functions', 'get', addNullOption);
+    converter.edit('accounts', 'functions', 'getDefault', addNullOption);
+    converter.edit('identities', 'functions', 'get', addNullOption);
     // Documentation says the promise can really hold the value undefined:
-    converter.edit('mailTabs', 'functions', 'getCurrent', (fnc) => {
-        fnc.parameters!.slice(-1)[0].converterPromiseOptional = true;
-        return fnc;
-    });
-    converter.edit('tabs', 'functions', 'getCurrent', (fnc) => {
-        fnc.parameters!.slice(-1)[0].converterPromiseOptional = true;
-        return fnc;
-    });
+    converter.edit('mailTabs', 'functions', 'getCurrent', addUndefinedOption);
+    converter.edit('tabs', 'functions', 'getCurrent', addUndefinedOption);
+
 }
