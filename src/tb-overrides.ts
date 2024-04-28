@@ -7,6 +7,10 @@ import Converter from './converter';
  */
 export default function tb_override(converter: Converter) {
 
+    // in TB 127's folders.json, the undocumented function getUnifiedFolder has
+    // a nameless parameter (!) which leads to an invalid declaration
+    converter.remove('folders', 'functions', 'getUnifiedFolder');
+
     // the type ThemeType in messenger.theme is defined in messenger.manifest
     converter.edit('theme', 'types', 'ThemeUpdateInfo', (x) => {
         x!.properties!.theme!['$ref'] = 'manifest.ThemeType';

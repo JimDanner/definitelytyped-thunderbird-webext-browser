@@ -171,7 +171,7 @@ function read_table(tbody: HTMLElement, base_url?: string): Record<string, strin
         let link = cell.attributes.href;
         if (!link.startsWith('http') && base_url)
             link = base_url + '/' + link;
-        result[cell.textContent] = link;
+        result[cell.textContent.replace(/ API$/, '')] = link;
      })
     return result;
 }
