@@ -41,11 +41,13 @@ It calls the methods of Converter:
 
 * `edit(namespace, section, id/name, editfunction)`
 * `edit_path` (a wrapper around `edit`)
-* `remove`
+* `remove(namespace, section, id/name)`
 * `add`
 * `removeNamespace` for the `test` namespace, which is OK of course
 
-Inserted a check in `edit`, `remove` and `add` to avoid crashes from trying to change non-existing properties (commit 383dbf6967). 
+Inserted a check in `edit`, `remove` and `add` to avoid crashes from trying to change non-existing properties (commit 383dbf6967).
+
+The full conversion process, including translation to Markdown or HTML, runs _after_ the override scripts have modified some elements of the namespaces.
 
 ### Optional promises
 The converter changes callbacks in the schemas to promises, because the schemas are derived from Chrome's WebExtensions API which uses callbacks, but Firefox and Thunderbird implement them with promises. Some callbacks in the schemas have 'optional' arguments. To be clear: not only the callback is optional (as it usually is, meaning the user is not obliged to 'consume' the promise), but so is _the callback's argument_. This means Thunderbird may choose not to return a value; the promise may resolve to `undefined` or `null`.
@@ -69,11 +71,18 @@ Here's the list of functions whose callbacks have an optional parameter accordin
   * `mailTabs.getCurrent`
   * `tabs.getCurrent`
 * listed as optional but the documentation says nothing about that:
+  * `action.getLabel` (from the file `browserAction.json`)
+  * `composeAction.getLabel`
   * `contacts.getPhoto`
+  * `mailTabs.create`, `.update`
+  * `messageDisplayAction.getLabel`
+  * `sessions.getTabValue`
+  * `spaces.open`
+  * `spacesToolbar.addButton`, `.clickButton`
   * `tabs.create`, `.duplicate`, `.update`, `.executeScript`
   * `windows.create`
 
-**Firefox API** (the parts used in Thunderbird)
+**Firefox API** (the parts used in Thunderbird; as mentioned on the MDN page, since the help texts in the JSON files don't tell us)
 * actually may return `null`:
   * `cookies.get` and `.remove`
   * `runtime.getBackgroundPage` (to be added by the Firefox types maintainer)

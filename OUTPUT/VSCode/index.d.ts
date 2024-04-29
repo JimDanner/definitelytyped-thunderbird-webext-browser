@@ -1,4 +1,4 @@
-// Type definitions for non-npm package WebExtension Development in Thunderbird 109.0
+// Type definitions for non-npm package WebExtension Development in Thunderbird 115.10
 // Project: https://webextension-api.thunderbird.net/en/stable/
 // Definitions by: Jim Danner <https://github.com/JimDanner>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
@@ -20,7 +20,7 @@ interface WebExtEvent<TCallback extends (...args: any[]) => any> {
  * The Thunderbird API is documented at
  * [thunderbird.net](https://webextension-api.thunderbird.net/en/latest/).
  *
- * @version Thunderbird 109.0
+ * @version Thunderbird 115.10
  */
 declare namespace messenger {
     /**
@@ -32,70 +32,22 @@ declare namespace messenger {
         /* _manifest types */
         export type OptionalPermission = OptionalPermissionNoPrompt | _OptionalPermission;
 
-        export interface ActionManifest {
-            /**
-             * The label of the action button, defaults to its title. Can be set to
-             * an empty string to not display any label. If the containing toolbar is
-             * configured to display text only, the title will be used as fallback.
-             */
-            default_label?: string | undefined;
-            /**
-             * The title of the action button. This shows up in the tooltip and the
-             * label. Defaults to the add-on name.
-             */
-            default_title?: string | undefined;
-            /** The paths to one or more icons for the action button. */
-            default_icon?: IconPath | undefined;
-            /**
-             * Specifies dark and light icons to be used with themes. The `light`
-             * icon is used on dark backgrounds and vice versa. **Note:** The default
-             * theme uses the `default_icon` for light backgrounds (if specified).
-             */
-            theme_icons?: ThemeIcons[] | undefined;
-            /**
-             * The html document to be opened as a popup when the user clicks on the
-             * action button.
-             */
-            default_popup?: string | undefined;
-            /**
-             * Enable browser styles. See the MDN documentation on browser styles for
-             * more information.
-             */
-            browser_style?: boolean | undefined;
-            /**
-             * Defines the location the action button will appear. The default
-             * location is `maintoolbar`.
-             */
-            default_area?: _ActionManifestDefaultArea | undefined;
-            /**
-             * Defines the windows, the action button should appear in. Defaults to
-             * showing it only in the `normal` Thunderbird window, but can also be
-             * shown in the `messageDisplay` window.
-             */
-            default_windows?: _ActionManifestDefaultWindows[] | undefined;
-        }
-
         /** Represents a WebExtension manifest.json file */
         export interface WebExtensionManifest {
             /** Needs at least manifest version 3. */
-            action?: ActionManifest | undefined;
+            action?: _WebExtensionManifestAction | undefined;
             /** Not supported on manifest versions above 2. */
-            browser_action?: ActionManifest | undefined;
+            browser_action?: _WebExtensionManifestBrowserAction | undefined;
             chrome_settings_overrides?: _WebExtensionManifestChromeSettingsOverrides | undefined;
             cloud_file?: _WebExtensionManifestCloudFile | undefined;
-            /**
-             * A _dictionary object_ defining one or more commands as _name-value_
-             * pairs, the _name_ being the name of the command and the _value_ being
-             * a {@link commands.CommandsShortcut}. The _name_ may also be one of the
-             * following built-in special shortcuts:
-             *
-             * - `_execute_browser_action`
-             * - `_execute_compose_action`
-             * - `_execute_message_display_action`
-             *   Example:
-             *   [manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/commands/manifest.json)
-             */
-            commands?: { [key: string]: _WebExtensionManifestCommands } | undefined;
+            commands?:
+                | {
+                      [key: string]: {
+                          suggested_key?: _UndefinedSuggestedKey | undefined;
+                          description?: string | undefined;
+                      };
+                  }
+                | undefined;
             compose_action?: _WebExtensionManifestComposeAction | undefined;
             message_display_action?: _WebExtensionManifestMessageDisplayAction | undefined;
             /**
@@ -110,7 +62,6 @@ declare namespace messenger {
              * be used in static and dynamic themes.
              */
             theme_experiment?: ThemeExperiment | undefined;
-            /** Needs at least manifest version 3. */
             declarative_net_request?: _WebExtensionManifestDeclarativeNetRequest | undefined;
             experiment_apis?: { [key: string]: experiments.ExperimentAPI } | undefined;
             /** A list of protocol handler definitions. */
@@ -129,6 +80,7 @@ declare namespace messenger {
                   }
                 | {
                       scripts: ExtensionURL[];
+                      type?: _UndefinedType | undefined;
                       /** Not supported on manifest versions above 2. */
                       persistent?: boolean | undefined;
                   }
@@ -170,7 +122,7 @@ declare namespace messenger {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
@@ -315,7 +267,7 @@ declare namespace messenger {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
@@ -329,7 +281,6 @@ declare namespace messenger {
 
         /** Represents a WebExtension language pack manifest.json file */
         export interface WebExtensionLangpackManifest {
-            homepage_url?: string | undefined;
             langpack_id: string;
             languages: _WebExtensionLangpackManifestLanguages;
             sources?: _WebExtensionLangpackManifestSources | undefined;
@@ -340,20 +291,20 @@ declare namespace messenger {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
             description?: string | undefined;
             author?: string | undefined;
             version: string;
+            homepage_url?: string | undefined;
             install_origins?: string[] | undefined;
             developer?: _WebExtensionLangpackManifestDeveloper | undefined;
         }
 
         /** Represents a WebExtension dictionary manifest.json file */
         export interface WebExtensionDictionaryManifest {
-            homepage_url?: string | undefined;
             dictionaries: _WebExtensionDictionaryManifestDictionaries;
             manifest_version: number;
             /**
@@ -362,13 +313,14 @@ declare namespace messenger {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
             description?: string | undefined;
             author?: string | undefined;
             version: string;
+            homepage_url?: string | undefined;
             install_origins?: string[] | undefined;
             developer?: _WebExtensionDictionaryManifestDeveloper | undefined;
         }
@@ -384,7 +336,7 @@ declare namespace messenger {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
@@ -427,8 +379,20 @@ declare namespace messenger {
             strict_max_version?: string | undefined;
         }
 
+        export interface GeckoAndroidSpecificProperties {
+            strict_min_version?: string | undefined;
+            strict_max_version?: string | undefined;
+        }
+
+        export interface DeprecatedApplications {
+            gecko?: FirefoxSpecificProperties | undefined;
+            /** @deprecated Unsupported on Firefox at this time. */
+            gecko_android?: GeckoAndroidSpecificProperties | undefined;
+        }
+
         export interface BrowserSpecificSettings {
             gecko?: FirefoxSpecificProperties | undefined;
+            gecko_android?: GeckoAndroidSpecificProperties | undefined;
         }
 
         export type MatchPattern = MatchPatternRestricted | MatchPatternUnestricted | '<all_urls>';
@@ -518,10 +482,12 @@ declare namespace messenger {
         export type _OptionalPermission =
             | 'accountsRead'
             | 'addressBooks'
+            | 'sensitiveDataUpload'
             | 'compose'
             | 'compose.save'
             | 'compose.send'
             | 'messagesModify'
+            | 'sensitiveDataUpload'
             | 'accountsFolders'
             | 'accountsIdentities'
             | 'messagesDelete'
@@ -529,10 +495,12 @@ declare namespace messenger {
             | 'messagesMove'
             | 'messagesRead'
             | 'messagesTags'
+            | 'sensitiveDataUpload'
             | 'tabs'
             | 'tabHide'
             | 'browserSettings'
             | 'browsingData'
+            | 'declarativeNetRequestFeedback'
             | 'downloads'
             | 'downloads.open'
             | 'management'
@@ -546,13 +514,143 @@ declare namespace messenger {
             | 'nativeMessaging'
             | 'webNavigation';
 
-        /**
-         * Defines the location the action button will appear. The default
-         * location is `maintoolbar`.
-         */
-        export type _ActionManifestDefaultArea = 'maintoolbar' | 'tabstoolbar';
+        export type _WebExtensionManifestActionDefaultWindows = 'normal' | 'messageDisplay';
 
-        export type _ActionManifestDefaultWindows = 'normal' | 'messageDisplay';
+        export type _WebExtensionManifestActionAllowedSpaces =
+            | 'mail'
+            | 'addressbook'
+            | 'calendar'
+            | 'tasks'
+            | 'chat'
+            | 'settings'
+            | 'default';
+
+        /** Specifies the type of the button. Default type is `button`. */
+        export type _WebExtensionManifestActionType = 'button' | 'menu';
+
+        /** Needs at least manifest version 3. */
+        export interface _WebExtensionManifestAction {
+            /**
+             * The label of the action button, defaults to its title. Can be set to
+             * an empty string to not display any label. If the containing toolbar is
+             * configured to display text only, the title will be used as fallback.
+             */
+            default_label?: string | undefined;
+            /**
+             * The title of the action button. This shows up in the tooltip and the
+             * label. Defaults to the add-on name.
+             */
+            default_title?: string | undefined;
+            /** The paths to one or more icons for the action button. */
+            default_icon?: IconPath | undefined;
+            /**
+             * Specifies dark and light icons to be used with themes. The `light`
+             * icon is used on dark backgrounds and vice versa. **Note:** The default
+             * theme uses the `default_icon` for light backgrounds (if specified).
+             */
+            theme_icons?: ThemeIcons[] | undefined;
+            /**
+             * The html document to be opened as a popup when the user clicks on the
+             * action button. Ignored for action buttons with type `menu`.
+             */
+            default_popup?: string | undefined;
+            /**
+             * Enable browser styles. See the MDN documentation on browser styles for
+             * more information.
+             */
+            browser_style?: boolean | undefined;
+            /**
+             * Defines the windows, the action button should appear in. Defaults to
+             * showing it only in the `normal` Thunderbird window, but can also be
+             * shown in the `messageDisplay` window.
+             */
+            default_windows?: _WebExtensionManifestActionDefaultWindows[] | undefined;
+            /**
+             * Defines for which spaces the action button will be added to
+             * Thunderbird's unified toolbar. Defaults to only allowing the action in
+             * the `mail` space. The `default` space is for tabs that don't belong to
+             * any space. If this is an empty array, the action button is shown in
+             * all spaces.
+             */
+            allowed_spaces?: _WebExtensionManifestActionAllowedSpaces[] | undefined;
+            /** Specifies the type of the button. Default type is `button`. */
+            type?: _WebExtensionManifestActionType | undefined;
+        }
+
+        /**
+         * Defines the location the browserAction button will appear. Deprecated
+         * and ignored. Replaced by `allowed_spaces`
+         */
+        export type _WebExtensionManifestBrowserActionDefaultArea = 'maintoolbar' | 'tabstoolbar';
+
+        export type _WebExtensionManifestBrowserActionDefaultWindows = 'normal' | 'messageDisplay';
+
+        export type _WebExtensionManifestBrowserActionAllowedSpaces =
+            | 'mail'
+            | 'addressbook'
+            | 'calendar'
+            | 'tasks'
+            | 'chat'
+            | 'settings'
+            | 'default';
+
+        /** Specifies the type of the button. Default type is `button`. */
+        export type _WebExtensionManifestBrowserActionType = 'button' | 'menu';
+
+        /** Not supported on manifest versions above 2. */
+        export interface _WebExtensionManifestBrowserAction {
+            /**
+             * The label of the browserAction button, defaults to its title. Can be
+             * set to an empty string to not display any label. If the containing
+             * toolbar is configured to display text only, the title will be used as
+             * fallback.
+             */
+            default_label?: string | undefined;
+            /**
+             * The title of the browserAction button. This shows up in the tooltip
+             * and the label. Defaults to the add-on name.
+             */
+            default_title?: string | undefined;
+            /** The paths to one or more icons for the browserAction button. */
+            default_icon?: IconPath | undefined;
+            /**
+             * Specifies dark and light icons to be used with themes. The `light`
+             * icon is used on dark backgrounds and vice versa. **Note:** The default
+             * theme uses the `default_icon` for light backgrounds (if specified).
+             */
+            theme_icons?: ThemeIcons[] | undefined;
+            /**
+             * The html document to be opened as a popup when the user clicks on the
+             * browserAction button. Ignored for action buttons with type `menu`.
+             */
+            default_popup?: string | undefined;
+            /**
+             * Enable browser styles. See the MDN documentation on browser styles for
+             * more information.
+             */
+            browser_style?: boolean | undefined;
+            /**
+             * Defines the location the browserAction button will appear. Deprecated
+             * and ignored. Replaced by `allowed_spaces`
+             */
+            default_area?: _WebExtensionManifestBrowserActionDefaultArea | undefined;
+            /**
+             * Defines the windows, the browserAction button should appear in.
+             * Defaults to showing it only in the `normal` Thunderbird window, but
+             * can also be shown in the `messageDisplay` window.
+             */
+            default_windows?: _WebExtensionManifestBrowserActionDefaultWindows[] | undefined;
+            /**
+             * Defines for which spaces the browserAction button will be added to
+             * Thunderbird's unified toolbar. Defaults to only allowing the
+             * browserAction in the `mail` space. The `default` space is for tabs
+             * that don't belong to any space. If this is an empty array, the
+             * browserAction button is shown in all spaces.
+             */
+            allowed_spaces?: _WebExtensionManifestBrowserActionAllowedSpaces[] | undefined;
+            /** Specifies the type of the button. Default type is `button`. */
+            type?: _WebExtensionManifestBrowserActionType | undefined;
+        }
 
         /** The type of param can be either "purpose" or "pref". */
         export type _WebExtensionManifestChromeSettingsOverridesSearchProviderParamsCondition = 'purpose' | 'pref';
@@ -683,7 +781,7 @@ declare namespace messenger {
             service_url?: string | undefined;
         }
 
-        export interface _WebExtensionManifestCommandsSuggestedKey {
+        export interface _UndefinedSuggestedKey {
             default?: KeyName | undefined;
             mac?: KeyName | undefined;
             linux?: KeyName | undefined;
@@ -695,16 +793,14 @@ declare namespace messenger {
             additionalProperties?: string | undefined;
         }
 
-        export interface _WebExtensionManifestCommands {
-            suggested_key?: _WebExtensionManifestCommandsSuggestedKey | undefined;
-            description?: string | undefined;
-        }
-
         /**
          * Defines the location the composeAction button will appear. The default
          * location is `maintoolbar`.
          */
         export type _WebExtensionManifestComposeActionDefaultArea = 'maintoolbar' | 'formattoolbar';
+
+        /** Specifies the type of the button. Default type is `button`. */
+        export type _WebExtensionManifestComposeActionType = 'button' | 'menu';
 
         export interface _WebExtensionManifestComposeAction {
             /**
@@ -729,7 +825,7 @@ declare namespace messenger {
             theme_icons?: ThemeIcons[] | undefined;
             /**
              * The html document to be opened as a popup when the user clicks on the
-             * composeAction button.
+             * composeAction button. Ignored for action buttons with type `menu`.
              */
             default_popup?: string | undefined;
             /**
@@ -742,7 +838,12 @@ declare namespace messenger {
              * location is `maintoolbar`.
              */
             default_area?: _WebExtensionManifestComposeActionDefaultArea | undefined;
+            /** Specifies the type of the button. Default type is `button`. */
+            type?: _WebExtensionManifestComposeActionType | undefined;
         }
+
+        /** Specifies the type of the button. Default type is `button`. */
+        export type _WebExtensionManifestMessageDisplayActionType = 'button' | 'menu';
 
         export interface _WebExtensionManifestMessageDisplayAction {
             /**
@@ -767,7 +868,8 @@ declare namespace messenger {
             theme_icons?: ThemeIcons[] | undefined;
             /**
              * The html document to be opened as a popup when the user clicks on the
-             * messageDisplayAction button.
+             * messageDisplayAction button. Ignored for action buttons with type
+             * `menu`.
              */
             default_popup?: string | undefined;
             /**
@@ -777,6 +879,8 @@ declare namespace messenger {
             browser_style?: boolean | undefined;
             /** Currently unused. */
             default_area?: string | undefined;
+            /** Specifies the type of the button. Default type is `button`. */
+            type?: _WebExtensionManifestMessageDisplayActionType | undefined;
         }
 
         export interface _WebExtensionManifestDeclarativeNetRequestRuleResources {
@@ -791,7 +895,6 @@ declare namespace messenger {
             path: ExtensionURL;
         }
 
-        /** Needs at least manifest version 3. */
         export interface _WebExtensionManifestDeclarativeNetRequest {
             rule_resources: _WebExtensionManifestDeclarativeNetRequestRuleResources[];
         }
@@ -802,9 +905,18 @@ declare namespace messenger {
 
         export type _WebExtensionManifestIncognito = 'not_allowed' | 'spanning';
 
+        export type _UndefinedType = 'module' | 'classic';
+
         export interface _WebExtensionManifestOptionsUi {
             page: ExtensionURL;
+            /** Defaults to true in Manifest V2; Deprecated in Manifest V3. */
             browser_style?: boolean | undefined;
+            /**
+             * chrome_style is ignored in Firefox. Its replacement (browser_style)
+             * has been deprecated.
+             *
+             * Not supported on manifest versions above 2.
+             */
             chrome_style?: boolean | undefined;
             open_in_tab?: boolean | undefined;
         }
@@ -813,6 +925,7 @@ declare namespace messenger {
             default_title?: string | undefined;
             default_icon?: IconPath | undefined;
             default_popup?: string | undefined;
+            /** Deprecated in Manifest V3. */
             browser_style?: boolean | undefined;
             show_matches?: MatchPattern[] | undefined;
             hide_matches?: MatchPatternRestricted[] | undefined;
@@ -854,7 +967,6 @@ declare namespace messenger {
             | 'theme'
             | 'captivePortal'
             | 'contextualIdentities'
-            | 'declarativeNetRequestFeedback'
             | 'declarativeNetRequestWithHostAccess'
             | 'dns'
             | 'geckoProfiler'
@@ -871,6 +983,7 @@ declare namespace messenger {
             | 'scripting'
             | 'webRequest'
             | 'webRequestBlocking'
+            | 'webRequestFilterResponse'
             | 'webRequestFilterResponse.serviceWorkerScript';
 
         /**
@@ -1167,7 +1280,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/accounts.html
+     * @see https://webextension-api.thunderbird.net/en/115/accounts.html
      */
     export namespace accounts {
         /* accounts types */
@@ -1269,7 +1382,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.html
+     * @see https://webextension-api.thunderbird.net/en/115/addressBooks.html
      */
     export namespace addressBooks {
         /* addressBooks types */
@@ -1310,7 +1423,7 @@ declare namespace messenger {
 
         /* addressBooks functions */
         /** Opens the address book user interface. */
-        export function openUI(): Promise<any>;
+        export function openUI(): Promise<tabs.Tab>;
 
         /** Closes the address book user interface. */
         export function closeUI(): Promise<any>;
@@ -1360,7 +1473,7 @@ declare namespace messenger {
          *
          * Not allowed in: Content scripts, Devtools pages
          *
-         * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.provider.html
+         * @see https://webextension-api.thunderbird.net/en/115/addressBooks.provider.html
          */
         export namespace provider {
             /**
@@ -1430,7 +1543,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/contacts.html
+     * @see https://webextension-api.thunderbird.net/en/115/contacts.html
      */
     export namespace contacts {
         /* contacts types */
@@ -1594,7 +1707,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/mailingLists.html
+     * @see https://webextension-api.thunderbird.net/en/115/mailingLists.html
      */
     export namespace mailingLists {
         /* mailingLists types */
@@ -1684,9 +1797,9 @@ declare namespace messenger {
     }
 
     /**
-     * Use an action to put a button in the mail window toolbar. In addition
-     * to its icon, an action button can also have a tooltip, a badge, and a
-     * popup.
+     * Use the action API to add a button to Thunderbird's unified toolbar.
+     * In addition to its icon, an action button can also have a tooltip, a
+     * badge, and a popup.
      *
      * Manifest keys: `action`, `browser_action`
      *
@@ -1920,6 +2033,12 @@ declare namespace messenger {
             windowId?: number | undefined;
         }
 
+        /** An object with information about the popup to open. */
+        export interface _OpenPopupOptions {
+            /** Defaults to the current window. */
+            windowId?: number | undefined;
+        }
+
         /* action functions */
         /**
          * Sets the title of the action button. Is used as tooltip and as the
@@ -1972,8 +2091,11 @@ declare namespace messenger {
         export function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
 
         /**
-         * Enables the action button for a tab. By default, an action button is
-         * enabled.
+         * Enables the action button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well. By
+         * default, an action button is enabled.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * action button.
@@ -1981,7 +2103,10 @@ declare namespace messenger {
         export function enable(tabId?: number): Promise<void>;
 
         /**
-         * Disables the action button for a tab.
+         * Disables the action button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * action button.
@@ -1991,8 +2116,15 @@ declare namespace messenger {
         /** Checks whether the action button is enabled. */
         export function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
 
-        /** Opens the action's popup window in the active window. */
-        export function openPopup(): Promise<boolean>;
+        /**
+         * Opens the action's popup window in the specified window. Defaults to
+         * the current window. Returns false if the popup could not be opened
+         * because the action has no popup, is of type `menu`, is disabled or has
+         * been removed from the toolbar.
+         *
+         * @param [options] An object with information about the popup to open.
+         */
+        export function openPopup(options?: _OpenPopupOptions): Promise<boolean>;
 
         /* action events */
         /**
@@ -2004,6 +2136,10 @@ declare namespace messenger {
     }
 
     /**
+     * Use the browserAction API to add a button to Thunderbird's unified
+     * toolbar. In addition to its icon, a browserAction button can also have
+     * a tooltip, a badge, and a popup.
+     *
      * Manifest keys: `action`, `browser_action`
      *
      * Not supported on manifest versions above 2.
@@ -2236,6 +2372,12 @@ declare namespace messenger {
             windowId?: number | undefined;
         }
 
+        /** An object with information about the popup to open. */
+        export interface _OpenPopupOptions {
+            /** Defaults to the current window. */
+            windowId?: number | undefined;
+        }
+
         /* browserAction functions */
         /**
          * Sets the title of the action button. Is used as tooltip and as the
@@ -2288,8 +2430,11 @@ declare namespace messenger {
         export function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
 
         /**
-         * Enables the action button for a tab. By default, an action button is
-         * enabled.
+         * Enables the action button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well. By
+         * default, an action button is enabled.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * action button.
@@ -2297,7 +2442,10 @@ declare namespace messenger {
         export function enable(tabId?: number): Promise<void>;
 
         /**
-         * Disables the action button for a tab.
+         * Disables the action button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * action button.
@@ -2307,8 +2455,15 @@ declare namespace messenger {
         /** Checks whether the action button is enabled. */
         export function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
 
-        /** Opens the action's popup window in the active window. */
-        export function openPopup(): Promise<boolean>;
+        /**
+         * Opens the action's popup window in the specified window. Defaults to
+         * the current window. Returns false if the popup could not be opened
+         * because the action has no popup, is of type `menu`, is disabled or has
+         * been removed from the toolbar.
+         *
+         * @param [options] An object with information about the popup to open.
+         */
+        export function openPopup(options?: _OpenPopupOptions): Promise<boolean>;
 
         /* browserAction events */
         /**
@@ -2324,7 +2479,7 @@ declare namespace messenger {
      *
      * Not allowed in: Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/cloudFile.html
+     * @see https://webextension-api.thunderbird.net/en/115/cloudFile.html
      */
     export namespace cloudFile {
         /* cloudFile types */
@@ -2628,7 +2783,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/commands.html
+     * @see https://webextension-api.thunderbird.net/en/115/commands.html
      */
     export namespace commands {
         /* commands types */
@@ -2654,6 +2809,18 @@ declare namespace messenger {
              * error.
              */
             shortcut?: string | undefined;
+        }
+
+        export interface _OnChangedChangeInfo {
+            /** The name of the shortcut. */
+            name: string;
+            /** The new shortcut active for this command, or blank if not active. */
+            newShortcut: string;
+            /**
+             * The old shortcut which is no longer active for this command, or blank
+             * if the shortcut was previously inactive.
+             */
+            oldShortcut: string;
         }
 
         /* commands functions */
@@ -2686,12 +2853,15 @@ declare namespace messenger {
          * @param tab The details of the active tab while the command occurred.
          */
         export const onCommand: WebExtEvent<(command: string, tab: tabs.Tab) => void>;
+
+        /** Fired when a registered command's shortcut is changed. */
+        export const onChanged: WebExtEvent<(changeInfo: _OnChangedChangeInfo) => void>;
     }
 
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/compose.html
+     * @see https://webextension-api.thunderbird.net/en/115/compose.html
      */
     export namespace compose {
         /* compose types */
@@ -2731,9 +2901,8 @@ declare namespace messenger {
              * [accounts](https://webextension-api.thunderbird.net/en/stable/accounts.html)
              * API. The settings from the identity will be used in the composed
              * message. If `replyTo` is also specified, the `replyTo` property of the
-             * identity is overridden. The permission
-             * <permission>accountsRead</permission> is required to include the
-             * `identityId`.
+             * identity is overridden. The permission _accountsRead_ is required to
+             * include the `identityId`.
              */
             identityId?: string | undefined;
             /**
@@ -2767,6 +2936,7 @@ declare namespace messenger {
             additionalFccFolder?: folders.MailFolder | '' | undefined;
             replyTo?: ComposeRecipientList | undefined;
             followupTo?: ComposeRecipientList | undefined;
+            /** A single newsgroup name or an array of newsgroup names. */
             newsgroups?: string | string[] | undefined;
             /**
              * The id of the original message (in case of draft, template, forward or
@@ -3110,14 +3280,19 @@ declare namespace messenger {
         export function getComposeDetails(tabId: number): Promise<ComposeDetails>;
 
         /**
-         * Updates the compose window. Only fields that are to be changed should
-         * be specified. Currently only a limited amount of information can be
-         * set, more will be added in later versions.
+         * Updates the compose window. The properties of the given {@link compose.ComposeDetails}
+         * object will be used to overwrite the current
+         * values of the specified compose window, so only properties that are to
+         * be changed should be included.
+         *
+         * When updating any of the array properties (`customHeaders` and most
+         * address fields), make sure to first get the current values to not
+         * accidentally remove all existing entries when setting the new value.
          *
          * **Note:** The compose format of an existing compose window cannot be
          * changed. Since Thunderbird 98, setting conflicting values for
          * `details.body`, `details.plainTextBody` or `details.isPlaintext` no
-         * longer throw an exception, instead the compose window chooses the
+         * longer throws an exception, instead the compose window chooses the
          * matching `details.body` or `details.plainTextBody` value and ignores
          * the other.
          */
@@ -3261,7 +3436,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/composeAction.html
+     * @see https://webextension-api.thunderbird.net/en/115/composeAction.html
      */
     export namespace composeAction {
         /* composeAction types */
@@ -3487,6 +3662,12 @@ declare namespace messenger {
             windowId?: number | undefined;
         }
 
+        /** An object with information about the popup to open. */
+        export interface _OpenPopupOptions {
+            /** Defaults to the current window. */
+            windowId?: number | undefined;
+        }
+
         /* composeAction functions */
         /**
          * Sets the title of the composeAction button. Is used as tooltip and as
@@ -3539,8 +3720,11 @@ declare namespace messenger {
         export function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
 
         /**
-         * Enables the composeAction button for a tab. By default, a
-         * composeAction button is enabled.
+         * Enables the composeAction button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well. By
+         * default, a composeAction button is enabled.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * composeAction button.
@@ -3548,7 +3732,10 @@ declare namespace messenger {
         export function enable(tabId?: number): Promise<void>;
 
         /**
-         * Disables the composeAction button for a tab.
+         * Disables the composeAction button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * composeAction button.
@@ -3558,8 +3745,15 @@ declare namespace messenger {
         /** Checks whether the composeAction button is enabled. */
         export function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
 
-        /** Opens the action's popup window in the active window. */
-        export function openPopup(): Promise<any>;
+        /**
+         * Opens the action's popup window in the specified window. Defaults to
+         * the current window. Returns false if the popup could not be opened
+         * because the action has no popup, is of type `menu`, is disabled or has
+         * been removed from the toolbar.
+         *
+         * @param [options] An object with information about the popup to open.
+         */
+        export function openPopup(options?: _OpenPopupOptions): Promise<boolean>;
 
         /* composeAction events */
         /**
@@ -3575,7 +3769,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/composeScripts.html
+     * @see https://webextension-api.thunderbird.net/en/115/composeScripts.html
      */
     export namespace composeScripts {
         /* composeScripts types */
@@ -3603,7 +3797,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayScripts.html
+     * @see https://webextension-api.thunderbird.net/en/115/messageDisplayScripts.html
      */
     export namespace messageDisplayScripts {
         /* messageDisplayScripts types */
@@ -3634,7 +3828,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/folders.html
+     * @see https://webextension-api.thunderbird.net/en/115/folders.html
      */
     export namespace folders {
         /* folders types */
@@ -3776,7 +3970,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/identities.html
+     * @see https://webextension-api.thunderbird.net/en/115/identities.html
      */
     export namespace identities {
         /* identities types */
@@ -3869,7 +4063,7 @@ declare namespace messenger {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/mailTabs.html
+     * @see https://webextension-api.thunderbird.net/en/115/mailTabs.html
      */
     export namespace mailTabs {
         /* mailTabs types */
@@ -3892,8 +4086,8 @@ declare namespace messenger {
             folderPaneVisible?: boolean | undefined;
             messagePaneVisible?: boolean | undefined;
             /**
-             * The <permission>accountsRead</permission> permission is required for
-             * this property to be included.
+             * The _accountsRead_ permission is required for this property to be
+             * included.
              */
             displayedFolder?: folders.MailFolder | undefined;
         }
@@ -4002,7 +4196,8 @@ declare namespace messenger {
         export interface _UpdateUpdateProperties {
             /**
              * Sets the folder displayed in the tab. The extension must have the
-             * <permission>accountsRead</permission> permission to do this.
+             * _accountsRead_ permission to do this. The previous message selection
+             * in the given folder will be restored.
              */
             displayedFolder?: folders.MailFolder | undefined;
             /** Sorts the list of messages. `sortOrder` must also be given. */
@@ -4044,7 +4239,7 @@ declare namespace messenger {
          * Gets all mail tabs that have the specified properties, or all mail
          * tabs if no properties are specified.
          */
-        export function query(queryInfo: _QueryQueryInfo): Promise<MailTab[]>;
+        export function query(queryInfo?: _QueryQueryInfo): Promise<MailTab[]>;
 
         /**
          * Get the properties of a mail tab.
@@ -4125,13 +4320,13 @@ declare namespace messenger {
     }
 
     /**
-     * The menus API allows to add items to Thunderbirds menus. You can
+     * The menus API allows to add items to Thunderbird's menus. You can
      * choose what types of objects your context menu additions apply to,
      * such as images, hyperlinks, and pages.
      *
      * Permissions: `menus`, `menus`
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/menus.html
+     * @see https://webextension-api.thunderbird.net/en/115/menus.html
      */
     export namespace menus {
         /* menus types */
@@ -4141,27 +4336,7 @@ declare namespace messenger {
          * and `tools_menu`. More information about each context can be found in
          * the Supported UI Elements article on developer.thunderbird.net.
          */
-        export type ContextType =
-            | 'all'
-            | 'page'
-            | 'frame'
-            | 'selection'
-            | 'link'
-            | 'editable'
-            | 'password'
-            | 'image'
-            | 'video'
-            | 'audio'
-            | 'browser_action'
-            | 'compose_action'
-            | 'message_display_action'
-            | 'tab'
-            | 'message_list'
-            | 'folder_pane'
-            | 'compose_attachments'
-            | 'message_attachments'
-            | 'all_message_attachments'
-            | 'tools_menu';
+        export type ContextType = _ContextType;
 
         /** The type of menu item. */
         export type ItemType = 'normal' | 'checkbox' | 'radio' | 'separator';
@@ -4234,33 +4409,28 @@ declare namespace messenger {
             fieldId?: _OnShowDataFieldId | undefined;
             /**
              * The selected messages, if the context menu was opened in the message
-             * list. The <permission>messagesRead</permission> permission is
-             * required.
+             * list. The _messagesRead_ permission is required.
              */
             selectedMessages?: messages.MessageList | undefined;
             /**
              * The displayed folder, if the context menu was opened in the message
-             * list. The <permission>accountsRead</permission> permission is
-             * required.
+             * list. The _accountsRead_ permission is required.
              */
             displayedFolder?: folders.MailFolder | undefined;
             /**
              * The selected folder, if the context menu was opened in the folder
-             * pane. The <permission>accountsRead</permission> permission is
-             * required.
+             * pane. The _accountsRead_ permission is required.
              */
             selectedFolder?: folders.MailFolder | undefined;
             /**
              * The selected account, if the context menu was opened on an account
-             * entry in the folder pane. The <permission>accountsRead</permission>
-             * permission is required.
+             * entry in the folder pane. The _accountsRead_ permission is required.
              */
             selectedAccount?: accounts.MailAccount | undefined;
             /**
-             * The selected attachments. The <permission>compose</permission>
-             * permission is required to return attachments of a message being
-             * composed. The <permission>messagesRead</permission> permission is
-             * required to return attachments of displayed messages.
+             * The selected attachments. The _compose_ permission is required to
+             * return attachments of a message being composed. The _messagesRead_
+             * permission is required to return attachments of displayed messages.
              */
             attachments?: Array<compose.ComposeAttachment | messages.MessageAttachment> | undefined;
         }
@@ -4333,36 +4503,85 @@ declare namespace messenger {
             fieldId?: _OnClickDataFieldId | undefined;
             /**
              * The selected messages, if the context menu was opened in the message
-             * list. The <permission>messagesRead</permission> permission is
-             * required.
+             * list. The _messagesRead_ permission is required.
              */
             selectedMessages?: messages.MessageList | undefined;
             /**
              * The displayed folder, if the context menu was opened in the message
-             * list. The <permission>accountsRead</permission> permission is
-             * required.
+             * list. The _accountsRead_ permission is required.
              */
             displayedFolder?: folders.MailFolder | undefined;
             /**
              * The selected folder, if the context menu was opened in the folder
-             * pane. The <permission>accountsRead</permission> permission is
-             * required.
+             * pane. The _accountsRead_ permission is required.
              */
             selectedFolder?: folders.MailFolder | undefined;
             /**
              * The selected account, if the context menu was opened on an account
-             * entry in the folder pane. The <permission>accountsRead</permission>
-             * permission is required.
+             * entry in the folder pane. The _accountsRead_ permission is required.
              */
             selectedAccount?: accounts.MailAccount | undefined;
             /**
-             * The selected attachments. The <permission>compose</permission>
-             * permission is required to return attachments of a message being
-             * composed. The <permission>messagesRead</permission> permission is
-             * required to return attachments of displayed messages.
+             * The selected attachments. The _compose_ permission is required to
+             * return attachments of a message being composed. The _messagesRead_
+             * permission is required to return attachments of displayed messages.
              */
             attachments?: Array<compose.ComposeAttachment | messages.MessageAttachment> | undefined;
         }
+
+        /**
+         * The provided path may be a relative path to an icon file, an image
+         * `data:` URL, a `blob:` URL or a `moz-extension: `URL. The `data:` or
+         * `blob:` URLs can be retrieved as follows:
+         * [DataBlobUrls.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/DataBlobUrls.js),````
+         */
+        export type SingleMenuIconPath = string;
+
+        /**
+         * Either a _string_ to specify a single icon path to be used for all
+         * sizes, or a _dictionary object_ to specify paths for multiple icons in
+         * different sizes, so the icon does not have to be scaled for a device
+         * with a different pixel density. Each entry is a _name-value_ pair with
+         * _name_ being a size and _value_ being a path to the icon for the
+         * specified size. Example:
+         * [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)See
+         * the
+         * `MDN documentation about choosing icon sizes <https: developer.mozilla.org="" en-us="" docs="" mozilla="" add-ons="" webextensions="" manifest.json="" browser_action#choosing_icon_sizes="">`\_\_
+         * for more information on this.</https:>
+         */
+        export type MenuIconPath =
+            | SingleMenuIconPath
+            | {
+                  [key: number]: SingleMenuIconPath;
+              };
+
+        export type _ContextType =
+            | 'all'
+            | 'all_message_attachments'
+            | 'audio'
+            | 'compose_action'
+            | 'compose_action_menu'
+            | 'compose_attachments'
+            | 'compose_body'
+            | 'editable'
+            | 'folder_pane'
+            | 'frame'
+            | 'image'
+            | 'link'
+            | 'message_attachments'
+            | 'message_display_action'
+            | 'message_display_action_menu'
+            | 'message_list'
+            | 'page'
+            | 'password'
+            | 'selection'
+            | 'tab'
+            | 'tools_menu'
+            | 'video'
+            | 'browser_action'
+            | 'browser_action_menu'
+            | 'action'
+            | 'action_menu';
 
         /** An identifier of the clicked Thunderbird UI element, if any. */
         export type _OnShowDataFieldId =
@@ -4396,7 +4615,7 @@ declare namespace messenger {
              * Custom icons to display next to the menu item. Custom icons can only
              * be set for items appearing in submenus.
              */
-            icons?: _manifest.IconPath | undefined;
+            icons?: MenuIconPath | undefined;
             /**
              * The text to be displayed in the item; this is _required_ unless `type`
              * is `separator`. When the context is `selection`, you can use `%s`
@@ -4457,11 +4676,6 @@ declare namespace messenger {
              * true.
              */
             enabled?: boolean | undefined;
-            /**
-             * Specifies a command to issue for the context click. Currently supports
-             * internal commands `_execute_browser_action`, `_execute_compose_action`
-             * and `_execute_message_display_action`.
-             */
             command?: string | undefined;
         }
 
@@ -4471,7 +4685,7 @@ declare namespace messenger {
          */
         export interface _UpdateUpdateProperties {
             type?: ItemType | undefined;
-            icons?: _manifest.IconPath | undefined;
+            icons?: MenuIconPath | undefined;
             title?: string | undefined;
             checked?: boolean | undefined;
             contexts?: ContextType[] | undefined;
@@ -4502,10 +4716,7 @@ declare namespace messenger {
              * `contextOptions.showDefaults` cannot be used with this option.
              */
             context?: 'tab' | undefined;
-            /**
-             * Required when context is `tab`. Requires the
-             * <permission>tabs</permission> permission.
-             */
+            /** Required when context is `tab`. Requires the _tabs_ permission. */
             tabId?: number | undefined;
         }
 
@@ -4612,21 +4823,22 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplay.html
+     * @see https://webextension-api.thunderbird.net/en/115/messageDisplay.html
      */
     export namespace messageDisplay {
         /**
          * Where to open the message. If not specified, the users preference is
-         * honoured. Ignored for external messages, which are always opened in a
-         * new window.
+         * honoured.
          */
         export type _OpenOpenPropertiesLocation = 'tab' | 'window';
 
         /**
-         * Settings for opening the message. Exactly one of messageId or
-         * headerMessageId must be specified.
+         * Settings for opening the message. Exactly one of messageId,
+         * headerMessageId or file must be specified.
          */
         export interface _OpenOpenProperties {
+            /** The DOM file object of a message to be opened. */
+            file?: File | undefined;
             /**
              * The id of a message to be opened. Will throw an _ExtensionError_, if
              * the provided `messageId` is unknown or invalid.
@@ -4640,8 +4852,7 @@ declare namespace messenger {
             headerMessageId?: string | undefined;
             /**
              * Where to open the message. If not specified, the users preference is
-             * honoured. Ignored for external messages, which are always opened in a
-             * new window.
+             * honoured.
              */
             location?: _OpenOpenPropertiesLocation | undefined;
             /**
@@ -4675,7 +4886,7 @@ declare namespace messenger {
          * Opens a message in a new tab or in a new window.
          *
          * @param openProperties Settings for opening the message. Exactly one of
-         * messageId or headerMessageId must be specified.
+         * messageId, headerMessageId or file must be specified.
          */
         export function open(openProperties: _OpenOpenProperties): Promise<tabs.Tab>;
 
@@ -4703,7 +4914,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayAction.html
+     * @see https://webextension-api.thunderbird.net/en/115/messageDisplayAction.html
      */
     export namespace messageDisplayAction {
         /* messageDisplayAction types */
@@ -4930,6 +5141,12 @@ declare namespace messenger {
             windowId?: number | undefined;
         }
 
+        /** An object with information about the popup to open. */
+        export interface _OpenPopupOptions {
+            /** Defaults to the current window. */
+            windowId?: number | undefined;
+        }
+
         /* messageDisplayAction functions */
         /**
          * Sets the title of the messageDisplayAction button. Is used as tooltip
@@ -4985,8 +5202,12 @@ declare namespace messenger {
         export function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
 
         /**
-         * Enables the messageDisplayAction button for a tab. By default, a
-         * messageDisplayAction button is enabled.
+         * Enables the messageDisplayAction button for a specific tab (if a
+         * `tabId` is provided), or for all tabs which do not have a custom
+         * enable state. Once the enable state of a tab has been updated
+         * individually, all further changes to its state have to be done
+         * individually as well. By default, a messageDisplayAction button is
+         * enabled.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * messageDisplayAction button.
@@ -4994,7 +5215,11 @@ declare namespace messenger {
         export function enable(tabId?: number): Promise<void>;
 
         /**
-         * Disables the messageDisplayAction button for a tab.
+         * Disables the messageDisplayAction button for a specific tab (if a
+         * `tabId` is provided), or for all tabs which do not have a custom
+         * enable state. Once the enable state of a tab has been updated
+         * individually, all further changes to its state have to be done
+         * individually as well.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * messageDisplayAction button.
@@ -5004,8 +5229,15 @@ declare namespace messenger {
         /** Checks whether the messageDisplayAction button is enabled. */
         export function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
 
-        /** Opens the action's popup window in the active window. */
-        export function openPopup(): Promise<any>;
+        /**
+         * Opens the action's popup window in the specified window. Defaults to
+         * the current window. Returns false if the popup could not be opened
+         * because the action has no popup, is of type `menu`, is disabled or has
+         * been removed from the toolbar.
+         *
+         * @param [options] An object with information about the popup to open.
+         */
+        export function openPopup(options?: _OpenPopupOptions): Promise<boolean>;
 
         /* messageDisplayAction events */
         /**
@@ -5021,7 +5253,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/messages.html
+     * @see https://webextension-api.thunderbird.net/en/115/messages.html
      */
     export namespace messages {
         /* messages types */
@@ -5041,9 +5273,8 @@ declare namespace messenger {
             /** Whether this message is flagged (a.k.a. starred). */
             flagged: boolean;
             /**
-             * The <permission>accountsRead</permission> permission is required for
-             * this property to be included. Not available for external or attached
-             * messages.
+             * The _accountsRead_ permission is required for this property to be
+             * included. Not available for external or attached messages.
              */
             folder?: folders.MailFolder | undefined;
             /** The message-id header of the message. */
@@ -5211,6 +5442,12 @@ declare namespace messenger {
         /** Whether all of the tag filters must apply, or any of them. */
         export type _TagsDetailMode = 'all' | 'any';
 
+        export type _GetRawOptionsDataFormat = 'File' | 'BinaryString' | 'File' | 'BinaryString';
+
+        export interface _GetRawOptions {
+            data_format: _GetRawOptionsDataFormat;
+        }
+
         export interface _QueryQueryInfo {
             /** If specified, returns only messages with or without attachments. */
             attachment?: boolean | undefined;
@@ -5228,8 +5465,8 @@ declare namespace messenger {
             /** Returns only flagged (or unflagged if false) messages. */
             flagged?: boolean | undefined;
             /**
-             * Returns only messages from the specified folder. The
-             * <permission>accountsRead</permission> permission is required.
+             * Returns only messages from the specified folder. The _accountsRead_
+             * permission is required.
              */
             folder?: folders.MailFolder | undefined;
             /** Returns only messages with a date after this value. */
@@ -5309,24 +5546,10 @@ declare namespace messenger {
         export function getFull(messageId: number): Promise<MessagePart>;
 
         /**
-         * Returns the unmodified source of a message as a binary string , which
-         * is a simple series of 8-bit values. Throws if the message could not be
-         * read, for example due to network issues. If the message contains
-         * non-ASCII characters, the body parts in the binary string cannot be
-         * read directly and must be decoded according to their character sets.
-         * Use {@link messages.getFull} to get the correctly decoded parts.
-         * Manually decoding the raw message is probably too error-prone,
-         * especially if the message contains MIME parts with different character
-         * set encodings or attachments.
-         *
-         * To get a readable version of the raw message as it appears in
-         * Thunderbird's message source view, it may be sufficient to decode the
-         * message according to the character set specified in its main
-         * content-type header (example: `text/html; charset=UTF-8`) using the
-         * following function (see MDN for supported input encodings ):
-         * [decodeBinaryString.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/decodeBinaryString.js)
+         * Returns the unmodified source of a message. Throws if the message
+         * could not be read, for example due to network issues.
          */
-        export function getRaw(messageId: number): Promise<string>;
+        export function getRaw(messageId: number, options?: _GetRawOptions): Promise<string | File>;
 
         /** Lists the attachments of a message. */
         export function listAttachments(messageId: number): Promise<MessageAttachment[]>;
@@ -5338,10 +5561,17 @@ declare namespace messenger {
         export function getAttachmentFile(messageId: number, partName: string): Promise<File>;
 
         /**
+         * Opens the specified attachment
+         *
+         * @param tabId The ID of the tab associated with the message opening.
+         */
+        export function openAttachment(messageId: number, partName: string, tabId: number): Promise<any>;
+
+        /**
          * Gets all messages that have the specified properties, or all messages
          * if no properties are specified.
          */
-        export function query(queryInfo: _QueryQueryInfo): Promise<MessageList>;
+        export function query(queryInfo?: _QueryQueryInfo): Promise<MessageList>;
 
         /**
          * Marks or unmarks a message as junk, read, flagged, or tagged. Updating
@@ -5419,8 +5649,8 @@ declare namespace messenger {
          * in the user's message. Throws if the specified tag key is used
          * already.
          *
-         * @param key Unique tag identifier (must use only alphanumeric
-         * characters).
+         * @param key Unique tag identifier (will be converted to lower case).
+         * Must not include `()<>{/%*"` or spaces.
          *
          * @param tag Human-readable tag name.
          *
@@ -5431,7 +5661,8 @@ declare namespace messenger {
         /**
          * Updates a message tag.
          *
-         * @param key Unique tag identifier.
+         * @param key Unique tag identifier (will be converted to lower case).
+         * Must not include `()<>{/%*"` or spaces.
          */
         export function updateTag(key: string, updateProperties: _UpdateTagUpdateProperties): Promise<any>;
 
@@ -5440,6 +5671,9 @@ declare namespace messenger {
          * key will not be removed from tagged messages, but they will appear
          * untagged. Recreating a deleted tag, will make all former tagged
          * messages appear tagged again.
+         *
+         * @param key Unique tag identifier (will be converted to lower case).
+         * Must not include `()<>{/%*"` or spaces.
          */
         export function deleteTag(key: string): Promise<any>;
 
@@ -5466,7 +5700,219 @@ declare namespace messenger {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/spacesToolbar.html
+     * @see https://webextension-api.thunderbird.net/en/115/sessions.html
+     */
+    export namespace sessions {
+        /* sessions functions */
+        /**
+         * Store a key/value pair associated with a given tab.
+         *
+         * @param tabId ID of the tab with which you want to associate the data.
+         * Error is thrown if ID is invalid.
+         *
+         * @param key Key that you can later use to retrieve this particular data
+         * value.
+         */
+        export function setTabValue(tabId: number, key: string, value: string): Promise<void>;
+
+        /**
+         * Retrieve a previously stored value for a given tab, given its key.
+         *
+         * @param tabId ID of the tab whose data you are trying to retrieve.
+         * Error is thrown if ID is invalid.
+         *
+         * @param key Key identifying the particular value to retrieve.
+         */
+        export function getTabValue(tabId: number, key: string): Promise<string | object | undefined>;
+
+        /**
+         * Remove a key/value pair from a given tab.
+         *
+         * @param tabId ID of the tab whose data you are trying to remove. Error
+         * is thrown if ID is invalid.
+         *
+         * @param key Key identifying the particular value to remove.
+         */
+        export function removeTabValue(tabId: number, key: string): Promise<void>;
+    }
+
+    /**
+     * Not allowed in: Content scripts, Devtools pages
+     *
+     * @see https://webextension-api.thunderbird.net/en/115/spaces.html
+     */
+    export namespace spaces {
+        /* spaces types */
+        export interface SpaceButtonProperties {
+            /**
+             * Sets the background color of the badge. Can be specified as an array
+             * of four integers in the range [0,255] that make up the RGBA color of
+             * the badge. For example, opaque red is `[255, 0, 0, 255]`. Can also be
+             * a string with an HTML color name (`red`) or a HEX color value
+             * (`#FF0000` or `#F00`). Reset when set to an empty string.
+             */
+            badgeBackgroundColor?: string | ColorArray | undefined;
+            /**
+             * Sets the badge text for the button in the spaces toolbar. The badge is
+             * displayed on top of the icon. Any number of characters can be set, but
+             * only about four can fit in the space. Removed when set to an empty
+             * string.
+             */
+            badgeText?: string | undefined;
+            /**
+             * The paths to one or more icons for the button in the spaces toolbar.
+             * Defaults to the extension icon, if set to an empty string.
+             */
+            defaultIcons?: string | _manifest.IconPath | undefined;
+            /**
+             * Specifies dark and light icons for the button in the spaces toolbar to
+             * be used with themes: The `light` icons will be used on dark
+             * backgrounds and vice versa. At least the set for _16px_ icons should
+             * be specified. The set for _32px_ icons will be used on screens with a
+             * very high pixel density, if specified.
+             */
+            themeIcons?: _manifest.ThemeIcons[] | undefined;
+            /**
+             * The title for the button in the spaces toolbar, used in the tooltip of
+             * the button and as the displayed name in the overflow menu. Defaults to
+             * the name of the extension, if set to an empty string.
+             */
+            title?: string | undefined;
+        }
+
+        /**
+         * An array of four integers in the range [0,255] that make up the RGBA
+         * color. For example, opaque red is `[255, 0, 0, 255]`.
+         */
+        export type ColorArray = [number, number, number, number];
+
+        export interface Space {
+            /** The id of the space. */
+            id: number;
+            /**
+             * The name of the space. Names are unique for a single extension, but
+             * different extensions may use the same name.
+             */
+            name: string;
+            /**
+             * Whether this space is one of the default Thunderbird spaces, or an
+             * extension space.
+             */
+            isBuiltIn: boolean;
+            /** Whether this space was created by this extension. */
+            isSelfOwned: boolean;
+            /**
+             * The id of the extension which owns the space. The _management_
+             * permission is required to include this property.
+             */
+            extensionId?: string | undefined;
+        }
+
+        export interface _QueryQueryInfo {
+            /** The id of the space. */
+            id?: number | undefined;
+            /** The name of the spaces (names are not unique). */
+            name?: string | undefined;
+            /** Spaces should be default Thunderbird spaces. */
+            isBuiltIn?: boolean | undefined;
+            /** Spaces should have been created by this extension. */
+            isSelfOwned?: boolean | undefined;
+            /**
+             * Id of the extension which should own the spaces. The _management_
+             * permission is required to be able to match against extension ids.
+             */
+            extensionId?: string | undefined;
+        }
+
+        /* spaces functions */
+        /**
+         * Creates a new space and adds its button to the spaces toolbar.
+         *
+         * @param name The name to assign to this space. May only contain
+         * alphanumeric characters and underscores. Must be unique for this
+         * extension.
+         *
+         * @param defaultUrl The default space url, loaded into a tab when the
+         * button in the spaces toolbar is clicked. Supported are `https://` and
+         * `http://` links, as well as links to WebExtension pages.
+         *
+         * @param [buttonProperties] Properties of the button for the new space.
+         */
+        export function create(
+            name: string,
+            defaultUrl: string,
+            buttonProperties?: SpaceButtonProperties,
+        ): Promise<Space>;
+
+        /**
+         * Retrieves details about the specified space.
+         *
+         * @param spaceId The id of the space.
+         */
+        export function get(spaceId: number): Promise<Space>;
+
+        /**
+         * Gets all spaces that have the specified properties, or all spaces if
+         * no properties are specified.
+         */
+        export function query(queryInfo?: _QueryQueryInfo): Promise<Space[]>;
+
+        /**
+         * Removes the specified space, closes all its tabs and removes its
+         * button from the spaces toolbar. Throws an exception if the requested
+         * space does not exist or was not created by this extension.
+         *
+         * @param spaceId The id of the space.
+         */
+        export function remove(spaceId: number): Promise<any>;
+
+        /**
+         * Updates the specified space. Throws an exception if the requested
+         * space does not exist or was not created by this extension.
+         *
+         * @param spaceId The id of the space.
+         *
+         * @param defaultUrl The default space url, loaded into a tab when the
+         * button in the spaces toolbar is clicked. Supported are `https://` and
+         * `http://` links, as well as links to WebExtension pages.
+         *
+         * @param [buttonProperties] Only specified button properties will be
+         * updated.
+         */
+        export function update(
+            spaceId: number,
+            defaultUrl: string,
+            buttonProperties?: SpaceButtonProperties,
+        ): Promise<any>;
+        /**
+         * Updates the specified space. Throws an exception if the requested
+         * space does not exist or was not created by this extension.
+         *
+         * @param spaceId The id of the space.
+         *
+         * @param [buttonProperties] Only specified button properties will be
+         * updated.
+         */
+        export function update(spaceId: number, buttonProperties?: SpaceButtonProperties): Promise<any>;
+
+        /**
+         * Opens or switches to the specified space. Throws an exception if the
+         * requested space does not exist or was not created by this extension.
+         *
+         * @param spaceId The id of the space.
+         *
+         * @param [windowId] The id of the normal window, where the space should
+         * be opened. Defaults to the most recent normal window.
+         */
+        export function open(spaceId: number, windowId?: number): Promise<tabs.Tab>;
+    }
+
+    /**
+     * Not supported on manifest versions above 2.
+     *
+     * Not allowed in: Content scripts, Devtools pages
+     *
+     * @see https://webextension-api.thunderbird.net/en/115/spacesToolbar.html
      */
     export namespace spacesToolbar {
         /* spacesToolbar types */
@@ -5530,28 +5976,44 @@ declare namespace messenger {
          * @param properties Properties of the new button. The `url` is
          * mandatory.
          */
-        export function addButton(id: string, properties: ButtonProperties): Promise<any>;
+        export function addButton(id: string, properties: ButtonProperties): Promise<number>;
 
         /**
          * Removes the specified button from the spaces toolbar. Throws an
-         * exception if the requested spaces toolbar button does not exist. If
-         * the tab of this button is currently open, it will be closed.
+         * exception if the requested spaces toolbar button does not exist or was
+         * not created by this extension. If the tab of this button is currently
+         * open, it will be closed.
          *
-         * @param id The id of the button which is to be removed. May only
-         * contain alphanumeric characters and underscores.
+         * @param id The id of the spaces toolbar button, which is to be removed.
+         * May only contain alphanumeric characters and underscores.
          */
         export function removeButton(id: string): Promise<any>;
 
         /**
          * Updates properties of the specified spaces toolbar button. Throws an
-         * exception if the requested spaces toolbar button does not exist.
+         * exception if the requested spaces toolbar button does not exist or was
+         * not created by this extension.
          *
-         * @param id The id of the button which is to be updated. May only
-         * contain alphanumeric characters and underscores.
+         * @param id The id of the spaces toolbar button, which is to be updated.
+         * May only contain alphanumeric characters and underscores.
          *
          * @param properties Only specified properties will be updated.
          */
         export function updateButton(id: string, properties: ButtonProperties): Promise<any>;
+
+        /**
+         * Trigger a click on the specified spaces toolbar button. Throws an
+         * exception if the requested spaces toolbar button does not exist or was
+         * not created by this extension.
+         *
+         * @param id The id of the spaces toolbar button. May only contain
+         * alphanumeric characters and underscores.
+         *
+         * @param [windowId] The id of the normal window, where the spaces
+         * toolbar button should be clicked. Defaults to the most recent normal
+         * window.
+         */
+        export function clickButton(id: string, windowId?: number): Promise<tabs.Tab>;
     }
 
     /**
@@ -5560,7 +6022,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/tabs.html
+     * @see https://webextension-api.thunderbird.net/en/115/tabs.html
      */
     export namespace tabs {
         /* tabs types */
@@ -5590,19 +6052,18 @@ declare namespace messenger {
             active: boolean;
             /**
              * The URL the tab is displaying. This property is only present if the
-             * extension's manifest includes the <permission>tabs</permission>
-             * permission.
+             * extension's manifest includes the _tabs_ permission.
              */
             url?: string | undefined;
             /**
              * The title of the tab. This property is only present if the extension's
-             * manifest includes the <permission>tabs</permission> permission.
+             * manifest includes the _tabs_ permission.
              */
             title?: string | undefined;
             /**
              * The URL of the tab's favicon. This property is only present if the
-             * extension's manifest includes the <permission>tabs</permission>
-             * permission. It may also be an empty string if the tab is loading.
+             * extension's manifest includes the _tabs_ permission. It may also be an
+             * empty string if the tab is loading.
              */
             favIconUrl?: string | undefined;
             /** Either `loading` or `complete`. */
@@ -5611,9 +6072,20 @@ declare namespace messenger {
             width?: number | undefined;
             /** The height of the tab in pixels. */
             height?: number | undefined;
+            /**
+             * The CookieStore id used by the tab. Either a custom id created using
+             * the contextualIdentities API , or a built-in one: `firefox-default`,
+             * `firefox-container-1`, `firefox-container-2`, `firefox-container-3`,
+             * `firefox-container-4`, `firefox-container-5`. **Note:** The naming
+             * pattern was deliberately not changed for Thunderbird, but kept for
+             * compatibility reasons.
+             */
+            cookieStoreId?: string | undefined;
             type?: _TabType | undefined;
             /** Whether the tab is a 3-pane tab. */
             mailTab?: boolean | undefined;
+            /** The id of the space. */
+            spaceId?: number | undefined;
         }
 
         /** Whether the tabs have completed loading. */
@@ -5639,9 +6111,8 @@ declare namespace messenger {
         export interface UpdateFilter {
             /**
              * A list of URLs or URL patterns. Events that cannot match any of the
-             * URLs will be filtered out. Filtering with urls requires the
-             * <permission>tabs</permission> or <permission>activeTab</permission>
-             * permission.
+             * URLs will be filtered out. Filtering with urls requires the _tabs_ or
+             * _activeTab_ permission.
              */
             urls?: string[] | undefined;
             /**
@@ -5713,6 +6184,15 @@ declare namespace messenger {
              */
             active?: boolean | undefined;
             /**
+             * The CookieStore id the new tab should use. Either a custom id created
+             * using the contextualIdentities API , or a built-in one:
+             * `firefox-default`, `firefox-container-1`, `firefox-container-2`,
+             * `firefox-container-3`, `firefox-container-4`, `firefox-container-5`.
+             * **Note:** The naming pattern was deliberately not changed for
+             * Thunderbird, but kept for compatibility reasons.
+             */
+            cookieStoreId?: string | undefined;
+            /**
              * Whether the tab should become the selected tab in the window. Defaults
              * to `true`
              *
@@ -5724,6 +6204,8 @@ declare namespace messenger {
         export interface _QueryQueryInfo {
             /** Whether the tab is a Thunderbird 3-pane tab. */
             mailTab?: boolean | undefined;
+            /** The id of the space the tabs should belong to. */
+            spaceId?: number | undefined;
             /**
              * Match tabs against the given Tab.type (see {@link tabs.Tab}). Ignored
              * if `queryInfo.mailTab` is specified.
@@ -5755,17 +6237,30 @@ declare namespace messenger {
             windowType?: WindowType | undefined;
             /** The position of the tabs within their windows. */
             index?: number | undefined;
+            /**
+             * The CookieStore id(s) used by the tabs. Either custom ids created
+             * using the contextualIdentities API , or built-in ones:
+             * `firefox-default`, `firefox-container-1`, `firefox-container-2`,
+             * `firefox-container-3`, `firefox-container-4`, `firefox-container-5`.
+             * **Note:** The naming pattern was deliberately not changed for
+             * Thunderbird, but kept for compatibility reasons.
+             */
+            cookieStoreId?: string[] | string | undefined;
         }
 
         /** Properties which should to be updated. */
         export interface _UpdateUpdateProperties {
             /**
-             * A URL to navigate the tab to. Only applicable for `content` tabs and
-             * active `mail` tabs.
+             * A URL of a page to load. If the URL points to a content page (a web
+             * page, an extension page or a registered WebExtension protocol handler
+             * page), the tab will navigate to the requested page. All other URLs
+             * will be opened externally without changing the tab. Note: This
+             * function will throw an error, if a content page is loaded into a
+             * non-content tab (its type must be either `content` or `mail`).
              */
             url?: string | undefined;
             /**
-             * Set this to `true`, if the tab should be active. Does not affect
+             * Set this to `true`, if the tab should become active. Does not affect
              * whether the window is focused (see {@link windows.update}). Setting
              * this to `false` has no effect.
              */
@@ -5776,8 +6271,8 @@ declare namespace messenger {
             /** Defaults to the window the tab is currently in. */
             windowId?: number | undefined;
             /**
-             * The position to move the window to. `-1` will place the tab at the end
-             * of the window.
+             * The position to move the tab to. `-1` will place the tab at the end of
+             * the window.
              */
             index: number;
         }
@@ -5814,6 +6309,11 @@ declare namespace messenger {
         export interface _OnActivatedActiveInfo {
             /** The ID of the tab that has become active. */
             tabId: number;
+            /**
+             * The ID of the tab that was previously active, if that tab is still
+             * open.
+             */
+            previousTabId?: number | undefined;
             /** The ID of the window the active tab changed inside of. */
             windowId: number;
         }
@@ -5874,7 +6374,14 @@ declare namespace messenger {
 
         /**
          * Creates a new content tab. Use the {@link messageDisplay_api} to open
-         * messages. Only supported in `normal` windows.
+         * messages.
+         * Only supported in `normal` windows. Same-site links in the loaded
+         * page
+         * are opened within Thunderbird, all other links are opened in the
+         * user's default browser.
+         * To override this behavior, add-ons have to register a
+         * [content script](https://bugzilla.mozilla.org/show_bug.cgi?id=1618828#c3),
+         * capture click events and handle them manually.
          *
          * @param createProperties Properties for the new tab. Defaults to an
          * empty tab, if no `url` is provided.
@@ -5892,7 +6399,7 @@ declare namespace messenger {
          * Gets all tabs that have the specified properties, or all tabs if no
          * properties are specified.
          */
-        export function query(queryInfo: _QueryQueryInfo): Promise<Tab[]>;
+        export function query(queryInfo?: _QueryQueryInfo): Promise<Tab[]>;
 
         /**
          * Modifies the properties of a tab. Properties that are not specified in
@@ -5912,16 +6419,16 @@ declare namespace messenger {
         export function update(updateProperties: _UpdateUpdateProperties): Promise<Tab>;
 
         /**
-         * Moves one or more tabs to a new position within its window, or to a
-         * new window. Note that tabs can only be moved to and from windows of
-         * type `normal`.
+         * Moves one or more tabs to a new position within its current window, or
+         * to a different window. Note that tabs can only be moved to and from
+         * windows of type `normal`.
          *
          * @param tabIds The tab or list of tabs to move.
          */
-        export function move(tabIds: number | number[], moveProperties: _MoveMoveProperties): Promise<Tab | Tab[]>;
+        export function move(tabIds: number | number[], moveProperties: _MoveMoveProperties): Promise<Tab[]>;
 
         /**
-         * Reload a tab.
+         * Reload a tab. Only applicable for tabs which display a content page.
          *
          * @param tabId The ID of the tab to reload; defaults to the selected tab
          * of the current window.
@@ -5929,7 +6436,7 @@ declare namespace messenger {
         export function reload(
             tabId: number,
             reloadProperties?: _ReloadReloadProperties,
-        ): Promise<void>; /** Reload a tab. */
+        ): Promise<void>; /** Reload a tab. Only applicable for tabs which display a content page. */
         export function reload(reloadProperties?: _ReloadReloadProperties): Promise<void>;
 
         /**
@@ -6051,7 +6558,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/theme.html
+     * @see https://webextension-api.thunderbird.net/en/115/theme.html
      */
     export namespace theme {
         /* theme types */
@@ -6113,7 +6620,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/windows.html
+     * @see https://webextension-api.thunderbird.net/en/115/windows.html
      */
     export namespace windows {
         /* windows types */
@@ -6121,14 +6628,7 @@ declare namespace messenger {
          * The type of a window. Under some circumstances a window may not be
          * assigned a type property.
          */
-        export type WindowType =
-            | 'normal'
-            | 'popup'
-            | 'panel'
-            | 'app'
-            | 'devtools'
-            | 'messageCompose'
-            | 'messageDisplay';
+        export type WindowType = 'normal' | 'popup' | 'messageCompose' | 'messageDisplay';
 
         /** The state of this window. */
         export type WindowState = 'normal' | 'minimized' | 'maximized' | 'fullscreen' | 'docked';
@@ -6182,8 +6682,7 @@ declare namespace messenger {
              * property that contains an array of {@link tabs.Tab} objects
              * representing the tabs inside the window. The {@link tabs.Tab} objects
              * only contain the `url`, `title` and `favIconUrl` properties if the
-             * extension's manifest file includes the <permission>tabs</permission>
-             * permission.
+             * extension's manifest file includes the _tabs_ permission.
              */
             populate?: boolean | undefined;
             /**
@@ -6250,6 +6749,11 @@ declare namespace messenger {
              * `window.close()`.
              */
             allowScriptsToClose?: boolean | undefined;
+            /**
+             * The CookieStoreId to use for all tabs that were created when the
+             * window is opened.
+             */
+            cookieStoreId?: string | undefined;
             /** A string to add to the beginning of the window title. */
             titlePreface?: string | undefined;
         }
@@ -6317,6 +6821,16 @@ declare namespace messenger {
         /**
          * Creates (opens) a new window with any optional sizing, position or
          * default URL provided.
+         * When loading a page into a popup window, same-site links are opened
+         * within the same window,
+         * all other links are opened in the user's default browser. To override
+         * this behavior,
+         * add-ons have to register a
+         * [content script](https://bugzilla.mozilla.org/show_bug.cgi?id=1618828#c3),
+         * capture click events and handle them manually. Same-site links with
+         * targets other than
+         * `_self` are opened in a new tab in the most recent "normal"
+         * Thunderbird window.
          */
         export function create(createData?: _CreateCreateData): Promise<Window>;
 
@@ -9576,6 +10090,14 @@ declare namespace messenger {
          */
         export const managed: StorageArea;
 
+        /**
+         * Items in the `session` storage area are kept in memory, and only until
+         * the either browser or extension is closed or reloaded.
+         *
+         * Not allowed in: Content scripts
+         */
+        export const session: StorageArea;
+
         /* storage events */
         /**
          * Fired when one or more items change.
@@ -10483,6 +11005,17 @@ declare namespace messenger {
              * is "weak"
              */
             weaknessReasons?: TransportWeaknessReasons[] | undefined;
+            /** True if the TLS connection used Encrypted Client Hello. */
+            usedEch?: boolean | undefined;
+            /** True if the TLS connection used Delegated Credentials. */
+            usedDelegatedCredentials?: boolean | undefined;
+            /** True if the TLS connection made OCSP requests. */
+            usedOcsp?: boolean | undefined;
+            /**
+             * True if the TLS connection used a privacy-preserving DNS transport
+             * like DNS-over-HTTPS.
+             */
+            usedPrivateDns?: boolean | undefined;
         }
 
         /** Contains data uploaded in a URL request. */
@@ -11417,7 +11950,7 @@ declare namespace messenger {
  * to use `messenger` instead of `browser`, to remind yourself of the subtle
  * differences between the Thunderbird, Firefox, and generic WebExtension APIs.
  *
- * @version Thunderbird 109.0
+ * @version Thunderbird 115.10
  */
 declare namespace browser {
     /**
@@ -11429,70 +11962,22 @@ declare namespace browser {
         /* _manifest types */
         export type OptionalPermission = OptionalPermissionNoPrompt | _OptionalPermission;
 
-        export interface ActionManifest {
-            /**
-             * The label of the action button, defaults to its title. Can be set to
-             * an empty string to not display any label. If the containing toolbar is
-             * configured to display text only, the title will be used as fallback.
-             */
-            default_label?: string | undefined;
-            /**
-             * The title of the action button. This shows up in the tooltip and the
-             * label. Defaults to the add-on name.
-             */
-            default_title?: string | undefined;
-            /** The paths to one or more icons for the action button. */
-            default_icon?: IconPath | undefined;
-            /**
-             * Specifies dark and light icons to be used with themes. The `light`
-             * icon is used on dark backgrounds and vice versa. **Note:** The default
-             * theme uses the `default_icon` for light backgrounds (if specified).
-             */
-            theme_icons?: ThemeIcons[] | undefined;
-            /**
-             * The html document to be opened as a popup when the user clicks on the
-             * action button.
-             */
-            default_popup?: string | undefined;
-            /**
-             * Enable browser styles. See the MDN documentation on browser styles for
-             * more information.
-             */
-            browser_style?: boolean | undefined;
-            /**
-             * Defines the location the action button will appear. The default
-             * location is `maintoolbar`.
-             */
-            default_area?: _ActionManifestDefaultArea | undefined;
-            /**
-             * Defines the windows, the action button should appear in. Defaults to
-             * showing it only in the `normal` Thunderbird window, but can also be
-             * shown in the `messageDisplay` window.
-             */
-            default_windows?: _ActionManifestDefaultWindows[] | undefined;
-        }
-
         /** Represents a WebExtension manifest.json file */
         export interface WebExtensionManifest {
             /** Needs at least manifest version 3. */
-            action?: ActionManifest | undefined;
+            action?: _WebExtensionManifestAction | undefined;
             /** Not supported on manifest versions above 2. */
-            browser_action?: ActionManifest | undefined;
+            browser_action?: _WebExtensionManifestBrowserAction | undefined;
             chrome_settings_overrides?: _WebExtensionManifestChromeSettingsOverrides | undefined;
             cloud_file?: _WebExtensionManifestCloudFile | undefined;
-            /**
-             * A _dictionary object_ defining one or more commands as _name-value_
-             * pairs, the _name_ being the name of the command and the _value_ being
-             * a {@link commands.CommandsShortcut}. The _name_ may also be one of the
-             * following built-in special shortcuts:
-             *
-             * - `_execute_browser_action`
-             * - `_execute_compose_action`
-             * - `_execute_message_display_action`
-             *   Example:
-             *   [manifest.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/commands/manifest.json)
-             */
-            commands?: { [key: string]: _WebExtensionManifestCommands } | undefined;
+            commands?:
+                | {
+                      [key: string]: {
+                          suggested_key?: _UndefinedSuggestedKey | undefined;
+                          description?: string | undefined;
+                      };
+                  }
+                | undefined;
             compose_action?: _WebExtensionManifestComposeAction | undefined;
             message_display_action?: _WebExtensionManifestMessageDisplayAction | undefined;
             /**
@@ -11507,7 +11992,6 @@ declare namespace browser {
              * be used in static and dynamic themes.
              */
             theme_experiment?: ThemeExperiment | undefined;
-            /** Needs at least manifest version 3. */
             declarative_net_request?: _WebExtensionManifestDeclarativeNetRequest | undefined;
             experiment_apis?: { [key: string]: experiments.ExperimentAPI } | undefined;
             /** A list of protocol handler definitions. */
@@ -11526,6 +12010,7 @@ declare namespace browser {
                   }
                 | {
                       scripts: ExtensionURL[];
+                      type?: _UndefinedType | undefined;
                       /** Not supported on manifest versions above 2. */
                       persistent?: boolean | undefined;
                   }
@@ -11567,7 +12052,7 @@ declare namespace browser {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
@@ -11712,7 +12197,7 @@ declare namespace browser {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
@@ -11726,7 +12211,6 @@ declare namespace browser {
 
         /** Represents a WebExtension language pack manifest.json file */
         export interface WebExtensionLangpackManifest {
-            homepage_url?: string | undefined;
             langpack_id: string;
             languages: _WebExtensionLangpackManifestLanguages;
             sources?: _WebExtensionLangpackManifestSources | undefined;
@@ -11737,20 +12221,20 @@ declare namespace browser {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
             description?: string | undefined;
             author?: string | undefined;
             version: string;
+            homepage_url?: string | undefined;
             install_origins?: string[] | undefined;
             developer?: _WebExtensionLangpackManifestDeveloper | undefined;
         }
 
         /** Represents a WebExtension dictionary manifest.json file */
         export interface WebExtensionDictionaryManifest {
-            homepage_url?: string | undefined;
             dictionaries: _WebExtensionDictionaryManifestDictionaries;
             manifest_version: number;
             /**
@@ -11759,13 +12243,14 @@ declare namespace browser {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
             description?: string | undefined;
             author?: string | undefined;
             version: string;
+            homepage_url?: string | undefined;
             install_origins?: string[] | undefined;
             developer?: _WebExtensionDictionaryManifestDeveloper | undefined;
         }
@@ -11781,7 +12266,7 @@ declare namespace browser {
              *
              * Not supported on manifest versions above 2.
              */
-            applications?: BrowserSpecificSettings | undefined;
+            applications?: DeprecatedApplications | undefined;
             browser_specific_settings?: BrowserSpecificSettings | undefined;
             name: string;
             short_name?: string | undefined;
@@ -11824,8 +12309,20 @@ declare namespace browser {
             strict_max_version?: string | undefined;
         }
 
+        export interface GeckoAndroidSpecificProperties {
+            strict_min_version?: string | undefined;
+            strict_max_version?: string | undefined;
+        }
+
+        export interface DeprecatedApplications {
+            gecko?: FirefoxSpecificProperties | undefined;
+            /** @deprecated Unsupported on Firefox at this time. */
+            gecko_android?: GeckoAndroidSpecificProperties | undefined;
+        }
+
         export interface BrowserSpecificSettings {
             gecko?: FirefoxSpecificProperties | undefined;
+            gecko_android?: GeckoAndroidSpecificProperties | undefined;
         }
 
         export type MatchPattern = MatchPatternRestricted | MatchPatternUnestricted | '<all_urls>';
@@ -11915,10 +12412,12 @@ declare namespace browser {
         export type _OptionalPermission =
             | 'accountsRead'
             | 'addressBooks'
+            | 'sensitiveDataUpload'
             | 'compose'
             | 'compose.save'
             | 'compose.send'
             | 'messagesModify'
+            | 'sensitiveDataUpload'
             | 'accountsFolders'
             | 'accountsIdentities'
             | 'messagesDelete'
@@ -11926,10 +12425,12 @@ declare namespace browser {
             | 'messagesMove'
             | 'messagesRead'
             | 'messagesTags'
+            | 'sensitiveDataUpload'
             | 'tabs'
             | 'tabHide'
             | 'browserSettings'
             | 'browsingData'
+            | 'declarativeNetRequestFeedback'
             | 'downloads'
             | 'downloads.open'
             | 'management'
@@ -11943,13 +12444,143 @@ declare namespace browser {
             | 'nativeMessaging'
             | 'webNavigation';
 
-        /**
-         * Defines the location the action button will appear. The default
-         * location is `maintoolbar`.
-         */
-        export type _ActionManifestDefaultArea = 'maintoolbar' | 'tabstoolbar';
+        export type _WebExtensionManifestActionDefaultWindows = 'normal' | 'messageDisplay';
 
-        export type _ActionManifestDefaultWindows = 'normal' | 'messageDisplay';
+        export type _WebExtensionManifestActionAllowedSpaces =
+            | 'mail'
+            | 'addressbook'
+            | 'calendar'
+            | 'tasks'
+            | 'chat'
+            | 'settings'
+            | 'default';
+
+        /** Specifies the type of the button. Default type is `button`. */
+        export type _WebExtensionManifestActionType = 'button' | 'menu';
+
+        /** Needs at least manifest version 3. */
+        export interface _WebExtensionManifestAction {
+            /**
+             * The label of the action button, defaults to its title. Can be set to
+             * an empty string to not display any label. If the containing toolbar is
+             * configured to display text only, the title will be used as fallback.
+             */
+            default_label?: string | undefined;
+            /**
+             * The title of the action button. This shows up in the tooltip and the
+             * label. Defaults to the add-on name.
+             */
+            default_title?: string | undefined;
+            /** The paths to one or more icons for the action button. */
+            default_icon?: IconPath | undefined;
+            /**
+             * Specifies dark and light icons to be used with themes. The `light`
+             * icon is used on dark backgrounds and vice versa. **Note:** The default
+             * theme uses the `default_icon` for light backgrounds (if specified).
+             */
+            theme_icons?: ThemeIcons[] | undefined;
+            /**
+             * The html document to be opened as a popup when the user clicks on the
+             * action button. Ignored for action buttons with type `menu`.
+             */
+            default_popup?: string | undefined;
+            /**
+             * Enable browser styles. See the MDN documentation on browser styles for
+             * more information.
+             */
+            browser_style?: boolean | undefined;
+            /**
+             * Defines the windows, the action button should appear in. Defaults to
+             * showing it only in the `normal` Thunderbird window, but can also be
+             * shown in the `messageDisplay` window.
+             */
+            default_windows?: _WebExtensionManifestActionDefaultWindows[] | undefined;
+            /**
+             * Defines for which spaces the action button will be added to
+             * Thunderbird's unified toolbar. Defaults to only allowing the action in
+             * the `mail` space. The `default` space is for tabs that don't belong to
+             * any space. If this is an empty array, the action button is shown in
+             * all spaces.
+             */
+            allowed_spaces?: _WebExtensionManifestActionAllowedSpaces[] | undefined;
+            /** Specifies the type of the button. Default type is `button`. */
+            type?: _WebExtensionManifestActionType | undefined;
+        }
+
+        /**
+         * Defines the location the browserAction button will appear. Deprecated
+         * and ignored. Replaced by `allowed_spaces`
+         */
+        export type _WebExtensionManifestBrowserActionDefaultArea = 'maintoolbar' | 'tabstoolbar';
+
+        export type _WebExtensionManifestBrowserActionDefaultWindows = 'normal' | 'messageDisplay';
+
+        export type _WebExtensionManifestBrowserActionAllowedSpaces =
+            | 'mail'
+            | 'addressbook'
+            | 'calendar'
+            | 'tasks'
+            | 'chat'
+            | 'settings'
+            | 'default';
+
+        /** Specifies the type of the button. Default type is `button`. */
+        export type _WebExtensionManifestBrowserActionType = 'button' | 'menu';
+
+        /** Not supported on manifest versions above 2. */
+        export interface _WebExtensionManifestBrowserAction {
+            /**
+             * The label of the browserAction button, defaults to its title. Can be
+             * set to an empty string to not display any label. If the containing
+             * toolbar is configured to display text only, the title will be used as
+             * fallback.
+             */
+            default_label?: string | undefined;
+            /**
+             * The title of the browserAction button. This shows up in the tooltip
+             * and the label. Defaults to the add-on name.
+             */
+            default_title?: string | undefined;
+            /** The paths to one or more icons for the browserAction button. */
+            default_icon?: IconPath | undefined;
+            /**
+             * Specifies dark and light icons to be used with themes. The `light`
+             * icon is used on dark backgrounds and vice versa. **Note:** The default
+             * theme uses the `default_icon` for light backgrounds (if specified).
+             */
+            theme_icons?: ThemeIcons[] | undefined;
+            /**
+             * The html document to be opened as a popup when the user clicks on the
+             * browserAction button. Ignored for action buttons with type `menu`.
+             */
+            default_popup?: string | undefined;
+            /**
+             * Enable browser styles. See the MDN documentation on browser styles for
+             * more information.
+             */
+            browser_style?: boolean | undefined;
+            /**
+             * Defines the location the browserAction button will appear. Deprecated
+             * and ignored. Replaced by `allowed_spaces`
+             */
+            default_area?: _WebExtensionManifestBrowserActionDefaultArea | undefined;
+            /**
+             * Defines the windows, the browserAction button should appear in.
+             * Defaults to showing it only in the `normal` Thunderbird window, but
+             * can also be shown in the `messageDisplay` window.
+             */
+            default_windows?: _WebExtensionManifestBrowserActionDefaultWindows[] | undefined;
+            /**
+             * Defines for which spaces the browserAction button will be added to
+             * Thunderbird's unified toolbar. Defaults to only allowing the
+             * browserAction in the `mail` space. The `default` space is for tabs
+             * that don't belong to any space. If this is an empty array, the
+             * browserAction button is shown in all spaces.
+             */
+            allowed_spaces?: _WebExtensionManifestBrowserActionAllowedSpaces[] | undefined;
+            /** Specifies the type of the button. Default type is `button`. */
+            type?: _WebExtensionManifestBrowserActionType | undefined;
+        }
 
         /** The type of param can be either "purpose" or "pref". */
         export type _WebExtensionManifestChromeSettingsOverridesSearchProviderParamsCondition = 'purpose' | 'pref';
@@ -12080,7 +12711,7 @@ declare namespace browser {
             service_url?: string | undefined;
         }
 
-        export interface _WebExtensionManifestCommandsSuggestedKey {
+        export interface _UndefinedSuggestedKey {
             default?: KeyName | undefined;
             mac?: KeyName | undefined;
             linux?: KeyName | undefined;
@@ -12092,16 +12723,14 @@ declare namespace browser {
             additionalProperties?: string | undefined;
         }
 
-        export interface _WebExtensionManifestCommands {
-            suggested_key?: _WebExtensionManifestCommandsSuggestedKey | undefined;
-            description?: string | undefined;
-        }
-
         /**
          * Defines the location the composeAction button will appear. The default
          * location is `maintoolbar`.
          */
         export type _WebExtensionManifestComposeActionDefaultArea = 'maintoolbar' | 'formattoolbar';
+
+        /** Specifies the type of the button. Default type is `button`. */
+        export type _WebExtensionManifestComposeActionType = 'button' | 'menu';
 
         export interface _WebExtensionManifestComposeAction {
             /**
@@ -12126,7 +12755,7 @@ declare namespace browser {
             theme_icons?: ThemeIcons[] | undefined;
             /**
              * The html document to be opened as a popup when the user clicks on the
-             * composeAction button.
+             * composeAction button. Ignored for action buttons with type `menu`.
              */
             default_popup?: string | undefined;
             /**
@@ -12139,7 +12768,12 @@ declare namespace browser {
              * location is `maintoolbar`.
              */
             default_area?: _WebExtensionManifestComposeActionDefaultArea | undefined;
+            /** Specifies the type of the button. Default type is `button`. */
+            type?: _WebExtensionManifestComposeActionType | undefined;
         }
+
+        /** Specifies the type of the button. Default type is `button`. */
+        export type _WebExtensionManifestMessageDisplayActionType = 'button' | 'menu';
 
         export interface _WebExtensionManifestMessageDisplayAction {
             /**
@@ -12164,7 +12798,8 @@ declare namespace browser {
             theme_icons?: ThemeIcons[] | undefined;
             /**
              * The html document to be opened as a popup when the user clicks on the
-             * messageDisplayAction button.
+             * messageDisplayAction button. Ignored for action buttons with type
+             * `menu`.
              */
             default_popup?: string | undefined;
             /**
@@ -12174,6 +12809,8 @@ declare namespace browser {
             browser_style?: boolean | undefined;
             /** Currently unused. */
             default_area?: string | undefined;
+            /** Specifies the type of the button. Default type is `button`. */
+            type?: _WebExtensionManifestMessageDisplayActionType | undefined;
         }
 
         export interface _WebExtensionManifestDeclarativeNetRequestRuleResources {
@@ -12188,7 +12825,6 @@ declare namespace browser {
             path: ExtensionURL;
         }
 
-        /** Needs at least manifest version 3. */
         export interface _WebExtensionManifestDeclarativeNetRequest {
             rule_resources: _WebExtensionManifestDeclarativeNetRequestRuleResources[];
         }
@@ -12199,9 +12835,18 @@ declare namespace browser {
 
         export type _WebExtensionManifestIncognito = 'not_allowed' | 'spanning';
 
+        export type _UndefinedType = 'module' | 'classic';
+
         export interface _WebExtensionManifestOptionsUi {
             page: ExtensionURL;
+            /** Defaults to true in Manifest V2; Deprecated in Manifest V3. */
             browser_style?: boolean | undefined;
+            /**
+             * chrome_style is ignored in Firefox. Its replacement (browser_style)
+             * has been deprecated.
+             *
+             * Not supported on manifest versions above 2.
+             */
             chrome_style?: boolean | undefined;
             open_in_tab?: boolean | undefined;
         }
@@ -12210,6 +12855,7 @@ declare namespace browser {
             default_title?: string | undefined;
             default_icon?: IconPath | undefined;
             default_popup?: string | undefined;
+            /** Deprecated in Manifest V3. */
             browser_style?: boolean | undefined;
             show_matches?: MatchPattern[] | undefined;
             hide_matches?: MatchPatternRestricted[] | undefined;
@@ -12251,7 +12897,6 @@ declare namespace browser {
             | 'theme'
             | 'captivePortal'
             | 'contextualIdentities'
-            | 'declarativeNetRequestFeedback'
             | 'declarativeNetRequestWithHostAccess'
             | 'dns'
             | 'geckoProfiler'
@@ -12268,6 +12913,7 @@ declare namespace browser {
             | 'scripting'
             | 'webRequest'
             | 'webRequestBlocking'
+            | 'webRequestFilterResponse'
             | 'webRequestFilterResponse.serviceWorkerScript';
 
         /**
@@ -12564,7 +13210,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/accounts.html
+     * @see https://webextension-api.thunderbird.net/en/115/accounts.html
      */
     export namespace accounts {
         /* accounts types */
@@ -12666,7 +13312,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.html
+     * @see https://webextension-api.thunderbird.net/en/115/addressBooks.html
      */
     export namespace addressBooks {
         /* addressBooks types */
@@ -12707,7 +13353,7 @@ declare namespace browser {
 
         /* addressBooks functions */
         /** Opens the address book user interface. */
-        export function openUI(): Promise<any>;
+        export function openUI(): Promise<tabs.Tab>;
 
         /** Closes the address book user interface. */
         export function closeUI(): Promise<any>;
@@ -12757,7 +13403,7 @@ declare namespace browser {
          *
          * Not allowed in: Content scripts, Devtools pages
          *
-         * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.provider.html
+         * @see https://webextension-api.thunderbird.net/en/115/addressBooks.provider.html
          */
         export namespace provider {
             /**
@@ -12827,7 +13473,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/contacts.html
+     * @see https://webextension-api.thunderbird.net/en/115/contacts.html
      */
     export namespace contacts {
         /* contacts types */
@@ -12991,7 +13637,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/mailingLists.html
+     * @see https://webextension-api.thunderbird.net/en/115/mailingLists.html
      */
     export namespace mailingLists {
         /* mailingLists types */
@@ -13081,9 +13727,9 @@ declare namespace browser {
     }
 
     /**
-     * Use an action to put a button in the mail window toolbar. In addition
-     * to its icon, an action button can also have a tooltip, a badge, and a
-     * popup.
+     * Use the action API to add a button to Thunderbird's unified toolbar.
+     * In addition to its icon, an action button can also have a tooltip, a
+     * badge, and a popup.
      *
      * Manifest keys: `action`, `browser_action`
      *
@@ -13317,6 +13963,12 @@ declare namespace browser {
             windowId?: number | undefined;
         }
 
+        /** An object with information about the popup to open. */
+        export interface _OpenPopupOptions {
+            /** Defaults to the current window. */
+            windowId?: number | undefined;
+        }
+
         /* action functions */
         /**
          * Sets the title of the action button. Is used as tooltip and as the
@@ -13369,8 +14021,11 @@ declare namespace browser {
         export function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
 
         /**
-         * Enables the action button for a tab. By default, an action button is
-         * enabled.
+         * Enables the action button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well. By
+         * default, an action button is enabled.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * action button.
@@ -13378,7 +14033,10 @@ declare namespace browser {
         export function enable(tabId?: number): Promise<void>;
 
         /**
-         * Disables the action button for a tab.
+         * Disables the action button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * action button.
@@ -13388,8 +14046,15 @@ declare namespace browser {
         /** Checks whether the action button is enabled. */
         export function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
 
-        /** Opens the action's popup window in the active window. */
-        export function openPopup(): Promise<boolean>;
+        /**
+         * Opens the action's popup window in the specified window. Defaults to
+         * the current window. Returns false if the popup could not be opened
+         * because the action has no popup, is of type `menu`, is disabled or has
+         * been removed from the toolbar.
+         *
+         * @param [options] An object with information about the popup to open.
+         */
+        export function openPopup(options?: _OpenPopupOptions): Promise<boolean>;
 
         /* action events */
         /**
@@ -13401,6 +14066,10 @@ declare namespace browser {
     }
 
     /**
+     * Use the browserAction API to add a button to Thunderbird's unified
+     * toolbar. In addition to its icon, a browserAction button can also have
+     * a tooltip, a badge, and a popup.
+     *
      * Manifest keys: `action`, `browser_action`
      *
      * Not supported on manifest versions above 2.
@@ -13633,6 +14302,12 @@ declare namespace browser {
             windowId?: number | undefined;
         }
 
+        /** An object with information about the popup to open. */
+        export interface _OpenPopupOptions {
+            /** Defaults to the current window. */
+            windowId?: number | undefined;
+        }
+
         /* browserAction functions */
         /**
          * Sets the title of the action button. Is used as tooltip and as the
@@ -13685,8 +14360,11 @@ declare namespace browser {
         export function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
 
         /**
-         * Enables the action button for a tab. By default, an action button is
-         * enabled.
+         * Enables the action button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well. By
+         * default, an action button is enabled.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * action button.
@@ -13694,7 +14372,10 @@ declare namespace browser {
         export function enable(tabId?: number): Promise<void>;
 
         /**
-         * Disables the action button for a tab.
+         * Disables the action button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * action button.
@@ -13704,8 +14385,15 @@ declare namespace browser {
         /** Checks whether the action button is enabled. */
         export function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
 
-        /** Opens the action's popup window in the active window. */
-        export function openPopup(): Promise<boolean>;
+        /**
+         * Opens the action's popup window in the specified window. Defaults to
+         * the current window. Returns false if the popup could not be opened
+         * because the action has no popup, is of type `menu`, is disabled or has
+         * been removed from the toolbar.
+         *
+         * @param [options] An object with information about the popup to open.
+         */
+        export function openPopup(options?: _OpenPopupOptions): Promise<boolean>;
 
         /* browserAction events */
         /**
@@ -13721,7 +14409,7 @@ declare namespace browser {
      *
      * Not allowed in: Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/cloudFile.html
+     * @see https://webextension-api.thunderbird.net/en/115/cloudFile.html
      */
     export namespace cloudFile {
         /* cloudFile types */
@@ -14025,7 +14713,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/commands.html
+     * @see https://webextension-api.thunderbird.net/en/115/commands.html
      */
     export namespace commands {
         /* commands types */
@@ -14051,6 +14739,18 @@ declare namespace browser {
              * error.
              */
             shortcut?: string | undefined;
+        }
+
+        export interface _OnChangedChangeInfo {
+            /** The name of the shortcut. */
+            name: string;
+            /** The new shortcut active for this command, or blank if not active. */
+            newShortcut: string;
+            /**
+             * The old shortcut which is no longer active for this command, or blank
+             * if the shortcut was previously inactive.
+             */
+            oldShortcut: string;
         }
 
         /* commands functions */
@@ -14083,12 +14783,15 @@ declare namespace browser {
          * @param tab The details of the active tab while the command occurred.
          */
         export const onCommand: WebExtEvent<(command: string, tab: tabs.Tab) => void>;
+
+        /** Fired when a registered command's shortcut is changed. */
+        export const onChanged: WebExtEvent<(changeInfo: _OnChangedChangeInfo) => void>;
     }
 
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/compose.html
+     * @see https://webextension-api.thunderbird.net/en/115/compose.html
      */
     export namespace compose {
         /* compose types */
@@ -14128,9 +14831,8 @@ declare namespace browser {
              * [accounts](https://webextension-api.thunderbird.net/en/stable/accounts.html)
              * API. The settings from the identity will be used in the composed
              * message. If `replyTo` is also specified, the `replyTo` property of the
-             * identity is overridden. The permission
-             * <permission>accountsRead</permission> is required to include the
-             * `identityId`.
+             * identity is overridden. The permission _accountsRead_ is required to
+             * include the `identityId`.
              */
             identityId?: string | undefined;
             /**
@@ -14164,6 +14866,7 @@ declare namespace browser {
             additionalFccFolder?: folders.MailFolder | '' | undefined;
             replyTo?: ComposeRecipientList | undefined;
             followupTo?: ComposeRecipientList | undefined;
+            /** A single newsgroup name or an array of newsgroup names. */
             newsgroups?: string | string[] | undefined;
             /**
              * The id of the original message (in case of draft, template, forward or
@@ -14507,14 +15210,19 @@ declare namespace browser {
         export function getComposeDetails(tabId: number): Promise<ComposeDetails>;
 
         /**
-         * Updates the compose window. Only fields that are to be changed should
-         * be specified. Currently only a limited amount of information can be
-         * set, more will be added in later versions.
+         * Updates the compose window. The properties of the given {@link compose.ComposeDetails}
+         * object will be used to overwrite the current
+         * values of the specified compose window, so only properties that are to
+         * be changed should be included.
+         *
+         * When updating any of the array properties (`customHeaders` and most
+         * address fields), make sure to first get the current values to not
+         * accidentally remove all existing entries when setting the new value.
          *
          * **Note:** The compose format of an existing compose window cannot be
          * changed. Since Thunderbird 98, setting conflicting values for
          * `details.body`, `details.plainTextBody` or `details.isPlaintext` no
-         * longer throw an exception, instead the compose window chooses the
+         * longer throws an exception, instead the compose window chooses the
          * matching `details.body` or `details.plainTextBody` value and ignores
          * the other.
          */
@@ -14658,7 +15366,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/composeAction.html
+     * @see https://webextension-api.thunderbird.net/en/115/composeAction.html
      */
     export namespace composeAction {
         /* composeAction types */
@@ -14884,6 +15592,12 @@ declare namespace browser {
             windowId?: number | undefined;
         }
 
+        /** An object with information about the popup to open. */
+        export interface _OpenPopupOptions {
+            /** Defaults to the current window. */
+            windowId?: number | undefined;
+        }
+
         /* composeAction functions */
         /**
          * Sets the title of the composeAction button. Is used as tooltip and as
@@ -14936,8 +15650,11 @@ declare namespace browser {
         export function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
 
         /**
-         * Enables the composeAction button for a tab. By default, a
-         * composeAction button is enabled.
+         * Enables the composeAction button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well. By
+         * default, a composeAction button is enabled.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * composeAction button.
@@ -14945,7 +15662,10 @@ declare namespace browser {
         export function enable(tabId?: number): Promise<void>;
 
         /**
-         * Disables the composeAction button for a tab.
+         * Disables the composeAction button for a specific tab (if a `tabId` is
+         * provided), or for all tabs which do not have a custom enable state.
+         * Once the enable state of a tab has been updated individually, all
+         * further changes to its state have to be done individually as well.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * composeAction button.
@@ -14955,8 +15675,15 @@ declare namespace browser {
         /** Checks whether the composeAction button is enabled. */
         export function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
 
-        /** Opens the action's popup window in the active window. */
-        export function openPopup(): Promise<any>;
+        /**
+         * Opens the action's popup window in the specified window. Defaults to
+         * the current window. Returns false if the popup could not be opened
+         * because the action has no popup, is of type `menu`, is disabled or has
+         * been removed from the toolbar.
+         *
+         * @param [options] An object with information about the popup to open.
+         */
+        export function openPopup(options?: _OpenPopupOptions): Promise<boolean>;
 
         /* composeAction events */
         /**
@@ -14972,7 +15699,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/composeScripts.html
+     * @see https://webextension-api.thunderbird.net/en/115/composeScripts.html
      */
     export namespace composeScripts {
         /* composeScripts types */
@@ -15000,7 +15727,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayScripts.html
+     * @see https://webextension-api.thunderbird.net/en/115/messageDisplayScripts.html
      */
     export namespace messageDisplayScripts {
         /* messageDisplayScripts types */
@@ -15031,7 +15758,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/folders.html
+     * @see https://webextension-api.thunderbird.net/en/115/folders.html
      */
     export namespace folders {
         /* folders types */
@@ -15173,7 +15900,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/identities.html
+     * @see https://webextension-api.thunderbird.net/en/115/identities.html
      */
     export namespace identities {
         /* identities types */
@@ -15266,7 +15993,7 @@ declare namespace browser {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/mailTabs.html
+     * @see https://webextension-api.thunderbird.net/en/115/mailTabs.html
      */
     export namespace mailTabs {
         /* mailTabs types */
@@ -15289,8 +16016,8 @@ declare namespace browser {
             folderPaneVisible?: boolean | undefined;
             messagePaneVisible?: boolean | undefined;
             /**
-             * The <permission>accountsRead</permission> permission is required for
-             * this property to be included.
+             * The _accountsRead_ permission is required for this property to be
+             * included.
              */
             displayedFolder?: folders.MailFolder | undefined;
         }
@@ -15399,7 +16126,8 @@ declare namespace browser {
         export interface _UpdateUpdateProperties {
             /**
              * Sets the folder displayed in the tab. The extension must have the
-             * <permission>accountsRead</permission> permission to do this.
+             * _accountsRead_ permission to do this. The previous message selection
+             * in the given folder will be restored.
              */
             displayedFolder?: folders.MailFolder | undefined;
             /** Sorts the list of messages. `sortOrder` must also be given. */
@@ -15441,7 +16169,7 @@ declare namespace browser {
          * Gets all mail tabs that have the specified properties, or all mail
          * tabs if no properties are specified.
          */
-        export function query(queryInfo: _QueryQueryInfo): Promise<MailTab[]>;
+        export function query(queryInfo?: _QueryQueryInfo): Promise<MailTab[]>;
 
         /**
          * Get the properties of a mail tab.
@@ -15522,13 +16250,13 @@ declare namespace browser {
     }
 
     /**
-     * The menus API allows to add items to Thunderbirds menus. You can
+     * The menus API allows to add items to Thunderbird's menus. You can
      * choose what types of objects your context menu additions apply to,
      * such as images, hyperlinks, and pages.
      *
      * Permissions: `menus`, `menus`
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/menus.html
+     * @see https://webextension-api.thunderbird.net/en/115/menus.html
      */
     export namespace menus {
         /* menus types */
@@ -15538,27 +16266,7 @@ declare namespace browser {
          * and `tools_menu`. More information about each context can be found in
          * the Supported UI Elements article on developer.thunderbird.net.
          */
-        export type ContextType =
-            | 'all'
-            | 'page'
-            | 'frame'
-            | 'selection'
-            | 'link'
-            | 'editable'
-            | 'password'
-            | 'image'
-            | 'video'
-            | 'audio'
-            | 'browser_action'
-            | 'compose_action'
-            | 'message_display_action'
-            | 'tab'
-            | 'message_list'
-            | 'folder_pane'
-            | 'compose_attachments'
-            | 'message_attachments'
-            | 'all_message_attachments'
-            | 'tools_menu';
+        export type ContextType = _ContextType;
 
         /** The type of menu item. */
         export type ItemType = 'normal' | 'checkbox' | 'radio' | 'separator';
@@ -15631,33 +16339,28 @@ declare namespace browser {
             fieldId?: _OnShowDataFieldId | undefined;
             /**
              * The selected messages, if the context menu was opened in the message
-             * list. The <permission>messagesRead</permission> permission is
-             * required.
+             * list. The _messagesRead_ permission is required.
              */
             selectedMessages?: messages.MessageList | undefined;
             /**
              * The displayed folder, if the context menu was opened in the message
-             * list. The <permission>accountsRead</permission> permission is
-             * required.
+             * list. The _accountsRead_ permission is required.
              */
             displayedFolder?: folders.MailFolder | undefined;
             /**
              * The selected folder, if the context menu was opened in the folder
-             * pane. The <permission>accountsRead</permission> permission is
-             * required.
+             * pane. The _accountsRead_ permission is required.
              */
             selectedFolder?: folders.MailFolder | undefined;
             /**
              * The selected account, if the context menu was opened on an account
-             * entry in the folder pane. The <permission>accountsRead</permission>
-             * permission is required.
+             * entry in the folder pane. The _accountsRead_ permission is required.
              */
             selectedAccount?: accounts.MailAccount | undefined;
             /**
-             * The selected attachments. The <permission>compose</permission>
-             * permission is required to return attachments of a message being
-             * composed. The <permission>messagesRead</permission> permission is
-             * required to return attachments of displayed messages.
+             * The selected attachments. The _compose_ permission is required to
+             * return attachments of a message being composed. The _messagesRead_
+             * permission is required to return attachments of displayed messages.
              */
             attachments?: Array<compose.ComposeAttachment | messages.MessageAttachment> | undefined;
         }
@@ -15730,36 +16433,85 @@ declare namespace browser {
             fieldId?: _OnClickDataFieldId | undefined;
             /**
              * The selected messages, if the context menu was opened in the message
-             * list. The <permission>messagesRead</permission> permission is
-             * required.
+             * list. The _messagesRead_ permission is required.
              */
             selectedMessages?: messages.MessageList | undefined;
             /**
              * The displayed folder, if the context menu was opened in the message
-             * list. The <permission>accountsRead</permission> permission is
-             * required.
+             * list. The _accountsRead_ permission is required.
              */
             displayedFolder?: folders.MailFolder | undefined;
             /**
              * The selected folder, if the context menu was opened in the folder
-             * pane. The <permission>accountsRead</permission> permission is
-             * required.
+             * pane. The _accountsRead_ permission is required.
              */
             selectedFolder?: folders.MailFolder | undefined;
             /**
              * The selected account, if the context menu was opened on an account
-             * entry in the folder pane. The <permission>accountsRead</permission>
-             * permission is required.
+             * entry in the folder pane. The _accountsRead_ permission is required.
              */
             selectedAccount?: accounts.MailAccount | undefined;
             /**
-             * The selected attachments. The <permission>compose</permission>
-             * permission is required to return attachments of a message being
-             * composed. The <permission>messagesRead</permission> permission is
-             * required to return attachments of displayed messages.
+             * The selected attachments. The _compose_ permission is required to
+             * return attachments of a message being composed. The _messagesRead_
+             * permission is required to return attachments of displayed messages.
              */
             attachments?: Array<compose.ComposeAttachment | messages.MessageAttachment> | undefined;
         }
+
+        /**
+         * The provided path may be a relative path to an icon file, an image
+         * `data:` URL, a `blob:` URL or a `moz-extension: `URL. The `data:` or
+         * `blob:` URLs can be retrieved as follows:
+         * [DataBlobUrls.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/DataBlobUrls.js),````
+         */
+        export type SingleMenuIconPath = string;
+
+        /**
+         * Either a _string_ to specify a single icon path to be used for all
+         * sizes, or a _dictionary object_ to specify paths for multiple icons in
+         * different sizes, so the icon does not have to be scaled for a device
+         * with a different pixel density. Each entry is a _name-value_ pair with
+         * _name_ being a size and _value_ being a path to the icon for the
+         * specified size. Example:
+         * [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)See
+         * the
+         * `MDN documentation about choosing icon sizes <https: developer.mozilla.org="" en-us="" docs="" mozilla="" add-ons="" webextensions="" manifest.json="" browser_action#choosing_icon_sizes="">`\_\_
+         * for more information on this.</https:>
+         */
+        export type MenuIconPath =
+            | SingleMenuIconPath
+            | {
+                  [key: number]: SingleMenuIconPath;
+              };
+
+        export type _ContextType =
+            | 'all'
+            | 'all_message_attachments'
+            | 'audio'
+            | 'compose_action'
+            | 'compose_action_menu'
+            | 'compose_attachments'
+            | 'compose_body'
+            | 'editable'
+            | 'folder_pane'
+            | 'frame'
+            | 'image'
+            | 'link'
+            | 'message_attachments'
+            | 'message_display_action'
+            | 'message_display_action_menu'
+            | 'message_list'
+            | 'page'
+            | 'password'
+            | 'selection'
+            | 'tab'
+            | 'tools_menu'
+            | 'video'
+            | 'browser_action'
+            | 'browser_action_menu'
+            | 'action'
+            | 'action_menu';
 
         /** An identifier of the clicked Thunderbird UI element, if any. */
         export type _OnShowDataFieldId =
@@ -15793,7 +16545,7 @@ declare namespace browser {
              * Custom icons to display next to the menu item. Custom icons can only
              * be set for items appearing in submenus.
              */
-            icons?: _manifest.IconPath | undefined;
+            icons?: MenuIconPath | undefined;
             /**
              * The text to be displayed in the item; this is _required_ unless `type`
              * is `separator`. When the context is `selection`, you can use `%s`
@@ -15854,11 +16606,6 @@ declare namespace browser {
              * true.
              */
             enabled?: boolean | undefined;
-            /**
-             * Specifies a command to issue for the context click. Currently supports
-             * internal commands `_execute_browser_action`, `_execute_compose_action`
-             * and `_execute_message_display_action`.
-             */
             command?: string | undefined;
         }
 
@@ -15868,7 +16615,7 @@ declare namespace browser {
          */
         export interface _UpdateUpdateProperties {
             type?: ItemType | undefined;
-            icons?: _manifest.IconPath | undefined;
+            icons?: MenuIconPath | undefined;
             title?: string | undefined;
             checked?: boolean | undefined;
             contexts?: ContextType[] | undefined;
@@ -15899,10 +16646,7 @@ declare namespace browser {
              * `contextOptions.showDefaults` cannot be used with this option.
              */
             context?: 'tab' | undefined;
-            /**
-             * Required when context is `tab`. Requires the
-             * <permission>tabs</permission> permission.
-             */
+            /** Required when context is `tab`. Requires the _tabs_ permission. */
             tabId?: number | undefined;
         }
 
@@ -16009,21 +16753,22 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplay.html
+     * @see https://webextension-api.thunderbird.net/en/115/messageDisplay.html
      */
     export namespace messageDisplay {
         /**
          * Where to open the message. If not specified, the users preference is
-         * honoured. Ignored for external messages, which are always opened in a
-         * new window.
+         * honoured.
          */
         export type _OpenOpenPropertiesLocation = 'tab' | 'window';
 
         /**
-         * Settings for opening the message. Exactly one of messageId or
-         * headerMessageId must be specified.
+         * Settings for opening the message. Exactly one of messageId,
+         * headerMessageId or file must be specified.
          */
         export interface _OpenOpenProperties {
+            /** The DOM file object of a message to be opened. */
+            file?: File | undefined;
             /**
              * The id of a message to be opened. Will throw an _ExtensionError_, if
              * the provided `messageId` is unknown or invalid.
@@ -16037,8 +16782,7 @@ declare namespace browser {
             headerMessageId?: string | undefined;
             /**
              * Where to open the message. If not specified, the users preference is
-             * honoured. Ignored for external messages, which are always opened in a
-             * new window.
+             * honoured.
              */
             location?: _OpenOpenPropertiesLocation | undefined;
             /**
@@ -16072,7 +16816,7 @@ declare namespace browser {
          * Opens a message in a new tab or in a new window.
          *
          * @param openProperties Settings for opening the message. Exactly one of
-         * messageId or headerMessageId must be specified.
+         * messageId, headerMessageId or file must be specified.
          */
         export function open(openProperties: _OpenOpenProperties): Promise<tabs.Tab>;
 
@@ -16100,7 +16844,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayAction.html
+     * @see https://webextension-api.thunderbird.net/en/115/messageDisplayAction.html
      */
     export namespace messageDisplayAction {
         /* messageDisplayAction types */
@@ -16327,6 +17071,12 @@ declare namespace browser {
             windowId?: number | undefined;
         }
 
+        /** An object with information about the popup to open. */
+        export interface _OpenPopupOptions {
+            /** Defaults to the current window. */
+            windowId?: number | undefined;
+        }
+
         /* messageDisplayAction functions */
         /**
          * Sets the title of the messageDisplayAction button. Is used as tooltip
@@ -16382,8 +17132,12 @@ declare namespace browser {
         export function getBadgeBackgroundColor(details: _GetBadgeBackgroundColorDetails): Promise<ColorArray>;
 
         /**
-         * Enables the messageDisplayAction button for a tab. By default, a
-         * messageDisplayAction button is enabled.
+         * Enables the messageDisplayAction button for a specific tab (if a
+         * `tabId` is provided), or for all tabs which do not have a custom
+         * enable state. Once the enable state of a tab has been updated
+         * individually, all further changes to its state have to be done
+         * individually as well. By default, a messageDisplayAction button is
+         * enabled.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * messageDisplayAction button.
@@ -16391,7 +17145,11 @@ declare namespace browser {
         export function enable(tabId?: number): Promise<void>;
 
         /**
-         * Disables the messageDisplayAction button for a tab.
+         * Disables the messageDisplayAction button for a specific tab (if a
+         * `tabId` is provided), or for all tabs which do not have a custom
+         * enable state. Once the enable state of a tab has been updated
+         * individually, all further changes to its state have to be done
+         * individually as well.
          *
          * @param [tabId] The id of the tab for which you want to modify the
          * messageDisplayAction button.
@@ -16401,8 +17159,15 @@ declare namespace browser {
         /** Checks whether the messageDisplayAction button is enabled. */
         export function isEnabled(details: _IsEnabledDetails): Promise<boolean>;
 
-        /** Opens the action's popup window in the active window. */
-        export function openPopup(): Promise<any>;
+        /**
+         * Opens the action's popup window in the specified window. Defaults to
+         * the current window. Returns false if the popup could not be opened
+         * because the action has no popup, is of type `menu`, is disabled or has
+         * been removed from the toolbar.
+         *
+         * @param [options] An object with information about the popup to open.
+         */
+        export function openPopup(options?: _OpenPopupOptions): Promise<boolean>;
 
         /* messageDisplayAction events */
         /**
@@ -16418,7 +17183,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/messages.html
+     * @see https://webextension-api.thunderbird.net/en/115/messages.html
      */
     export namespace messages {
         /* messages types */
@@ -16438,9 +17203,8 @@ declare namespace browser {
             /** Whether this message is flagged (a.k.a. starred). */
             flagged: boolean;
             /**
-             * The <permission>accountsRead</permission> permission is required for
-             * this property to be included. Not available for external or attached
-             * messages.
+             * The _accountsRead_ permission is required for this property to be
+             * included. Not available for external or attached messages.
              */
             folder?: folders.MailFolder | undefined;
             /** The message-id header of the message. */
@@ -16608,6 +17372,12 @@ declare namespace browser {
         /** Whether all of the tag filters must apply, or any of them. */
         export type _TagsDetailMode = 'all' | 'any';
 
+        export type _GetRawOptionsDataFormat = 'File' | 'BinaryString' | 'File' | 'BinaryString';
+
+        export interface _GetRawOptions {
+            data_format: _GetRawOptionsDataFormat;
+        }
+
         export interface _QueryQueryInfo {
             /** If specified, returns only messages with or without attachments. */
             attachment?: boolean | undefined;
@@ -16625,8 +17395,8 @@ declare namespace browser {
             /** Returns only flagged (or unflagged if false) messages. */
             flagged?: boolean | undefined;
             /**
-             * Returns only messages from the specified folder. The
-             * <permission>accountsRead</permission> permission is required.
+             * Returns only messages from the specified folder. The _accountsRead_
+             * permission is required.
              */
             folder?: folders.MailFolder | undefined;
             /** Returns only messages with a date after this value. */
@@ -16706,24 +17476,10 @@ declare namespace browser {
         export function getFull(messageId: number): Promise<MessagePart>;
 
         /**
-         * Returns the unmodified source of a message as a binary string , which
-         * is a simple series of 8-bit values. Throws if the message could not be
-         * read, for example due to network issues. If the message contains
-         * non-ASCII characters, the body parts in the binary string cannot be
-         * read directly and must be decoded according to their character sets.
-         * Use {@link messages.getFull} to get the correctly decoded parts.
-         * Manually decoding the raw message is probably too error-prone,
-         * especially if the message contains MIME parts with different character
-         * set encodings or attachments.
-         *
-         * To get a readable version of the raw message as it appears in
-         * Thunderbird's message source view, it may be sufficient to decode the
-         * message according to the character set specified in its main
-         * content-type header (example: `text/html; charset=UTF-8`) using the
-         * following function (see MDN for supported input encodings ):
-         * [decodeBinaryString.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/decodeBinaryString.js)
+         * Returns the unmodified source of a message. Throws if the message
+         * could not be read, for example due to network issues.
          */
-        export function getRaw(messageId: number): Promise<string>;
+        export function getRaw(messageId: number, options?: _GetRawOptions): Promise<string | File>;
 
         /** Lists the attachments of a message. */
         export function listAttachments(messageId: number): Promise<MessageAttachment[]>;
@@ -16735,10 +17491,17 @@ declare namespace browser {
         export function getAttachmentFile(messageId: number, partName: string): Promise<File>;
 
         /**
+         * Opens the specified attachment
+         *
+         * @param tabId The ID of the tab associated with the message opening.
+         */
+        export function openAttachment(messageId: number, partName: string, tabId: number): Promise<any>;
+
+        /**
          * Gets all messages that have the specified properties, or all messages
          * if no properties are specified.
          */
-        export function query(queryInfo: _QueryQueryInfo): Promise<MessageList>;
+        export function query(queryInfo?: _QueryQueryInfo): Promise<MessageList>;
 
         /**
          * Marks or unmarks a message as junk, read, flagged, or tagged. Updating
@@ -16816,8 +17579,8 @@ declare namespace browser {
          * in the user's message. Throws if the specified tag key is used
          * already.
          *
-         * @param key Unique tag identifier (must use only alphanumeric
-         * characters).
+         * @param key Unique tag identifier (will be converted to lower case).
+         * Must not include `()<>{/%*"` or spaces.
          *
          * @param tag Human-readable tag name.
          *
@@ -16828,7 +17591,8 @@ declare namespace browser {
         /**
          * Updates a message tag.
          *
-         * @param key Unique tag identifier.
+         * @param key Unique tag identifier (will be converted to lower case).
+         * Must not include `()<>{/%*"` or spaces.
          */
         export function updateTag(key: string, updateProperties: _UpdateTagUpdateProperties): Promise<any>;
 
@@ -16837,6 +17601,9 @@ declare namespace browser {
          * key will not be removed from tagged messages, but they will appear
          * untagged. Recreating a deleted tag, will make all former tagged
          * messages appear tagged again.
+         *
+         * @param key Unique tag identifier (will be converted to lower case).
+         * Must not include `()<>{/%*"` or spaces.
          */
         export function deleteTag(key: string): Promise<any>;
 
@@ -16863,7 +17630,219 @@ declare namespace browser {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/spacesToolbar.html
+     * @see https://webextension-api.thunderbird.net/en/115/sessions.html
+     */
+    export namespace sessions {
+        /* sessions functions */
+        /**
+         * Store a key/value pair associated with a given tab.
+         *
+         * @param tabId ID of the tab with which you want to associate the data.
+         * Error is thrown if ID is invalid.
+         *
+         * @param key Key that you can later use to retrieve this particular data
+         * value.
+         */
+        export function setTabValue(tabId: number, key: string, value: string): Promise<void>;
+
+        /**
+         * Retrieve a previously stored value for a given tab, given its key.
+         *
+         * @param tabId ID of the tab whose data you are trying to retrieve.
+         * Error is thrown if ID is invalid.
+         *
+         * @param key Key identifying the particular value to retrieve.
+         */
+        export function getTabValue(tabId: number, key: string): Promise<string | object | undefined>;
+
+        /**
+         * Remove a key/value pair from a given tab.
+         *
+         * @param tabId ID of the tab whose data you are trying to remove. Error
+         * is thrown if ID is invalid.
+         *
+         * @param key Key identifying the particular value to remove.
+         */
+        export function removeTabValue(tabId: number, key: string): Promise<void>;
+    }
+
+    /**
+     * Not allowed in: Content scripts, Devtools pages
+     *
+     * @see https://webextension-api.thunderbird.net/en/115/spaces.html
+     */
+    export namespace spaces {
+        /* spaces types */
+        export interface SpaceButtonProperties {
+            /**
+             * Sets the background color of the badge. Can be specified as an array
+             * of four integers in the range [0,255] that make up the RGBA color of
+             * the badge. For example, opaque red is `[255, 0, 0, 255]`. Can also be
+             * a string with an HTML color name (`red`) or a HEX color value
+             * (`#FF0000` or `#F00`). Reset when set to an empty string.
+             */
+            badgeBackgroundColor?: string | ColorArray | undefined;
+            /**
+             * Sets the badge text for the button in the spaces toolbar. The badge is
+             * displayed on top of the icon. Any number of characters can be set, but
+             * only about four can fit in the space. Removed when set to an empty
+             * string.
+             */
+            badgeText?: string | undefined;
+            /**
+             * The paths to one or more icons for the button in the spaces toolbar.
+             * Defaults to the extension icon, if set to an empty string.
+             */
+            defaultIcons?: string | _manifest.IconPath | undefined;
+            /**
+             * Specifies dark and light icons for the button in the spaces toolbar to
+             * be used with themes: The `light` icons will be used on dark
+             * backgrounds and vice versa. At least the set for _16px_ icons should
+             * be specified. The set for _32px_ icons will be used on screens with a
+             * very high pixel density, if specified.
+             */
+            themeIcons?: _manifest.ThemeIcons[] | undefined;
+            /**
+             * The title for the button in the spaces toolbar, used in the tooltip of
+             * the button and as the displayed name in the overflow menu. Defaults to
+             * the name of the extension, if set to an empty string.
+             */
+            title?: string | undefined;
+        }
+
+        /**
+         * An array of four integers in the range [0,255] that make up the RGBA
+         * color. For example, opaque red is `[255, 0, 0, 255]`.
+         */
+        export type ColorArray = [number, number, number, number];
+
+        export interface Space {
+            /** The id of the space. */
+            id: number;
+            /**
+             * The name of the space. Names are unique for a single extension, but
+             * different extensions may use the same name.
+             */
+            name: string;
+            /**
+             * Whether this space is one of the default Thunderbird spaces, or an
+             * extension space.
+             */
+            isBuiltIn: boolean;
+            /** Whether this space was created by this extension. */
+            isSelfOwned: boolean;
+            /**
+             * The id of the extension which owns the space. The _management_
+             * permission is required to include this property.
+             */
+            extensionId?: string | undefined;
+        }
+
+        export interface _QueryQueryInfo {
+            /** The id of the space. */
+            id?: number | undefined;
+            /** The name of the spaces (names are not unique). */
+            name?: string | undefined;
+            /** Spaces should be default Thunderbird spaces. */
+            isBuiltIn?: boolean | undefined;
+            /** Spaces should have been created by this extension. */
+            isSelfOwned?: boolean | undefined;
+            /**
+             * Id of the extension which should own the spaces. The _management_
+             * permission is required to be able to match against extension ids.
+             */
+            extensionId?: string | undefined;
+        }
+
+        /* spaces functions */
+        /**
+         * Creates a new space and adds its button to the spaces toolbar.
+         *
+         * @param name The name to assign to this space. May only contain
+         * alphanumeric characters and underscores. Must be unique for this
+         * extension.
+         *
+         * @param defaultUrl The default space url, loaded into a tab when the
+         * button in the spaces toolbar is clicked. Supported are `https://` and
+         * `http://` links, as well as links to WebExtension pages.
+         *
+         * @param [buttonProperties] Properties of the button for the new space.
+         */
+        export function create(
+            name: string,
+            defaultUrl: string,
+            buttonProperties?: SpaceButtonProperties,
+        ): Promise<Space>;
+
+        /**
+         * Retrieves details about the specified space.
+         *
+         * @param spaceId The id of the space.
+         */
+        export function get(spaceId: number): Promise<Space>;
+
+        /**
+         * Gets all spaces that have the specified properties, or all spaces if
+         * no properties are specified.
+         */
+        export function query(queryInfo?: _QueryQueryInfo): Promise<Space[]>;
+
+        /**
+         * Removes the specified space, closes all its tabs and removes its
+         * button from the spaces toolbar. Throws an exception if the requested
+         * space does not exist or was not created by this extension.
+         *
+         * @param spaceId The id of the space.
+         */
+        export function remove(spaceId: number): Promise<any>;
+
+        /**
+         * Updates the specified space. Throws an exception if the requested
+         * space does not exist or was not created by this extension.
+         *
+         * @param spaceId The id of the space.
+         *
+         * @param defaultUrl The default space url, loaded into a tab when the
+         * button in the spaces toolbar is clicked. Supported are `https://` and
+         * `http://` links, as well as links to WebExtension pages.
+         *
+         * @param [buttonProperties] Only specified button properties will be
+         * updated.
+         */
+        export function update(
+            spaceId: number,
+            defaultUrl: string,
+            buttonProperties?: SpaceButtonProperties,
+        ): Promise<any>;
+        /**
+         * Updates the specified space. Throws an exception if the requested
+         * space does not exist or was not created by this extension.
+         *
+         * @param spaceId The id of the space.
+         *
+         * @param [buttonProperties] Only specified button properties will be
+         * updated.
+         */
+        export function update(spaceId: number, buttonProperties?: SpaceButtonProperties): Promise<any>;
+
+        /**
+         * Opens or switches to the specified space. Throws an exception if the
+         * requested space does not exist or was not created by this extension.
+         *
+         * @param spaceId The id of the space.
+         *
+         * @param [windowId] The id of the normal window, where the space should
+         * be opened. Defaults to the most recent normal window.
+         */
+        export function open(spaceId: number, windowId?: number): Promise<tabs.Tab>;
+    }
+
+    /**
+     * Not supported on manifest versions above 2.
+     *
+     * Not allowed in: Content scripts, Devtools pages
+     *
+     * @see https://webextension-api.thunderbird.net/en/115/spacesToolbar.html
      */
     export namespace spacesToolbar {
         /* spacesToolbar types */
@@ -16927,28 +17906,44 @@ declare namespace browser {
          * @param properties Properties of the new button. The `url` is
          * mandatory.
          */
-        export function addButton(id: string, properties: ButtonProperties): Promise<any>;
+        export function addButton(id: string, properties: ButtonProperties): Promise<number>;
 
         /**
          * Removes the specified button from the spaces toolbar. Throws an
-         * exception if the requested spaces toolbar button does not exist. If
-         * the tab of this button is currently open, it will be closed.
+         * exception if the requested spaces toolbar button does not exist or was
+         * not created by this extension. If the tab of this button is currently
+         * open, it will be closed.
          *
-         * @param id The id of the button which is to be removed. May only
-         * contain alphanumeric characters and underscores.
+         * @param id The id of the spaces toolbar button, which is to be removed.
+         * May only contain alphanumeric characters and underscores.
          */
         export function removeButton(id: string): Promise<any>;
 
         /**
          * Updates properties of the specified spaces toolbar button. Throws an
-         * exception if the requested spaces toolbar button does not exist.
+         * exception if the requested spaces toolbar button does not exist or was
+         * not created by this extension.
          *
-         * @param id The id of the button which is to be updated. May only
-         * contain alphanumeric characters and underscores.
+         * @param id The id of the spaces toolbar button, which is to be updated.
+         * May only contain alphanumeric characters and underscores.
          *
          * @param properties Only specified properties will be updated.
          */
         export function updateButton(id: string, properties: ButtonProperties): Promise<any>;
+
+        /**
+         * Trigger a click on the specified spaces toolbar button. Throws an
+         * exception if the requested spaces toolbar button does not exist or was
+         * not created by this extension.
+         *
+         * @param id The id of the spaces toolbar button. May only contain
+         * alphanumeric characters and underscores.
+         *
+         * @param [windowId] The id of the normal window, where the spaces
+         * toolbar button should be clicked. Defaults to the most recent normal
+         * window.
+         */
+        export function clickButton(id: string, windowId?: number): Promise<tabs.Tab>;
     }
 
     /**
@@ -16957,7 +17952,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/tabs.html
+     * @see https://webextension-api.thunderbird.net/en/115/tabs.html
      */
     export namespace tabs {
         /* tabs types */
@@ -16987,19 +17982,18 @@ declare namespace browser {
             active: boolean;
             /**
              * The URL the tab is displaying. This property is only present if the
-             * extension's manifest includes the <permission>tabs</permission>
-             * permission.
+             * extension's manifest includes the _tabs_ permission.
              */
             url?: string | undefined;
             /**
              * The title of the tab. This property is only present if the extension's
-             * manifest includes the <permission>tabs</permission> permission.
+             * manifest includes the _tabs_ permission.
              */
             title?: string | undefined;
             /**
              * The URL of the tab's favicon. This property is only present if the
-             * extension's manifest includes the <permission>tabs</permission>
-             * permission. It may also be an empty string if the tab is loading.
+             * extension's manifest includes the _tabs_ permission. It may also be an
+             * empty string if the tab is loading.
              */
             favIconUrl?: string | undefined;
             /** Either `loading` or `complete`. */
@@ -17008,9 +18002,20 @@ declare namespace browser {
             width?: number | undefined;
             /** The height of the tab in pixels. */
             height?: number | undefined;
+            /**
+             * The CookieStore id used by the tab. Either a custom id created using
+             * the contextualIdentities API , or a built-in one: `firefox-default`,
+             * `firefox-container-1`, `firefox-container-2`, `firefox-container-3`,
+             * `firefox-container-4`, `firefox-container-5`. **Note:** The naming
+             * pattern was deliberately not changed for Thunderbird, but kept for
+             * compatibility reasons.
+             */
+            cookieStoreId?: string | undefined;
             type?: _TabType | undefined;
             /** Whether the tab is a 3-pane tab. */
             mailTab?: boolean | undefined;
+            /** The id of the space. */
+            spaceId?: number | undefined;
         }
 
         /** Whether the tabs have completed loading. */
@@ -17036,9 +18041,8 @@ declare namespace browser {
         export interface UpdateFilter {
             /**
              * A list of URLs or URL patterns. Events that cannot match any of the
-             * URLs will be filtered out. Filtering with urls requires the
-             * <permission>tabs</permission> or <permission>activeTab</permission>
-             * permission.
+             * URLs will be filtered out. Filtering with urls requires the _tabs_ or
+             * _activeTab_ permission.
              */
             urls?: string[] | undefined;
             /**
@@ -17110,6 +18114,15 @@ declare namespace browser {
              */
             active?: boolean | undefined;
             /**
+             * The CookieStore id the new tab should use. Either a custom id created
+             * using the contextualIdentities API , or a built-in one:
+             * `firefox-default`, `firefox-container-1`, `firefox-container-2`,
+             * `firefox-container-3`, `firefox-container-4`, `firefox-container-5`.
+             * **Note:** The naming pattern was deliberately not changed for
+             * Thunderbird, but kept for compatibility reasons.
+             */
+            cookieStoreId?: string | undefined;
+            /**
              * Whether the tab should become the selected tab in the window. Defaults
              * to `true`
              *
@@ -17121,6 +18134,8 @@ declare namespace browser {
         export interface _QueryQueryInfo {
             /** Whether the tab is a Thunderbird 3-pane tab. */
             mailTab?: boolean | undefined;
+            /** The id of the space the tabs should belong to. */
+            spaceId?: number | undefined;
             /**
              * Match tabs against the given Tab.type (see {@link tabs.Tab}). Ignored
              * if `queryInfo.mailTab` is specified.
@@ -17152,17 +18167,30 @@ declare namespace browser {
             windowType?: WindowType | undefined;
             /** The position of the tabs within their windows. */
             index?: number | undefined;
+            /**
+             * The CookieStore id(s) used by the tabs. Either custom ids created
+             * using the contextualIdentities API , or built-in ones:
+             * `firefox-default`, `firefox-container-1`, `firefox-container-2`,
+             * `firefox-container-3`, `firefox-container-4`, `firefox-container-5`.
+             * **Note:** The naming pattern was deliberately not changed for
+             * Thunderbird, but kept for compatibility reasons.
+             */
+            cookieStoreId?: string[] | string | undefined;
         }
 
         /** Properties which should to be updated. */
         export interface _UpdateUpdateProperties {
             /**
-             * A URL to navigate the tab to. Only applicable for `content` tabs and
-             * active `mail` tabs.
+             * A URL of a page to load. If the URL points to a content page (a web
+             * page, an extension page or a registered WebExtension protocol handler
+             * page), the tab will navigate to the requested page. All other URLs
+             * will be opened externally without changing the tab. Note: This
+             * function will throw an error, if a content page is loaded into a
+             * non-content tab (its type must be either `content` or `mail`).
              */
             url?: string | undefined;
             /**
-             * Set this to `true`, if the tab should be active. Does not affect
+             * Set this to `true`, if the tab should become active. Does not affect
              * whether the window is focused (see {@link windows.update}). Setting
              * this to `false` has no effect.
              */
@@ -17173,8 +18201,8 @@ declare namespace browser {
             /** Defaults to the window the tab is currently in. */
             windowId?: number | undefined;
             /**
-             * The position to move the window to. `-1` will place the tab at the end
-             * of the window.
+             * The position to move the tab to. `-1` will place the tab at the end of
+             * the window.
              */
             index: number;
         }
@@ -17211,6 +18239,11 @@ declare namespace browser {
         export interface _OnActivatedActiveInfo {
             /** The ID of the tab that has become active. */
             tabId: number;
+            /**
+             * The ID of the tab that was previously active, if that tab is still
+             * open.
+             */
+            previousTabId?: number | undefined;
             /** The ID of the window the active tab changed inside of. */
             windowId: number;
         }
@@ -17271,7 +18304,14 @@ declare namespace browser {
 
         /**
          * Creates a new content tab. Use the {@link messageDisplay_api} to open
-         * messages. Only supported in `normal` windows.
+         * messages.
+         * Only supported in `normal` windows. Same-site links in the loaded
+         * page
+         * are opened within Thunderbird, all other links are opened in the
+         * user's default browser.
+         * To override this behavior, add-ons have to register a
+         * [content script](https://bugzilla.mozilla.org/show_bug.cgi?id=1618828#c3),
+         * capture click events and handle them manually.
          *
          * @param createProperties Properties for the new tab. Defaults to an
          * empty tab, if no `url` is provided.
@@ -17289,7 +18329,7 @@ declare namespace browser {
          * Gets all tabs that have the specified properties, or all tabs if no
          * properties are specified.
          */
-        export function query(queryInfo: _QueryQueryInfo): Promise<Tab[]>;
+        export function query(queryInfo?: _QueryQueryInfo): Promise<Tab[]>;
 
         /**
          * Modifies the properties of a tab. Properties that are not specified in
@@ -17309,16 +18349,16 @@ declare namespace browser {
         export function update(updateProperties: _UpdateUpdateProperties): Promise<Tab>;
 
         /**
-         * Moves one or more tabs to a new position within its window, or to a
-         * new window. Note that tabs can only be moved to and from windows of
-         * type `normal`.
+         * Moves one or more tabs to a new position within its current window, or
+         * to a different window. Note that tabs can only be moved to and from
+         * windows of type `normal`.
          *
          * @param tabIds The tab or list of tabs to move.
          */
-        export function move(tabIds: number | number[], moveProperties: _MoveMoveProperties): Promise<Tab | Tab[]>;
+        export function move(tabIds: number | number[], moveProperties: _MoveMoveProperties): Promise<Tab[]>;
 
         /**
-         * Reload a tab.
+         * Reload a tab. Only applicable for tabs which display a content page.
          *
          * @param tabId The ID of the tab to reload; defaults to the selected tab
          * of the current window.
@@ -17326,7 +18366,7 @@ declare namespace browser {
         export function reload(
             tabId: number,
             reloadProperties?: _ReloadReloadProperties,
-        ): Promise<void>; /** Reload a tab. */
+        ): Promise<void>; /** Reload a tab. Only applicable for tabs which display a content page. */
         export function reload(reloadProperties?: _ReloadReloadProperties): Promise<void>;
 
         /**
@@ -17448,7 +18488,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/theme.html
+     * @see https://webextension-api.thunderbird.net/en/115/theme.html
      */
     export namespace theme {
         /* theme types */
@@ -17510,7 +18550,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/latest/windows.html
+     * @see https://webextension-api.thunderbird.net/en/115/windows.html
      */
     export namespace windows {
         /* windows types */
@@ -17518,14 +18558,7 @@ declare namespace browser {
          * The type of a window. Under some circumstances a window may not be
          * assigned a type property.
          */
-        export type WindowType =
-            | 'normal'
-            | 'popup'
-            | 'panel'
-            | 'app'
-            | 'devtools'
-            | 'messageCompose'
-            | 'messageDisplay';
+        export type WindowType = 'normal' | 'popup' | 'messageCompose' | 'messageDisplay';
 
         /** The state of this window. */
         export type WindowState = 'normal' | 'minimized' | 'maximized' | 'fullscreen' | 'docked';
@@ -17579,8 +18612,7 @@ declare namespace browser {
              * property that contains an array of {@link tabs.Tab} objects
              * representing the tabs inside the window. The {@link tabs.Tab} objects
              * only contain the `url`, `title` and `favIconUrl` properties if the
-             * extension's manifest file includes the <permission>tabs</permission>
-             * permission.
+             * extension's manifest file includes the _tabs_ permission.
              */
             populate?: boolean | undefined;
             /**
@@ -17647,6 +18679,11 @@ declare namespace browser {
              * `window.close()`.
              */
             allowScriptsToClose?: boolean | undefined;
+            /**
+             * The CookieStoreId to use for all tabs that were created when the
+             * window is opened.
+             */
+            cookieStoreId?: string | undefined;
             /** A string to add to the beginning of the window title. */
             titlePreface?: string | undefined;
         }
@@ -17714,6 +18751,16 @@ declare namespace browser {
         /**
          * Creates (opens) a new window with any optional sizing, position or
          * default URL provided.
+         * When loading a page into a popup window, same-site links are opened
+         * within the same window,
+         * all other links are opened in the user's default browser. To override
+         * this behavior,
+         * add-ons have to register a
+         * [content script](https://bugzilla.mozilla.org/show_bug.cgi?id=1618828#c3),
+         * capture click events and handle them manually. Same-site links with
+         * targets other than
+         * `_self` are opened in a new tab in the most recent "normal"
+         * Thunderbird window.
          */
         export function create(createData?: _CreateCreateData): Promise<Window>;
 
@@ -20973,6 +22020,14 @@ declare namespace browser {
          */
         export const managed: StorageArea;
 
+        /**
+         * Items in the `session` storage area are kept in memory, and only until
+         * the either browser or extension is closed or reloaded.
+         *
+         * Not allowed in: Content scripts
+         */
+        export const session: StorageArea;
+
         /* storage events */
         /**
          * Fired when one or more items change.
@@ -21880,6 +22935,17 @@ declare namespace browser {
              * is "weak"
              */
             weaknessReasons?: TransportWeaknessReasons[] | undefined;
+            /** True if the TLS connection used Encrypted Client Hello. */
+            usedEch?: boolean | undefined;
+            /** True if the TLS connection used Delegated Credentials. */
+            usedDelegatedCredentials?: boolean | undefined;
+            /** True if the TLS connection made OCSP requests. */
+            usedOcsp?: boolean | undefined;
+            /**
+             * True if the TLS connection used a privacy-preserving DNS transport
+             * like DNS-over-HTTPS.
+             */
+            usedPrivateDns?: boolean | undefined;
         }
 
         /** Contains data uploaded in a URL request. */

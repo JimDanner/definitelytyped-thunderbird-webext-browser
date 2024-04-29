@@ -5,7 +5,7 @@ Script to generate type definitions and documentation for the development of Web
 This generator is derived from [definitelytyped-firefox-webext-browser](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser), a generator for the type definitions for development of Firefox add-ons, made by [Jasmin Bom](https://github.com/jsmnbom).
 
 ## Usage
-*You should only need to do this if you wanna update the definitions; to just use them, download the resulting definition file from the OUTPUT directory (see [below](#4-use-the-definitions-or-submit-them-to-definitelytyped) for usage) or install the definition package `@types/thunderbird-webext-browser` in the manner provided by your development environment.*
+*You should only need to do this if you want to update the definitions; to just use them, download the resulting definition file from the OUTPUT directory (see [below](#4-use-the-definitions-or-submit-them-to-definitelytyped) for usage) or install the definition package `@types/thunderbird-webext-browser` in the manner provided by your development environment.*
 
 ### 1. Clone, install, and compile to JavaScript
 On a machine that has node.js and npm, download the project files. For example,
@@ -32,9 +32,9 @@ The generator uses type information and documentation contained in JSON files fr
 Go to [the source code site](https://hg.mozilla.org/try-comm-central/tags) and copy the *tag* of the version you choose – this would be `THUNDERBIRD_102_7_2_RELEASE` if you plan to develop add-ons for Thunderbird 102.7.2, or `default` to get the latest version that's under development.
 
 <details>
-<summary><b>Notice: one part of this generator is version-dependent</b> (click arow for details)</summary>
+<summary><b>Notice: one part of this generator is version-dependent</b> (click arrow for details)</summary>
 
-The scripts `src/overrides.ts` and `tb-overrides.ts` correct shortcomings of the downloaded JSON files – they have some duplication, they don't always show the correct return type for functions, and they list some mandatory function parameters as optional. Thus, **whenever the APIs change, the overrides scripts must also be updated**. The current files were updated for version THUNDERBIRD_109_0b4_RELEASE (see [the source code](https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts#L1) to verify the current version).
+The scripts `src/overrides.ts` and `tb-overrides.ts` correct shortcomings of the downloaded JSON files – they have some duplication, they don't always show the correct return type for functions, and they list some mandatory function parameters as optional. Thus, **whenever the APIs change, the overrides scripts must also be updated**. The current files were updated for version THUNDERBIRD_126_0b1_RELEASE (see [the source code](https://github.com/JimDanner/definitelytyped-thunderbird-webext-browser/blob/master/src/overrides.ts#L1) to verify the current version).
 
 If that differs a lot from the version you're generating for, there may be imperfections in the result.
 </details>
@@ -84,7 +84,7 @@ How you install the definition file `index.d.ts` in your IDE depends on the IDE.
 
 The definitions [are also in](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/thunderbird-webext-browser) the `@types` repository, also known as [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped), so a development environment can install it from that repository as `@types/thunderbird-webext-browser`.
 
-<details><summary><b>Submitting updates</b> (click the arrow for details)</summary>
+<details><summary><b>Submitting updates to DefinitelyTyped</b> (click the arrow for details)</summary>
 The DefinitelyTyped repository will accept updates in the form of pull requests. For sending PRs to DefinitelyTyped you need to include why you changed. For simple updates (Thunderbird version changes), this can be easily generated and uploaded to gist using the included script (requires the gist tool and that you are logged in):
 
 ```shell

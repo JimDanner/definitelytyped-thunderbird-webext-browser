@@ -90,6 +90,9 @@ export function descToMarkdown(description: string) {
   // some literal strings are between <value> and </value>
   description = description.replace(/<\/?value>/g, '``');
 
+  // sometimes required permissions are between <permission> and </permission>; doesn't work
+  description = description.replace(/<\/?permission>/g, '_');
+
   // references to other documentation items are in reStructuredText form
   description = description.replace(/:ref:`([^`]+)`/g, '{@link $1}');
 

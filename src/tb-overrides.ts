@@ -1,4 +1,4 @@
-// THUNDERBIRD_109_0b4_RELEASE FIREFOX_109_0b9_RELEASE
+// THUNDERBIRD_126_0b1_RELEASE FIREFOX_109_0b9_RELEASE
 import Converter from './converter';
 
 /**
@@ -36,11 +36,50 @@ export default function tb_override(converter: Converter) {
         return x;
     });
 
+    // windows.create() has a mangled description
+    converter.edit('windows', 'functions', 'create', (x) => {
+        x!.description =
+            `Creates (opens) a new window with any optional sizing, position or default URL provided.
+            When loading a page into a popup window, same-site links are opened within the same window,
+            all other links are opened in the user\'s default browser. To override this behavior,
+            add-ons have to register a
+            [content script](https://bugzilla.mozilla.org/show_bug.cgi?id=1618828#c3),
+            capture click events and handle them manually. Same-site links with targets other than
+            <value>_self</value> are opened in a new tab in the most recent "normal" Thunderbird window.`;
+        return x;
+    })
+
+    // tabs.create() has a mangled description
+    converter.edit('tabs', 'functions', 'create', (x) => {
+        x!.description =
+            `Creates a new content tab. Use the :ref:\`messageDisplay_api\` to open messages.
+            Only supported in <value>normal</value> windows. Same-site links in the loaded page
+            are opened within Thunderbird, all other links are opened in the user's default browser.
+            To override this behavior, add-ons have to register a 
+            [content script](https://bugzilla.mozilla.org/show_bug.cgi?id=1618828#c3),
+            capture click events and handle them manually.`;
+        return x;
+    })
+
+    // menus.MenuIconDictionary has a mangled description
+    converter.edit('menus', 'types', 'MenuIconDictionary', (x) => {
+        x!.description =
+            `A <em>dictionary object</em> to specify paths for multiple icons in different sizes,
+            so the best matching icon can be used, instead of scaling a standard icon to fit the
+            pixel density of the user's display. Each entry is a <em>name-value</em> pair, with
+            <em>name</em> being a size and <em>value</em> being a :ref:\`menus.MenuIconPath\`.
+            Example: <literalinclude>includes/IconPath.json<lang>JSON</lang></literalinclude>
+            
+            See the [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes) for more information on this.`;
+        return x;
+    })
+
     // Some functions' callbacks have an optional parameter in the schema - they should return a promise
     // holding a type OR something like null or undefined, e.g. Promise<MailAccount | null>.
     // But in most cases that seems to be an error in the schemas, not backed by the online
     // documentation - see https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21
     // In cases where the docs really say it, add null or undefined.
+    // (For the Firefox APIs the other script, overrides.ts, does this)
     function addNullOption(fnc: TypeSchema) {
         fnc.parameters!.slice(-1)[0].converterPromiseOptionalNull = true;
         return fnc;
@@ -56,5 +95,4 @@ export default function tb_override(converter: Converter) {
     // Documentation says the promise can really hold the value undefined:
     converter.edit('mailTabs', 'functions', 'getCurrent', addUndefinedOption);
     converter.edit('tabs', 'functions', 'getCurrent', addUndefinedOption);
-
 }
