@@ -1,10 +1,3 @@
-// Type definitions for non-npm package WebExtension Development in Thunderbird 115.10
-// Project: https://webextension-api.thunderbird.net/en/stable/
-// Definitions by: Jim Danner <https://github.com/JimDanner>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Generated using script at github.com/JimDanner/definitelytyped-thunderbird-webext-browser
-// derived from github.com/jsmnbom/definitelytyped-firefox-webext-browser by Jasmin Bom
-
 interface WebExtEvent<TCallback extends (...args: any[]) => any> {
     addListener(cb: TCallback): void;
     removeListener(cb: TCallback): void;
@@ -3538,7 +3531,15 @@ declare namespace messenger {
         type SingleMenuIconPath = string;
 
         /**
-         * Either a _string_ to specify a single icon path to be used for all sizes, or a _dictionary object_ to specify paths for multiple icons in different sizes, so the icon does not have to be scaled for a device with a different pixel density. Each entry is a _name-value_ pair with _name_ being a size and _value_ being a path to the icon for the specified size. Example: [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)See the `MDN documentation about choosing icon sizes <https: developer.mozilla.org="" en-us="" docs="" mozilla="" add-ons="" webextensions="" manifest.json="" browser_action#choosing_icon_sizes="">`__ for more information on this.</https:>
+         * Either a _string_ to specify a single icon path to be used for all sizes, or a
+         * _dictionary object_ to specify paths for multiple icons in different sizes, so the
+         * icon does not have to be scaled for a device with a different pixel density. Each entry is a
+         * _name-value_ pair with _name_ being a size and _value_ being a path
+         * to the icon for the specified size.
+         * Example: [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)
+         *
+         * See the [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes)
+         * for more information on this.
          */
         type MenuIconPath =
             | SingleMenuIconPath
@@ -12545,7 +12546,15 @@ declare namespace browser {
         type SingleMenuIconPath = string;
 
         /**
-         * Either a _string_ to specify a single icon path to be used for all sizes, or a _dictionary object_ to specify paths for multiple icons in different sizes, so the icon does not have to be scaled for a device with a different pixel density. Each entry is a _name-value_ pair with _name_ being a size and _value_ being a path to the icon for the specified size. Example: [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)See the `MDN documentation about choosing icon sizes <https: developer.mozilla.org="" en-us="" docs="" mozilla="" add-ons="" webextensions="" manifest.json="" browser_action#choosing_icon_sizes="">`__ for more information on this.</https:>
+         * Either a _string_ to specify a single icon path to be used for all sizes, or a
+         * _dictionary object_ to specify paths for multiple icons in different sizes, so the
+         * icon does not have to be scaled for a device with a different pixel density. Each entry is a
+         * _name-value_ pair with _name_ being a size and _value_ being a path
+         * to the icon for the specified size.
+         * Example: [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)
+         *
+         * See the [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes)
+         * for more information on this.
          */
         type MenuIconPath =
             | SingleMenuIconPath

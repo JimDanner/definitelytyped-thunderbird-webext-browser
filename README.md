@@ -85,11 +85,15 @@ How you install the definition file `index.d.ts` in your IDE depends on the IDE.
 The definitions [are also in](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/thunderbird-webext-browser) the `@types` repository, also known as [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped), so a development environment can install it from that repository as `@types/thunderbird-webext-browser`.
 
 <details><summary><b>Submitting updates to DefinitelyTyped</b> (click the arrow for details)</summary>
-The DefinitelyTyped repository will accept updates in the form of pull requests. For sending PRs to DefinitelyTyped you need to include why you changed. For simple updates (Thunderbird version changes), this can be easily generated and uploaded to gist using the included script (requires the gist tool and that you are logged in):
+The DefinitelyTyped repository will accept updates in the form of pull requests. 
 
-```shell
-diffgen THUNDERBIRD_91_8_0_RELEASE THUNDERBIRD_102_7_2_RELEASE
-```
+* Update your personal fork of the DefinitelyTyped repository
+* Sparse-clone (or pull) your fork to your computer
+* Insert the updated `index.d.ts`, run the necessary tests, commit, run further tests, and push to your fork on Github
+* For sending PRs to DefinitelyTyped you need to include why you changed. For simple updates (Thunderbird version changes), this can be easily generated and uploaded to gist using the included script (requires the gist tool and that you are logged in):
+    ```shell
+    diffgen THUNDERBIRD_91_8_0_RELEASE THUNDERBIRD_102_7_2_RELEASE
+    ```
 
 </details>
 

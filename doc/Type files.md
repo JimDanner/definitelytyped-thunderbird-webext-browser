@@ -52,6 +52,9 @@ This creates problems when a namespace has a function called like a reserved wor
 
 Conclusion: creating a fully nested system of namespaces is marginally beneficial on VSCode, and practically necessary on WebStorm. We just need to make sure there's never an `export` statement side-by-side with other items in the same container.
 
+#### Remark on IDEs
+You may wonder why IDEs deal so inconsistently with `.d.ts` (TypeScript declaration) files. I think it is because Microsoft [refuses to write an official standard](https://github.com/microsoft/TypeScript/issues/15711) for the TypeScript language. It writes fairly good tutorials, but without a formal set of rules for the parsing of TypeScript code, ambivalence remains. There's just no _official_ way to interpret a TypeScript declaration file, and the developers of IDEs (including Microsoft's own VSCode team) are left to make arbitrary choices.
+
 ## Limitations of TypeScript for WebExtensions
 Perfect correspondence between WebExtension definitions and TypeScript declarations seems impossible. For a function with _an optional parameter before the final one_, WebExtensions allows omission of only that optional parameter, and TypeScript doesn't. For example with [tabs.setZoomSettings](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/setZoomSettings):
 

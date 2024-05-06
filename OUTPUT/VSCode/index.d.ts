@@ -1,10 +1,3 @@
-// Type definitions for non-npm package WebExtension Development in Thunderbird 115.10
-// Project: https://webextension-api.thunderbird.net/en/stable/
-// Definitions by: Jim Danner <https://github.com/JimDanner>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Generated using script at github.com/JimDanner/definitelytyped-thunderbird-webext-browser
-// derived from github.com/jsmnbom/definitelytyped-firefox-webext-browser by Jasmin Bom
-
 interface WebExtEvent<TCallback extends (...args: any[]) => any> {
     addListener(cb: TCallback): void;
     removeListener(cb: TCallback): void;
@@ -1357,7 +1350,7 @@ declare namespace messenger {
          * @deprecated This will be removed. Use {@link identities.getDefault}
          * instead.
          */
-        export function getDefaultIdentity(accountId: string): Promise<identities.MailIdentity>;
+        export function getDefaultIdentity(accountId: string): Promise<identities.MailIdentity | null>;
 
         /* accounts events */
         /** Fired when a new account has been created. */
@@ -1640,7 +1633,7 @@ declare namespace messenger {
         export function get(id: string): Promise<ContactNode>;
 
         /** Gets the photo associated with this contact, if any. */
-        export function getPhoto(id: string): Promise<File>;
+        export function getPhoto(id: string): Promise<File | null>;
 
         /** Sets the photo associated with this contact. */
         export function setPhoto(id: string, file: File): Promise<any>;
@@ -2058,7 +2051,7 @@ declare namespace messenger {
         export function setLabel(details: _SetLabelDetails): Promise<void>;
 
         /** Gets the label of the action button. */
-        export function getLabel(details: _GetLabelDetails): Promise<string>;
+        export function getLabel(details: _GetLabelDetails): Promise<string | null>;
 
         /**
          * Sets the icon for the action button. Either the `path` or the
@@ -2397,7 +2390,7 @@ declare namespace messenger {
         export function setLabel(details: _SetLabelDetails): Promise<void>;
 
         /** Gets the label of the action button. */
-        export function getLabel(details: _GetLabelDetails): Promise<string>;
+        export function getLabel(details: _GetLabelDetails): Promise<string | null>;
 
         /**
          * Sets the icon for the action button. Either the `path` or the
@@ -2645,7 +2638,7 @@ declare namespace messenger {
          *
          * @param accountId Unique identifier of the account.
          */
-        export function getAccount(accountId: string): Promise<CloudFileAccount>;
+        export function getAccount(accountId: string): Promise<CloudFileAccount | undefined>;
 
         /**
          * Retrieve all cloud file accounts for the current add-on.
@@ -2664,7 +2657,7 @@ declare namespace messenger {
         export function updateAccount(
             accountId: string,
             updateProperties: _UpdateAccountUpdateProperties,
-        ): Promise<CloudFileAccount>;
+        ): Promise<CloudFileAccount | undefined>;
 
         /* cloudFile events */
         /**
@@ -4036,7 +4029,7 @@ declare namespace messenger {
          * Returns the default identity for the requested account, or `null` if
          * it is not defined.
          */
-        export function getDefault(accountId: string): Promise<MailIdentity>;
+        export function getDefault(accountId: string): Promise<MailIdentity | null>;
 
         /** Sets the default identity for the requested account. */
         export function setDefault(accountId: string, identityId: string): Promise<any>;
@@ -4539,15 +4532,19 @@ declare namespace messenger {
 
         /**
          * Either a _string_ to specify a single icon path to be used for all
-         * sizes, or a _dictionary object_ to specify paths for multiple icons in
-         * different sizes, so the icon does not have to be scaled for a device
-         * with a different pixel density. Each entry is a _name-value_ pair with
-         * _name_ being a size and _value_ being a path to the icon for the
-         * specified size. Example:
-         * [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)See
-         * the
-         * `MDN documentation about choosing icon sizes <https: developer.mozilla.org="" en-us="" docs="" mozilla="" add-ons="" webextensions="" manifest.json="" browser_action#choosing_icon_sizes="">`\_\_
-         * for more information on this.</https:>
+         * sizes, or a
+         * _dictionary object_ to specify paths for multiple icons in different
+         * sizes, so the
+         * icon does not have to be scaled for a device with a different pixel
+         * density. Each entry is a
+         * _name-value_ pair with _name_ being a size and _value_ being a path
+         * to the icon for the specified size.
+         * Example:
+         * [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)
+         *
+         * See the
+         * [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes)
+         * for more information on this.
          */
         export type MenuIconPath =
             | SingleMenuIconPath
@@ -4873,7 +4870,7 @@ declare namespace messenger {
          * tab itself is currently not visible). It returns `null` if no messages
          * are displayed, or if multiple messages are displayed.
          */
-        export function getDisplayedMessage(tabId: number): Promise<messages.MessageHeader | null>;
+        export function getDisplayedMessage(tabId: number): Promise<messages.MessageHeader | null | null>;
 
         /**
          * Gets an array of the currently displayed messages in the specified tab
@@ -13287,7 +13284,7 @@ declare namespace browser {
          * @deprecated This will be removed. Use {@link identities.getDefault}
          * instead.
          */
-        export function getDefaultIdentity(accountId: string): Promise<identities.MailIdentity>;
+        export function getDefaultIdentity(accountId: string): Promise<identities.MailIdentity | null>;
 
         /* accounts events */
         /** Fired when a new account has been created. */
@@ -13570,7 +13567,7 @@ declare namespace browser {
         export function get(id: string): Promise<ContactNode>;
 
         /** Gets the photo associated with this contact, if any. */
-        export function getPhoto(id: string): Promise<File>;
+        export function getPhoto(id: string): Promise<File | null>;
 
         /** Sets the photo associated with this contact. */
         export function setPhoto(id: string, file: File): Promise<any>;
@@ -13988,7 +13985,7 @@ declare namespace browser {
         export function setLabel(details: _SetLabelDetails): Promise<void>;
 
         /** Gets the label of the action button. */
-        export function getLabel(details: _GetLabelDetails): Promise<string>;
+        export function getLabel(details: _GetLabelDetails): Promise<string | null>;
 
         /**
          * Sets the icon for the action button. Either the `path` or the
@@ -14327,7 +14324,7 @@ declare namespace browser {
         export function setLabel(details: _SetLabelDetails): Promise<void>;
 
         /** Gets the label of the action button. */
-        export function getLabel(details: _GetLabelDetails): Promise<string>;
+        export function getLabel(details: _GetLabelDetails): Promise<string | null>;
 
         /**
          * Sets the icon for the action button. Either the `path` or the
@@ -14575,7 +14572,7 @@ declare namespace browser {
          *
          * @param accountId Unique identifier of the account.
          */
-        export function getAccount(accountId: string): Promise<CloudFileAccount>;
+        export function getAccount(accountId: string): Promise<CloudFileAccount | undefined>;
 
         /**
          * Retrieve all cloud file accounts for the current add-on.
@@ -14594,7 +14591,7 @@ declare namespace browser {
         export function updateAccount(
             accountId: string,
             updateProperties: _UpdateAccountUpdateProperties,
-        ): Promise<CloudFileAccount>;
+        ): Promise<CloudFileAccount | undefined>;
 
         /* cloudFile events */
         /**
@@ -15966,7 +15963,7 @@ declare namespace browser {
          * Returns the default identity for the requested account, or `null` if
          * it is not defined.
          */
-        export function getDefault(accountId: string): Promise<MailIdentity>;
+        export function getDefault(accountId: string): Promise<MailIdentity | null>;
 
         /** Sets the default identity for the requested account. */
         export function setDefault(accountId: string, identityId: string): Promise<any>;
@@ -16469,15 +16466,19 @@ declare namespace browser {
 
         /**
          * Either a _string_ to specify a single icon path to be used for all
-         * sizes, or a _dictionary object_ to specify paths for multiple icons in
-         * different sizes, so the icon does not have to be scaled for a device
-         * with a different pixel density. Each entry is a _name-value_ pair with
-         * _name_ being a size and _value_ being a path to the icon for the
-         * specified size. Example:
-         * [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)See
-         * the
-         * `MDN documentation about choosing icon sizes <https: developer.mozilla.org="" en-us="" docs="" mozilla="" add-ons="" webextensions="" manifest.json="" browser_action#choosing_icon_sizes="">`\_\_
-         * for more information on this.</https:>
+         * sizes, or a
+         * _dictionary object_ to specify paths for multiple icons in different
+         * sizes, so the
+         * icon does not have to be scaled for a device with a different pixel
+         * density. Each entry is a
+         * _name-value_ pair with _name_ being a size and _value_ being a path
+         * to the icon for the specified size.
+         * Example:
+         * [MenuIconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/MenuIconPath.json)
+         *
+         * See the
+         * [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes)
+         * for more information on this.
          */
         export type MenuIconPath =
             | SingleMenuIconPath
@@ -16803,7 +16804,7 @@ declare namespace browser {
          * tab itself is currently not visible). It returns `null` if no messages
          * are displayed, or if multiple messages are displayed.
          */
-        export function getDisplayedMessage(tabId: number): Promise<messages.MessageHeader | null>;
+        export function getDisplayedMessage(tabId: number): Promise<messages.MessageHeader | null | null>;
 
         /**
          * Gets an array of the currently displayed messages in the specified tab

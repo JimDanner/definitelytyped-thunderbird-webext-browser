@@ -47,7 +47,7 @@ export default function tb_override(converter: Converter) {
             capture click events and handle them manually. Same-site links with targets other than
             <value>_self</value> are opened in a new tab in the most recent "normal" Thunderbird window.`;
         return x;
-    })
+    });
 
     // tabs.create() has a mangled description
     converter.edit('tabs', 'functions', 'create', (x) => {
@@ -59,7 +59,7 @@ export default function tb_override(converter: Converter) {
             [content script](https://bugzilla.mozilla.org/show_bug.cgi?id=1618828#c3),
             capture click events and handle them manually.`;
         return x;
-    })
+    });
 
     // menus.MenuIconDictionary has a mangled description
     converter.edit('menus', 'types', 'MenuIconDictionary', (x) => {
@@ -72,14 +72,32 @@ export default function tb_override(converter: Converter) {
             
             See the [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes) for more information on this.`;
         return x;
-    })
+    });
 
-    // Some functions' callbacks have an optional parameter in the schema - they should return a promise
-    // holding a type OR something like null or undefined, e.g. Promise<MailAccount | null>.
+    // menus.MenuIconPath has a mangled description
+    converter.edit('menus', 'types', 'MenuIconPath', (x) => {
+        x!.description =
+            `Either a <em>string</em> to specify a single icon path to be used for all sizes, or a 
+            <em>dictionary object</em> to specify paths for multiple icons in different sizes, so the
+            icon does not have to be scaled for a device with a different pixel density. Each entry is a
+            <em>name-value</em> pair with <em>name</em> being a size and <em>value</em> being a path
+             to the icon for the specified size.
+             Example: <literalinclude>includes/MenuIconPath.json<lang>JSON</lang></literalinclude>
+             
+             See the [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes)
+             for more information on this.`;
+        return x;
+    });
+
+    // Some functions' callbacks have an optional parameter in the schema - they should be taken to
+    // return a promise holding a type OR undefined, e.g. Promise<MailAccount | undefined>.
     // But in most cases that seems to be an error in the schemas, not backed by the online
     // documentation - see https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21
-    // In cases where the docs really say it, add null or undefined.
+    // Also, Thunderbird may actually pass in the value null instead of undefined/no argument.
+    // We manually put in the optional undefined or null in those places where it applies.
     // (For the Firefox APIs the other script, overrides.ts, does this)
+    // This code follows the list from one of the Thunderbird developers involved:
+    // https://github.com/thunderbird/webext-docs/issues/56#issuecomment-2085352524
     function addNullOption(fnc: TypeSchema) {
         fnc.parameters!.slice(-1)[0].converterPromiseOptionalNull = true;
         return fnc;
@@ -88,11 +106,19 @@ export default function tb_override(converter: Converter) {
         fnc.parameters!.slice(-1)[0].converterPromiseOptional = true;
         return fnc;
     }
-    // Documentation says the promise can really hold the value null:
+    // The developer says the promise can really be empty (i.e. hold the value undefined):
+    converter.edit('cloudFile', 'functions', 'getAccount', addUndefinedOption);
+    converter.edit('cloudFile', 'functions', 'updateAccount', addUndefinedOption);
+    converter.edit('mailTabs', 'functions', 'getCurrent', addUndefinedOption);
+    converter.edit('sessions', 'functions', 'getTabValue', addUndefinedOption);
+    converter.edit('tabs', 'functions', 'getCurrent', addUndefinedOption);
+    // The developer says the promise can really hold the value null:
+    converter.edit('action', 'functions', 'getLabel', addNullOption);
     converter.edit('accounts', 'functions', 'get', addNullOption);
     converter.edit('accounts', 'functions', 'getDefault', addNullOption);
+    converter.edit('accounts', 'functions', 'getDefaultIdentity', addNullOption);
+    converter.edit('contacts', 'functions', 'getPhoto', addNullOption);
     converter.edit('identities', 'functions', 'get', addNullOption);
-    // Documentation says the promise can really hold the value undefined:
-    converter.edit('mailTabs', 'functions', 'getCurrent', addUndefinedOption);
-    converter.edit('tabs', 'functions', 'getCurrent', addUndefinedOption);
+    converter.edit('identities', 'functions', 'getDefault', addNullOption);
+    converter.edit('messageDisplay', 'functions', 'getDisplayedMessage', addNullOption);
 }

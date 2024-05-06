@@ -49,14 +49,7 @@ let namespaces_used: Record<string, string> = JSON.parse(fs.readFileSync(path.re
 const NAMESPACE_ALIASES = { contextMenusInternal: 'menusInternal', manifest: '_manifest' };
 
 // Header, intermediate part and footer of the definitions file
-const HEADER = `// Type definitions for non-npm package WebExtension Development in Thunderbird ${tb_version}
-// Project: https://webextension-api.thunderbird.net/en/stable/
-// Definitions by: Jim Danner <https://github.com/JimDanner>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Generated using script at github.com/JimDanner/definitelytyped-thunderbird-webext-browser
-// derived from github.com/jsmnbom/definitelytyped-firefox-webext-browser by Jasmin Bom
-
-interface WebExtEvent<TCallback extends (...args: any[]) => any> {
+const HEADER = `interface WebExtEvent<TCallback extends (...args: any[]) => any> {
     addListener(cb: TCallback): void;
     removeListener(cb: TCallback): void;
     hasListener(cb: TCallback): boolean;

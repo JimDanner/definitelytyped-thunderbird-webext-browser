@@ -822,7 +822,7 @@ export default class Converter {
     let returnType: string | TypeSchema = 'void';
     // Prove otherwise? either a normal returns or as an async promise
     if (func.returns) {
-      // First check if it has a callbackc and a return value
+      // First check if it has a callback and a return value
       // If it does it's probably cause we overwrote the return value in index.ts and we need to remove the
       // callback parameter anyways
       let callback =

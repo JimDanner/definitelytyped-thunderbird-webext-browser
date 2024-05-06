@@ -50,15 +50,13 @@ Inserted a check in `edit`, `remove` and `add` to avoid crashes from trying to c
 The full conversion process, including translation to Markdown or HTML, runs _after_ the override scripts have modified some elements of the namespaces.
 
 ### Optional promises
-The converter changes callbacks in the schemas to promises, because the schemas are derived from Chrome's WebExtensions API which uses callbacks, but Firefox and Thunderbird implement them with promises. Some callbacks in the schemas have 'optional' arguments. To be clear: not only the callback is optional (as it usually is, meaning the user is not obliged to 'consume' the promise), but so is _the callback's argument_. This means Thunderbird may choose not to return a value; the promise may resolve to `undefined` or `null`.
+The converter changes callbacks in the schemas to promises, because the schemas are derived from Chrome's WebExtensions API which uses callbacks, but Firefox and Thunderbird implement them with promises. Some callbacks in the schemas have 'optional' arguments. To be clear: not only the callback is optional (as it usually is, meaning the user is not obliged to 'consume' the promise), but so is _the callback's parameter_. This means Thunderbird may choose not to return a value; the promise may resolve to `undefined`.
 
-But in fact, [this is often untrue](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21) according to MDN and Thunderbird API documentation. If we trust the 'optional' flag in the schema, we get it wrong more often than right. And it also occurs the other way around: a function whose promise can contain `null` being in the schema with a required callback parameter.
+_Note:_ if a function in JavaScript is called without any argument, it runs with its arguments set to `undefined`. So if the WebExtension engine is to supply a `Tab` object to the callback but may also decide to call it without any argument, the extension programmer should write that callback with signature `function(Tab|undefined)`, perhaps with a check whether the value received is `undefined`. Thus, a _callback with an optional parameter of type `T`_ would in principle be one with the signature `function(T|undefined)`.
 
-So I've gone to the trouble of looking it up in the online documentation for all thirty-or-so individual cases (*sigh...*). For those cases where a nullish value is really allowed, the override scripts [overrides.ts](..%2Fsrc%2Foverrides.ts) and [tb-overrides.ts](..%2Fsrc%2Ftb-overrides.ts) add a flag 'by hand' that tells the converter to insert the alternative possibility, making the return value something like
+But in fact, [this is often untrue](https://github.com/jsmnbom/definitelytyped-firefox-webext-browser/issues/21) according to MDN and Thunderbird API documentation (see also [this discussion](https://github.com/thunderbird/webext-docs/issues/56)). Some callbacks may receive the argument `null`, and others simply aren't called without an argument under any circumstances, so a check on `undefined` values would be redundant. If we trust the 'optional' flag in the schema, we get it wrong more often than right. And it also occurs the other way around: a function whose promise can contain `null` being in the schema with a required callback parameter of another type.
 
-```ts
-Promise<MailAccount|null>
-```
+So I've gone to the trouble of looking it up in the online documentation for all forty-or-so individual cases, with the help of [a script](..%2Fscripts%2Ffind-optional-callback-params.js). For those cases where a nullish value is really allowed, the override scripts [overrides.ts](..%2Fsrc%2Foverrides.ts) and [tb-overrides.ts](..%2Fsrc%2Ftb-overrides.ts) add a flag 'by hand' that tells the converter to insert the alternative possibility, making the return value something like `Promise<Tab|null>` or `Promise<Tab|undefined>`.
 
 Here's the list of functions whose callbacks have an optional parameter according to the schemas:
 
@@ -67,10 +65,10 @@ Here's the list of functions whose callbacks have an optional parameter accordin
   * `accounts.get`
   * `accounts.getDefault`
   * `identities.get`
-* actually may return `undefined`:
+* actually may return `undefined` (i.e. get called without an argument):
   * `mailTabs.getCurrent`
   * `tabs.getCurrent`
-* listed as optional but the documentation says nothing about that:
+* listed as optional but the documentation says nothing about that – presumably never gets called without an argument:
   * `action.getLabel` (from the file `browserAction.json`)
   * `composeAction.getLabel`
   * `contacts.getPhoto`
