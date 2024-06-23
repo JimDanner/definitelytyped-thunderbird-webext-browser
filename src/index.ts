@@ -20,9 +20,9 @@ const API_DIR        = 'APIs',
 
 const argv = minimist(process.argv.slice(2), {
     string: ['tag', 'out'],
-    boolean: ['webstorm'],
-    default: {webstorm: false},
-    alias: { t: 'tag', version: 'tag', o: 'out', w: 'webstorm' },
+    boolean: ['webstorm', 'dump'],
+    default: {webstorm: false, dump: false},
+    alias: { t: 'tag', version: 'tag', o: 'out', d: 'dump', w: 'webstorm' },
 });
 const outfile: string = argv.out || `OUTPUT/${argv.webstorm ? 'WebStorm' : 'VSCode'}/index.d.ts`;
 let tb_tag: string = argv.tag;
@@ -105,14 +105,19 @@ console.log('\n\x1b[1mOverride\x1b[m');
 override(converter);
 tb_override(converter);
 
-console.log('\n\x1b[1mConvert\x1b[m');
-console.debug(`[Error messages that are non-breaking:
+if (argv.dump) {
+   console.log(`\n\x1b[1mDump schemas to ${path.join(tb_tag, METAINFO_DIR, 'schema_dump.json')}\x1b[m`);
+   converter.dump(path.resolve(API_DIR, tb_tag, METAINFO_DIR, 'schema_dump.json'));
+}
+else {
+    console.log('\n\x1b[1mConvert\x1b[m');
+    console.debug(`[Error messages that are non-breaking:
  - AddressBookNode is within the parent scope of the place where it's used; no error
  - requestUpdateCheck is not implemented yet
  - DirectoryEntry is not implemented and only used in a deprecated function]`);
-converter.convert(HEADER, INBETWEEN, FOOTER, argv.webstorm);
+    converter.convert(HEADER, INBETWEEN, FOOTER, argv.webstorm);
 
-console.log('\n\x1b[1mWrite to file\x1b[m');
-converter.write(outfile);
-
+    console.log('\n\x1b[1mWrite to file\x1b[m');
+    converter.write(outfile);
+}
 console.log('\x1b[33m[DONE]\x1b[m');

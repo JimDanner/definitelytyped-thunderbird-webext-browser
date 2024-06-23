@@ -189,6 +189,23 @@ function commentFromSchema(schema: TypeSchema | NamespaceSchema | NameDesc) {
   return toDocComment(comment_markdown) + '\n';
 }
 
+// Sort objects by keys. Deep: also sort nested contained objects that way
+function sortObject (unordered: any): any {
+  if (!unordered || typeof unordered !== 'object') {
+    return unordered;
+  }
+  if (Array.isArray(unordered)) {
+    return unordered.map(sortObject);
+  }
+  const ordered: Record<string, any> = {};
+  Object.keys(unordered)
+      .sort()
+      .forEach((key: string) => {
+        ordered[key] = sortObject(unordered[key]);
+      });
+  return ordered;
+}
+
 // Iterate over plain objects in nested objects and arrays
 function* deepIteratePlainObjects(item: object): Iterable<object> {
   if (_.isArray(item)) {
@@ -294,6 +311,15 @@ export default class Converter {
         }
       }
     }
+  }
+
+  dump(filename: string) {
+    const sorted = sortObject(this.namespaces);
+    // console.log(JSON.stringify(sorted, null,'\t'));
+    try {
+      Writer({path: filename}).write(JSON.stringify(sorted, null, '\t'));
+    }
+    catch(e) {console.log('error:', e.toString())}
   }
 
   setUnsupportedAsOptional() {

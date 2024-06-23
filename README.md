@@ -61,7 +61,7 @@ You can also use `-t` instead of `--tag`. It will download several files:
 If everything has downloaded successfully, the program can generate the type definitions and documentation:
 
 ```shell
-$ node build/index.js [--tag <TAG>] [--out <OUTPUT_FILE>] [--webstorm]
+$ node build/index.js [--tag <TAG>] [--out <OUTPUT_FILE>] [--webstorm] [--dump]
 ```
 
 for example,
@@ -75,6 +75,7 @@ All options may be omitted:
 * without `--out` (or `-o`) the output will be a file named `index.d.ts` in a subdrectory of `OUTPUT/`
 * without `--tag` (or `-t`) the program takes the first version whose downloads it finds – so if you have downloaded the files for more than one version, be sure to include the tag
 * with `--webstorm` (or `-w`) the program generates a special version that works better in the WebStorm IDE. The standard version works better in Visual Studio Code.
+* with `--dump` (or `-d`) the program doesn't generate `index.d.ts` but dumps the full contents of the schemas (the description of the Thunderbird WebExtension API) sorted alphabetically to a file `metainfo/schema_dump.json` in the directory of the downloaded files. This can be used to list the API changes between Thunderbird versions; in particular, the script `scripts/diffgen` uses it.
 
 ### 4. Use the definitions, or submit them to DefinitelyTyped
 How you install the definition file `index.d.ts` in your IDE depends on the IDE. For example:
@@ -90,9 +91,9 @@ The DefinitelyTyped repository will accept updates in the form of pull requests.
 * Update your personal fork of the DefinitelyTyped repository
 * Sparse-clone (or pull) your fork to your computer
 * Insert the updated `index.d.ts`, run the necessary tests, commit, run further tests, and push to your fork on Github
-* For sending PRs to DefinitelyTyped you need to include why you changed. For simple updates (Thunderbird version changes), this can be easily generated and uploaded to gist using the included script (requires the gist tool and that you are logged in):
+* For sending PRs to DefinitelyTyped you need to include why you changed. For simple updates (Thunderbird version changes), this can be easily generated and uploaded to gist using the included script (requires the `github-cli` package and that you are logged in):
     ```shell
-    diffgen THUNDERBIRD_91_8_0_RELEASE THUNDERBIRD_102_7_2_RELEASE
+    scripts/diffgen THUNDERBIRD_91_8_0_RELEASE THUNDERBIRD_102_7_2_RELEASE
     ```
 
 </details>
@@ -104,6 +105,7 @@ I have documented a few of these difficulties in the `doc` directory:
 
 * [Reserved words](./doc/Reserved%20words.md): issues related to the use of `delete` and `import` as names in the Thunderbird API;
 * [Type files](./doc/Type%20files.md): how to organize the various namespaces in the declaration file;
-* [Converter](./doc/Converter.md): some things I came across in the `converter.ts` script.
+* [Converter](./doc/Converter.md): some things I came across in the `converter.ts` script;
+* [Updating](./doc/Updating.md): the changes to make when you try to generate the definition file for a new version of Thunderbird.
 
 Some implementation notes are in comments in the scripts themselves, notably an explanation of the algorithm that creates function overloads when the API has optional function parameters in certain places: in the file `converter.ts`, in the function `convertFunction`.
