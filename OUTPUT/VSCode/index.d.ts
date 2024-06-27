@@ -13,7 +13,7 @@ interface WebExtEvent<TCallback extends (...args: any[]) => any> {
  * The Thunderbird API is documented at
  * [thunderbird.net](https://webextension-api.thunderbird.net/en/latest/).
  *
- * @version Thunderbird 115.10
+ * @version Thunderbird 127.0a1
  */
 declare namespace messenger {
     /**
@@ -81,6 +81,12 @@ declare namespace messenger {
                       service_worker: ExtensionURL;
                   }
                 | undefined;
+            /**
+             * Alias property for options_ui.page, ignored when options_ui.page is
+             * set. When using this property the options page is always opened in a
+             * new tab.
+             */
+            options_page?: ExtensionURL | undefined;
             options_ui?: _WebExtensionManifestOptionsUi | undefined;
             content_scripts?: ContentScript[] | undefined;
             content_security_policy?:
@@ -488,6 +494,9 @@ declare namespace messenger {
             | 'messagesMove'
             | 'messagesRead'
             | 'messagesTags'
+            | 'messagesTagsList'
+            | 'messagesUpdate'
+            | 'messagesModifyPermanent'
             | 'sensitiveDataUpload'
             | 'tabs'
             | 'tabHide'
@@ -975,6 +984,7 @@ declare namespace messenger {
             | 'idle'
             | 'scripting'
             | 'webRequest'
+            | 'webRequestAuthProvider'
             | 'webRequestBlocking'
             | 'webRequestFilterResponse'
             | 'webRequestFilterResponse.serviceWorkerScript';
@@ -1273,7 +1283,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/accounts.html
+     * @see https://webextension-api.thunderbird.net/en/latest/accounts.html
      */
     export namespace accounts {
         /* accounts types */
@@ -1284,19 +1294,33 @@ declare namespace messenger {
          */
         export interface MailAccount {
             /** A unique identifier for this account. */
-            id: string;
+            id: MailAccountId;
             /** The human-friendly name of this account. */
             name: string;
             /** What sort of account this is, e.g. `imap`, `nntp`, or `pop3`. */
             type: string;
-            /** The folders for this account are only included if requested. */
+            /**
+             * The folders for this account are only included if requested.
+             *
+             * Not supported on manifest versions above 2.
+             */
             folders?: folders.MailFolder[] | undefined;
+            /** The root folder associated with this account. */
+            rootFolder?: folders.MailFolder | undefined;
             /**
              * The identities associated with this account. The default identity is
              * listed first, others in no particular order.
              */
             identities: identities.MailIdentity[];
         }
+
+        /** A unique id representing a {@link accounts.MailAccount}. */
+        export type MailAccountId = string;
+
+        /** The type of an account. */
+        export type MailAccountType = _MailAccountType;
+
+        export type _MailAccountType = 'imap' | 'pop3' | 'nntp' | 'none' | 'imap' | 'pop3' | 'nntp' | 'local';
 
         export interface _OnUpdatedChangedValues {
             /** The human-friendly name of this account. */
@@ -1324,7 +1348,7 @@ declare namespace messenger {
          * object should included the account's folders.
          * Defaults to `true`.
          */
-        export function get(accountId: string, includeFolders?: boolean): Promise<MailAccount | null>;
+        export function get(accountId: MailAccountId, includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Returns the default account, or `null` if it is not defined.
@@ -1338,26 +1362,32 @@ declare namespace messenger {
         /**
          * Sets the default identity for an account.
          *
-         * @deprecated This will be removed. Use {@link identities.setDefault}
-         * instead.
+         * @deprecated Deprecated since Thunderbird 91 and removed in Manifest
+         * V3: accounts.setDefaultIdentity() is now available as
+         * identities.setDefault.
+         *
+         * Not supported on manifest versions above 2.
          */
-        export function setDefaultIdentity(accountId: string, identityId: string): Promise<any>;
+        export function setDefaultIdentity(accountId: MailAccountId, identityId: string): Promise<any>;
 
         /**
          * Returns the default identity for an account, or `null` if it is not
          * defined.
          *
-         * @deprecated This will be removed. Use {@link identities.getDefault}
-         * instead.
+         * @deprecated Deprecated since Thunderbird 91 and removed in Manifest
+         * V3: accounts.getDefaultIdentity() is now available as
+         * identities.getDefault.
+         *
+         * Not supported on manifest versions above 2.
          */
-        export function getDefaultIdentity(accountId: string): Promise<identities.MailIdentity | null>;
+        export function getDefaultIdentity(accountId: MailAccountId): Promise<identities.MailIdentity | null>;
 
         /* accounts events */
         /** Fired when a new account has been created. */
-        export const onCreated: WebExtEvent<(id: string, account: MailAccount) => void>;
+        export const onCreated: WebExtEvent<(accountId: MailAccountId, account: MailAccount) => void>;
 
         /** Fired when an account has been removed. */
-        export const onDeleted: WebExtEvent<(id: string) => void>;
+        export const onDeleted: WebExtEvent<(accountId: MailAccountId) => void>;
 
         /**
          * Fired when a property of an account has been modified. Folders and
@@ -1367,7 +1397,7 @@ declare namespace messenger {
          * assigned as default identity, but not after a property of the default
          * identity has been changed.
          */
-        export const onUpdated: WebExtEvent<(id: string, changedValues: _OnUpdatedChangedValues) => void>;
+        export const onUpdated: WebExtEvent<(accountId: MailAccountId, changedValues: _OnUpdatedChangedValues) => void>;
     }
 
     /**
@@ -1375,7 +1405,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/addressBooks.html
+     * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.html
      */
     export namespace addressBooks {
         /* addressBooks types */
@@ -1466,7 +1496,7 @@ declare namespace messenger {
          *
          * Not allowed in: Content scripts, Devtools pages
          *
-         * @see https://webextension-api.thunderbird.net/en/115/addressBooks.provider.html
+         * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.provider.html
          */
         export namespace provider {
             /**
@@ -1536,7 +1566,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/contacts.html
+     * @see https://webextension-api.thunderbird.net/en/latest/contacts.html
      */
     export namespace contacts {
         /* contacts types */
@@ -1583,7 +1613,8 @@ declare namespace messenger {
 
         /**
          * A set of individual properties for a particular contact, and its vCard
-         * string. Further information can be found in {@link howto_contacts}.
+         * string. Further information can be found in
+         * [examples/vcard](https://webextension-api.thunderbird.net/en/stable/examples/vcard.html).
          */
         export interface ContactProperties {
             [key: string]: string | null;
@@ -1700,7 +1731,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/mailingLists.html
+     * @see https://webextension-api.thunderbird.net/en/latest/mailingLists.html
      */
     export namespace mailingLists {
         /* mailingLists types */
@@ -2472,7 +2503,7 @@ declare namespace messenger {
      *
      * Not allowed in: Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/cloudFile.html
+     * @see https://webextension-api.thunderbird.net/en/latest/cloudFile.html
      */
     export namespace cloudFile {
         /* cloudFile types */
@@ -2776,7 +2807,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/commands.html
+     * @see https://webextension-api.thunderbird.net/en/latest/commands.html
      */
     export namespace commands {
         /* commands types */
@@ -2854,7 +2885,7 @@ declare namespace messenger {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/compose.html
+     * @see https://webextension-api.thunderbird.net/en/latest/compose.html
      */
     export namespace compose {
         /* compose types */
@@ -2865,8 +2896,7 @@ declare namespace messenger {
                    * The ID of a contact or mailing list from the
                    * [contacts](https://webextension-api.thunderbird.net/en/stable/contacts.html)
                    * and
-                   * [mailingLists](https://webextension-api.thunderbird.net/en/stable/mailingLists.html)
-                   * APIs.
+                   * [mailingLists](https://webextension-api.thunderbird.net/en/stable/mailingLists.html).
                    */
                   id: string;
                   /** Which sort of object this ID is for. */
@@ -2890,24 +2920,67 @@ declare namespace messenger {
          */
         export interface ComposeDetails {
             /**
-             * The ID of an identity from the
-             * [accounts](https://webextension-api.thunderbird.net/en/stable/accounts.html)
-             * API. The settings from the identity will be used in the composed
-             * message. If `replyTo` is also specified, the `replyTo` property of the
-             * identity is overridden. The permission _accountsRead_ is required to
-             * include the `identityId`.
+             * An additional fcc folder which can be selected while composing the
+             * message, an empty string if not used.
              */
-            identityId?: string | undefined;
+            additionalFccFolder?: folders.MailFolderId | folders.MailFolder | '' | undefined;
+            /**
+             * Whether or not the vCard of the used identity will be attached to the
+             * message during send. **Note:** If the value has not been modified,
+             * selecting a different identity will load the default value of the new
+             * identity.
+             */
+            attachVCard?: boolean | undefined;
+            /** Only used in the begin\* functions. Attachments to add to the message. */
+            attachments?: Array<FileAttachment | ComposeAttachment> | undefined;
+            bcc?: ComposeRecipientList | undefined;
+            /** The HTML content of the message. */
+            body?: string | undefined;
+            cc?: ComposeRecipientList | undefined;
+            /**
+             * Array of custom headers. Headers will be returned in
+             * _Http-Header-Case_ (a.k.a. _Train-Case_). Set an empty array to clear
+             * all custom headers.
+             */
+            customHeaders?: CustomHeader[] | undefined;
+            /**
+             * Defines the MIME format of the sent message (ignored on plain text
+             * messages). Defaults to `auto`, which will send html messages as plain
+             * text, if they do not include any formatting, and as `both` otherwise
+             * (a multipart/mixed message).
+             */
+            deliveryFormat?: _ComposeDetailsDeliveryFormat | undefined;
+            /**
+             * Let the sender know when the recipient's server received the message.
+             * Not supported by all servers.
+             */
+            deliveryStatusNotification?: boolean | undefined;
+            followupTo?: ComposeRecipientList | undefined;
             /**
              * _Caution_: Setting a value for `from` does not change the used
-             * identity, it overrides the FROM header. Many email servers do not
-             * accept emails where the FROM header does not match the sender
+             * identity, it overrides the `From` header. Many email servers do not
+             * accept emails where the `From` header does not match the sender
              * identity. Must be set to exactly one valid email address.
              */
             from?: ComposeRecipient | undefined;
-            to?: ComposeRecipientList | undefined;
-            cc?: ComposeRecipientList | undefined;
-            bcc?: ComposeRecipientList | undefined;
+            /**
+             * The ID of an identity from the
+             * [accounts](https://webextension-api.thunderbird.net/en/stable/accounts.html).
+             * The settings from the identity will be used in the composed message.
+             * If `replyTo` is also specified, the `replyTo` property of the identity
+             * is overridden. The permission _accountsRead_ is required to include
+             * the `identityId`.
+             */
+            identityId?: string | undefined;
+            /**
+             * Whether the composer is considered modified by the user. A modified
+             * composer asks for confirmation, when it is closed.
+             */
+            isModified?: boolean | undefined;
+            /** Whether the message is an HTML message or a plain text message. */
+            isPlainText?: boolean | undefined;
+            /** A single newsgroup name or an array of newsgroup names. */
+            newsgroups?: string | string[] | undefined;
             /**
              * Indicates whether the default fcc setting (defined by the used
              * identity) is being overridden for this message. Setting `false` will
@@ -2921,49 +2994,18 @@ declare namespace messenger {
              * specifying the folder for the copy of the sent message, or an empty
              * string to not save a copy at all.
              */
-            overrideDefaultFccFolder?: folders.MailFolder | '' | undefined;
-            /**
-             * An additional fcc folder which can be selected while composing the
-             * message, an empty string if not used.
-             */
-            additionalFccFolder?: folders.MailFolder | '' | undefined;
-            replyTo?: ComposeRecipientList | undefined;
-            followupTo?: ComposeRecipientList | undefined;
-            /** A single newsgroup name or an array of newsgroup names. */
-            newsgroups?: string | string[] | undefined;
+            overrideDefaultFccFolder?: folders.MailFolderId | folders.MailFolder | '' | undefined;
+            /** The plain text content of the message. */
+            plainTextBody?: string | undefined;
+            /** The priority of the message. */
+            priority?: _ComposeDetailsPriority | undefined;
             /**
              * The id of the original message (in case of draft, template, forward or
              * reply). Read-only. Is `null` in all other cases or if the original
              * message was opened from file.
              */
-            relatedMessageId?: number | undefined;
-            subject?: string | undefined;
-            /**
-             * Read-only. The type of the message being composed, depending on how
-             * the compose window was opened by the user.
-             */
-            type?: _ComposeDetailsType | undefined;
-            /** The HTML content of the message. */
-            body?: string | undefined;
-            /** The plain text content of the message. */
-            plainTextBody?: string | undefined;
-            /** Whether the message is an HTML message or a plain text message. */
-            isPlainText?: boolean | undefined;
-            /**
-             * Defines the mime format of the sent message (ignored on plain text
-             * messages). Defaults to `auto`, which will send html messages as plain
-             * text, if they do not include any formatting, and as `both` otherwise
-             * (a multipart/mixed message).
-             */
-            deliveryFormat?: _ComposeDetailsDeliveryFormat | undefined;
-            /**
-             * Array of custom headers. Headers will be returned in
-             * _Http-Header-Case_ (a.k.a. _Train-Case_). Set an empty array to clear
-             * all custom headers.
-             */
-            customHeaders?: CustomHeader[] | undefined;
-            /** The priority of the message. */
-            priority?: _ComposeDetailsPriority | undefined;
+            relatedMessageId?: messages.MessageId | undefined;
+            replyTo?: ComposeRecipientList | undefined;
             /**
              * Add the _Disposition-Notification-To_ header to the message to
              * requests the recipients email client to send a reply once the message
@@ -2971,20 +3013,13 @@ declare namespace messenger {
              * recipient might ignore the request.
              */
             returnReceipt?: boolean | undefined;
+            subject?: string | undefined;
+            to?: ComposeRecipientList | undefined;
             /**
-             * Let the sender know when the recipient's server received the message.
-             * Not supported by all servers.
+             * Read-only. The type of the message being composed, depending on how
+             * the compose window was opened by the user.
              */
-            deliveryStatusNotification?: boolean | undefined;
-            /**
-             * Wether or not the vCard of the used identity will be attached to the
-             * message during send. Note: If the value has not been modified,
-             * selecting a different identity will load the default value of the new
-             * identity.
-             */
-            attachVCard?: boolean | undefined;
-            /** Only used in the begin\* functions. Attachments to add to the message. */
-            attachments?: Array<FileAttachment | ComposeAttachment> | undefined;
+            type?: _ComposeDetailsType | undefined;
         }
 
         /**
@@ -3013,7 +3048,11 @@ declare namespace messenger {
 
         /** A custom header definition. */
         export interface CustomHeader {
-            /** Name of a custom header, must have a `X-` prefix. */
+            /**
+             * Name of a custom header, must be prefixed by `X-` (but not by
+             * `X-Mozilla-`) or be one of the explicitly allowed headers
+             * (`MSIP_Labels`)
+             */
             name: string;
             value: string;
         }
@@ -3032,13 +3071,7 @@ declare namespace messenger {
         export type _UndefinedType = 'contact' | 'mailingList';
 
         /**
-         * Read-only. The type of the message being composed, depending on how
-         * the compose window was opened by the user.
-         */
-        export type _ComposeDetailsType = 'draft' | 'new' | 'redirect' | 'reply' | 'forward';
-
-        /**
-         * Defines the mime format of the sent message (ignored on plain text
+         * Defines the MIME format of the sent message (ignored on plain text
          * messages). Defaults to `auto`, which will send html messages as plain
          * text, if they do not include any formatting, and as `both` otherwise
          * (a multipart/mixed message).
@@ -3047,6 +3080,12 @@ declare namespace messenger {
 
         /** The priority of the message. */
         export type _ComposeDetailsPriority = 'lowest' | 'low' | 'normal' | 'high' | 'highest';
+
+        /**
+         * Read-only. The type of the message being composed, depending on how
+         * the compose window was opened by the user.
+         */
+        export type _ComposeDetailsType = 'draft' | 'new' | 'redirect' | 'reply' | 'forward';
 
         export type _BeginReplyReplyType = 'replyToSender' | 'replyToList' | 'replyToAll';
 
@@ -3116,7 +3155,7 @@ declare namespace messenger {
         }
 
         /** The used save mode. */
-        export type _OnAfterSaveSaveInfoMode = 'draft' | 'template';
+        export type _OnAfterSaveSaveInfoMode = 'autoSave' | 'draft' | 'template';
 
         export interface _OnAfterSaveSaveInfo {
             /** The used save mode. */
@@ -3151,7 +3190,7 @@ declare namespace messenger {
          * @param messageId If specified, the message or template to edit as a
          * new message.
          */
-        export function beginNew(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
+        export function beginNew(messageId: messages.MessageId, details?: ComposeDetails): Promise<tabs.Tab>;
         /**
          * Open a new message compose window.
          *
@@ -3192,7 +3231,7 @@ declare namespace messenger {
          * APIs.
          */
         export function beginReply(
-            messageId: number,
+            messageId: messages.MessageId,
             replyType: _BeginReplyReplyType,
             details?: ComposeDetails,
         ): Promise<tabs.Tab>;
@@ -3216,7 +3255,7 @@ declare namespace messenger {
          * @param messageId The message to reply to, as retrieved using other
          * APIs.
          */
-        export function beginReply(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
+        export function beginReply(messageId: messages.MessageId, details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
          * Open a new message compose window forwarding a given message.
@@ -3239,7 +3278,7 @@ declare namespace messenger {
          * APIs.
          */
         export function beginForward(
-            messageId: number,
+            messageId: messages.MessageId,
             forwardType: _BeginForwardForwardType,
             details?: ComposeDetails,
         ): Promise<tabs.Tab>;
@@ -3263,7 +3302,7 @@ declare namespace messenger {
          * @param messageId The message to forward, as retrieved using other
          * APIs.
          */
-        export function beginForward(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
+        export function beginForward(messageId: messages.MessageId, details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
          * Fetches the current state of a compose window. Currently only a
@@ -3429,7 +3468,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/composeAction.html
+     * @see https://webextension-api.thunderbird.net/en/latest/composeAction.html
      */
     export namespace composeAction {
         /* composeAction types */
@@ -3762,7 +3801,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/composeScripts.html
+     * @see https://webextension-api.thunderbird.net/en/latest/composeScripts.html
      */
     export namespace composeScripts {
         /* composeScripts types */
@@ -3790,7 +3829,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/messageDisplayScripts.html
+     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayScripts.html
      */
     export namespace messageDisplayScripts {
         /* messageDisplayScripts types */
@@ -3800,6 +3839,12 @@ declare namespace messenger {
             css?: extensionTypes.ExtensionFileOrCode[] | undefined;
             /** The list of JavaScript files to inject */
             js?: extensionTypes.ExtensionFileOrCode[] | undefined;
+            /**
+             * Determines when the files specified in css and js are injected. The
+             * states directly correspond to `Document.readyState`: `loading`,
+             * `interactive` and `complete`
+             */
+            runAt?: _RegisteredMessageDisplayScriptOptionsRunAt | undefined;
         }
 
         /**
@@ -3811,8 +3856,21 @@ declare namespace messenger {
             unregister(): Promise<any>;
         }
 
+        /**
+         * Determines when the files specified in css and js are injected. The
+         * states directly correspond to `Document.readyState`: `loading`,
+         * `interactive` and `complete`
+         */
+        export type _RegisteredMessageDisplayScriptOptionsRunAt = 'document_start' | 'document_end' | 'document_idle';
+
         /* messageDisplayScripts functions */
-        /** Register a message display script programmatically */
+        /**
+         * Register a message display script programmatically. **Note:**
+         * Registered scripts will only be applied to newly opened messages. To
+         * apply the script to already open messages, manually inject your script
+         * by calling {@link tabs.executeScript} for each of the open
+         * `messageDisplay` tabs.
+         */
         export function register(messageDisplayScriptOptions: RegisteredMessageDisplayScriptOptions): Promise<any>;
     }
 
@@ -3821,21 +3879,27 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/folders.html
+     * @see https://webextension-api.thunderbird.net/en/latest/folders.html
      */
     export namespace folders {
         /* folders types */
         /**
-         * An object describing a mail folder, as returned for example by the
-         * {@link folders.getParentFolders} or {@link folders.getSubFolders}
-         * methods, or part of a {@link accounts.MailAccount} object, which is
-         * returned for example by the {@link accounts.list} and {@link accounts.get}
-         * methods. The `subFolders` property is only included if
-         * requested.
+         * An object describing a folder. The `subFolders` property is only
+         * included if requested.
          */
         export interface MailFolder {
-            /** The account this folder belongs to. */
-            accountId: string;
+            /** The id of the account this folder belongs to. */
+            accountId?: accounts.MailAccountId | undefined;
+            /** An identifier for the folder. */
+            id?: MailFolderId | undefined;
+            /** Whether this folder is a favorite folder. */
+            isFavorite?: boolean | undefined;
+            /** Whether this folder is a root folder. */
+            isRoot?: boolean | undefined;
+            /** Whether this folder is a unified mailbox folder. */
+            isUnified?: boolean | undefined;
+            /** Whether this folder is a virtual search folder. */
+            isVirtual?: boolean | undefined;
             /** The human-friendly name of this folder. */
             name?: string | undefined;
             /**
@@ -3846,26 +3910,66 @@ declare namespace messenger {
              */
             path: string;
             /**
+             * The special use of this folder. A folder can have multiple special
+             * uses.
+             */
+            specialUse?: MailFolderSpecialUse[] | undefined;
+            /**
              * Subfolders are only included if requested. They will be returned in
              * the same order as used in Thunderbird's folder pane.
              */
             subFolders?: MailFolder[] | undefined;
-            /** The type of folder, for several common types. */
-            type?: _MailFolderType | undefined;
+            /**
+             * Deprecated. Was used to represent the type of this folder.
+             *
+             * Not supported on manifest versions above 2.
+             */
+            type?: MailFolderSpecialUse | undefined;
         }
 
-        /** An object containing additional information about a mail folder. */
+        /**
+         * A unique id representing a {@link folders.MailFolder} throughout a
+         * session. Renaming or moving a folder will invalidate its id.
+         */
+        export type MailFolderId = string;
+
+        /** An object containing additional information about a folder. */
         export interface MailFolderInfo {
-            /** Whether this folder is a favorite folder. */
+            /**
+             * Deprecated. This information is now available in {@link folders.MailFolder}.
+             *
+             *
+             * Not supported on manifest versions above 2.
+             */
             favorite?: boolean | undefined;
+            /** Date the folder was last used (precision: seconds). */
+            lastUsed?: extensionTypes.Date | undefined;
+            /** Quota information, if available. */
+            quota?: MailFolderQuota[] | undefined;
+            /** Number of new messages in this folder. */
+            newMessageCount?: number | undefined;
             /** Number of messages in this folder. */
             totalMessageCount?: number | undefined;
             /** Number of unread messages in this folder. */
             unreadMessageCount?: number | undefined;
         }
 
-        /** The type of folder, for several common types. */
-        export type _MailFolderType =
+        /** An object containing capability information about a folder. */
+        export interface MailFolderCapabilities {
+            /** Whether this folder supports adding new messages. */
+            canAddMessages?: boolean | undefined;
+            /** Whether this folder supports adding new subfolders. */
+            canAddSubfolders?: boolean | undefined;
+            /** Whether this folder can be deleted. */
+            canBeDeleted?: boolean | undefined;
+            /** Whether this folder can be renamed. */
+            canBeRenamed?: boolean | undefined;
+            /** Whether this folder supports deleting messages. */
+            canDeleteMessages?: boolean | undefined;
+        }
+
+        /** Supported values for the special use of a folder. */
+        export type MailFolderSpecialUse =
             | 'inbox'
             | 'drafts'
             | 'sent'
@@ -3875,43 +3979,213 @@ declare namespace messenger {
             | 'junk'
             | 'outbox';
 
+        /** An object containing quota information. */
+        export interface MailFolderQuota {
+            /**
+             * The type of the quota as defined by RFC2087\. A `STORAGE` quota is
+             * constraining the available storage in bytes, a `MESSAGE` quota is
+             * constraining the number of storable messages.
+             */
+            type: _MailFolderQuotaType;
+            /** The maximum available quota. */
+            limit: number;
+            /** The currently used quota. */
+            used: number;
+            /** The currently unused quota. */
+            unused: number;
+        }
+
+        /** An object defining a range. */
+        export interface QueryRange {
+            /** The minimum value required to match the query. */
+            min?: number | undefined;
+            /** The maximum value required to match the query. */
+            max?: number | undefined;
+        }
+
+        export interface RegularExpression {
+            /** A regular expression, for example `^Projects \d{4}$`. */
+            regexp: string;
+            /**
+             * Supported RegExp flags: `i` = case insensitive, and/or one of `u` =
+             * unicode support or `v` = extended unicode support
+             */
+            flags?: string | undefined;
+        }
+
+        /**
+         * The type of the quota as defined by RFC2087\. A `STORAGE` quota is
+         * constraining the available storage in bytes, a `MESSAGE` quota is
+         * constraining the number of storable messages.
+         */
+        export type _MailFolderQuotaType = 'STORAGE' | 'MESSAGE';
+
+        export interface _QueryQueryInfo {
+            /** Limits the search to folders of the account with the specified id. */
+            accountId?: accounts.MailAccountId | undefined;
+            /** Whether the folder supports adding new messages, or not. */
+            canAddMessages?: boolean | undefined;
+            /** Whether the folder supports adding new subfolders, or not. */
+            canAddSubfolders?: boolean | undefined;
+            /** Whether the folder can be deleted, or not. */
+            canBeDeleted?: boolean | undefined;
+            /** Whether the folder can be renamed, or not. */
+            canBeRenamed?: boolean | undefined;
+            /** Whether the folder supports deleting messages, or not. */
+            canDeleteMessages?: boolean | undefined;
+            /** Limits the search to the folder with the specified id. */
+            folderId?: MailFolderId | undefined;
+            /**
+             * Whether the folder (excluding subfolders) contains messages, or not.
+             * Supports to specify a {@link folders.QueryRange} (min/max) instead of
+             * a simple boolean value (none/some).
+             */
+            hasMessages?: boolean | QueryRange | undefined;
+            /**
+             * Whether the folder (excluding subfolders) contains unread messages, or
+             * not. Supports to specify a {@link folders.QueryRange} (min/max)
+             * instead of a simple boolean value (none/some).
+             */
+            hasUnreadMessages?: boolean | QueryRange | undefined;
+            /**
+             * Whether the folder (excluding subfolders) contains new messages, or
+             * not. Supports to specify a {@link folders.QueryRange} (min/max)
+             * instead of a simple boolean value (none/some).
+             */
+            hasNewMessages?: boolean | QueryRange | undefined;
+            /**
+             * Whether the folder has subfolders, or not. Supports to specify a
+             * {@link folders.QueryRange} (min/max) instead of a simple boolean value
+             * (none/some).
+             */
+            hasSubFolders?: boolean | QueryRange | undefined;
+            /** Whether the folder is a favorite folder, or not. */
+            isFavorite?: boolean | undefined;
+            /** Whether the folder is a root folder, or not. */
+            isRoot?: boolean | undefined;
+            /**
+             * Whether the folder is a unified mailbox folder, or not. Note: Unified
+             * mailbox folders are always skipped, unless this property is set to
+             * `true`
+             */
+            isUnified?: boolean | undefined;
+            /** Whether the folder is a virtual search folder, or not. */
+            isVirtual?: boolean | undefined;
+            /**
+             * Limits the number of returned folders. If used together with `recent`,
+             * supports being set to {@link folders.DEFAULT_MOST_RECENT_LIMIT}
+             */
+            limit?: number | undefined;
+            /**
+             * Return only folders whose name is matched by the provided string or
+             * regular expression.
+             */
+            name?: RegularExpression | string | undefined;
+            /**
+             * Return only folders whose path is matched by the provided string or
+             * regular expression.
+             */
+            path?: RegularExpression | string | undefined;
+            /**
+             * Whether the folder (excluding subfolders) has been used within the
+             * last month, or not. The returned folders will be sorted by their
+             * recentness.
+             */
+            recent?: boolean | undefined;
+            /**
+             * Match only folders with the specified special use (folders have to
+             * match all specified uses).
+             */
+            specialUse?: MailFolderSpecialUse[] | undefined;
+            /**
+             * Deprecated. Match only folders with the specified special use.
+             *
+             * Not supported on manifest versions above 2.
+             */
+            type?: MailFolderSpecialUse | undefined;
+        }
+
         export { _delete as delete };
 
+        /** The properties to update. */
+        export interface _UpdateUpdateProperties {
+            /** Sets or clears the favorite status. */
+            isFavorite?: boolean | undefined;
+        }
+
+        /* folders properties */
+        /**
+         * The number of most recent folders used in Thunderbird's UI. Controled
+         * by the `mail.folder_widget.max_recent` preference.
+         */
+        export const DEFAULT_MOST_RECENT_LIMIT: number;
+
         /* folders functions */
+        /**
+         * Gets folders that match the specified properties, or all folders if no
+         * properties are specified.
+         */
+        export function query(queryInfo?: _QueryQueryInfo): Promise<MailFolder[]>;
+
+        /**
+         * Returns the specified folder.
+         *
+         * @param [includeSubFolders] Specifies whether the returned {@link folders.MailFolder}
+         * object should include all its nested subfolders .
+         * Defaults to `true`.
+         */
+        export function get(folder: MailFolderId, includeSubFolders?: boolean): Promise<MailFolder>;
+
         /**
          * Creates a new subfolder in the specified folder or at the root of the
          * specified account.
          */
-        export function create(parent: MailFolder | accounts.MailAccount, childName: string): Promise<MailFolder>;
+        export function create(
+            destination: MailFolderId | MailFolder | accounts.MailAccount,
+            childName: string,
+        ): Promise<MailFolder>;
 
         /** Renames a folder. */
-        export function rename(folder: MailFolder, newName: string): Promise<MailFolder>;
+        export function rename(folder: MailFolderId | MailFolder, newName: string): Promise<MailFolder>;
 
         /**
-         * Moves the given `sourceFolder` into the given `destination`. Throws if
-         * the destination already contains a folder with the name of the source
-         * folder.
+         * Moves the given source folder into the given destination folder.
+         * Throws if the destination already contains a folder with the name of
+         * the source folder.
          */
         export function move(
-            sourceFolder: MailFolder,
-            destination: MailFolder | accounts.MailAccount,
+            source: MailFolderId | MailFolder,
+            destination: MailFolderId | MailFolder | accounts.MailAccount,
         ): Promise<MailFolder>;
 
         /**
-         * Copies the given `sourceFolder` into the given `destination`. Throws
-         * if the destination already contains a folder with the name of the
-         * source folder.
+         * Copies the given source folder into the given destination folder.
+         * Throws if the destination already contains a folder with the name of
+         * the source folder.
          */
         export function copy(
-            sourceFolder: MailFolder,
-            destination: MailFolder | accounts.MailAccount,
+            source: MailFolderId | MailFolder,
+            destination: MailFolderId | MailFolder | accounts.MailAccount,
         ): Promise<MailFolder>;
 
         /** Deletes a folder. */
-        function _delete(folder: MailFolder): Promise<any>;
+        function _delete(folder: MailFolderId | MailFolder): Promise<any>;
 
-        /** Get additional information about a mail folder. */
-        export function getFolderInfo(folder: MailFolder): Promise<MailFolderInfo>;
+        /**
+         * Updates properties of a folder.
+         *
+         * @param updateProperties The properties to update.
+         */
+        export function update(
+            folder: MailFolderId | MailFolder,
+            updateProperties: _UpdateUpdateProperties,
+        ): Promise<any>;
+
+        /** Get additional information about a folder. */
+        export function getFolderInfo(folder: MailFolderId | MailFolder): Promise<MailFolderInfo>;
+
+        /** Get capability information about a folder. */
+        export function getFolderCapabilities(folder: MailFolderId | MailFolder): Promise<MailFolderCapabilities>;
 
         /**
          * Get all parent folders as a flat ordered array. The first array entry
@@ -3921,7 +4195,10 @@ declare namespace messenger {
          * object for each parent folder should include its
          * nested subfolders . Defaults to `false`.
          */
-        export function getParentFolders(folder: MailFolder, includeSubFolders?: boolean): Promise<MailFolder[]>;
+        export function getParentFolders(
+            folder: MailFolderId | MailFolder,
+            includeSubFolders?: boolean,
+        ): Promise<MailFolder[]>;
 
         /**
          * Get the subfolders of the specified folder or account.
@@ -3931,9 +4208,12 @@ declare namespace messenger {
          * include all its nested subfolders . Defaults to `true`.
          */
         export function getSubFolders(
-            folderOrAccount: MailFolder | accounts.MailAccount,
+            folder: MailFolderId | MailFolder | accounts.MailAccount,
             includeSubFolders?: boolean,
         ): Promise<MailFolder[]>;
+
+        /** Marks all messages in a folder as read. */
+        export function markAsRead(folder: MailFolderId | MailFolder): void;
 
         /* folders events */
         /** Fired when a folder has been created. */
@@ -3952,6 +4232,12 @@ declare namespace messenger {
         export const onDeleted: WebExtEvent<(deletedFolder: MailFolder) => void>;
 
         /**
+         * Fired when properties of a folder have changed (`specialUse` and
+         * `isFavorite`).
+         */
+        export const onUpdated: WebExtEvent<(originalFolder: MailFolder, updatedFolder: MailFolder) => void>;
+
+        /**
          * Fired when certain information of a folder have changed. Bursts of
          * message count changes are collapsed to a single event.
          */
@@ -3963,7 +4249,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/identities.html
+     * @see https://webextension-api.thunderbird.net/en/latest/identities.html
      */
     export namespace identities {
         /* identities types */
@@ -3972,7 +4258,7 @@ declare namespace messenger {
              * The id of the {@link accounts.MailAccount} this identity belongs to.
              * The `accountId` property is read-only.
              */
-            accountId?: string | undefined;
+            accountId?: accounts.MailAccountId | undefined;
             /** If the identity uses HTML as the default compose format. */
             composeHtml?: boolean | undefined;
             /**
@@ -4005,7 +4291,7 @@ declare namespace messenger {
          * in any specific order. Use {@link identities.getDefault} to get the
          * default identity of an account.
          */
-        export function list(accountId?: string): Promise<MailIdentity[]>;
+        export function list(accountId?: accounts.MailAccountId): Promise<MailIdentity[]>;
 
         /**
          * Returns details of the requested identity, or `null` if it doesn't
@@ -4014,7 +4300,7 @@ declare namespace messenger {
         export function get(identityId: string): Promise<MailIdentity | null>;
 
         /** Create a new identity in the specified account. */
-        export function create(accountId: string, details: MailIdentity): Promise<MailIdentity>;
+        export function create(accountId: accounts.MailAccountId, details: MailIdentity): Promise<MailIdentity>;
 
         /**
          * Attempts to delete the requested identity. Default identities cannot
@@ -4029,10 +4315,10 @@ declare namespace messenger {
          * Returns the default identity for the requested account, or `null` if
          * it is not defined.
          */
-        export function getDefault(accountId: string): Promise<MailIdentity | null>;
+        export function getDefault(accountId: accounts.MailAccountId): Promise<MailIdentity | null>;
 
         /** Sets the default identity for the requested account. */
-        export function setDefault(accountId: string, identityId: string): Promise<any>;
+        export function setDefault(accountId: accounts.MailAccountId, identityId: string): Promise<any>;
 
         /* identities events */
         /**
@@ -4056,7 +4342,7 @@ declare namespace messenger {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/mailTabs.html
+     * @see https://webextension-api.thunderbird.net/en/latest/mailTabs.html
      */
     export namespace mailTabs {
         /* mailTabs types */
@@ -4083,6 +4369,31 @@ declare namespace messenger {
              * included.
              */
             displayedFolder?: folders.MailFolder | undefined;
+        }
+
+        export interface MailTabProperties {
+            /** Sorts the list of messages. `sortOrder` must also be given. */
+            sortType?: _MailTabPropertiesSortType | undefined;
+            /** Sorts the list of messages. `sortType` must also be given. */
+            sortOrder?: _MailTabPropertiesSortOrder | undefined;
+            viewType?: _MailTabPropertiesViewType | undefined;
+            /**
+             * Sets the arrangement of the folder pane, message list pane, and
+             * message display pane. Note that setting this applies it to all mail
+             * tabs.
+             */
+            layout?: _MailTabPropertiesLayout | undefined;
+            /** Shows or hides the folder pane. */
+            folderPaneVisible?: boolean | undefined;
+            /** Shows or hides the message display pane. */
+            messagePaneVisible?: boolean | undefined;
+            /**
+             * Sets the folder displayed in the mail tab. Requires the _accountsRead_
+             * permission. The previous message selection in the given folder will be
+             * restored, if any. This property is ignored, if `selectedMessages` is
+             * specified.
+             */
+            displayedFolder?: folders.MailFolderId | folders.MailFolder | undefined;
         }
 
         export interface QuickFilterTextDetail {
@@ -4137,22 +4448,8 @@ declare namespace messenger {
 
         export type _MailTabLayout = 'standard' | 'wide' | 'vertical';
 
-        export interface _QueryQueryInfo {
-            /** Whether the tabs are active in their windows. */
-            active?: boolean | undefined;
-            /** Whether the tabs are in the current window. */
-            currentWindow?: boolean | undefined;
-            /** Whether the tabs are in the last focused window. */
-            lastFocusedWindow?: boolean | undefined;
-            /**
-             * The ID of the parent window, or {@link windows.WINDOW_ID_CURRENT} for
-             * the current window.
-             */
-            windowId?: number | undefined;
-        }
-
         /** Sorts the list of messages. `sortOrder` must also be given. */
-        export type _UpdateUpdatePropertiesSortType =
+        export type _MailTabPropertiesSortType =
             | 'none'
             | 'date'
             | 'subject'
@@ -4175,39 +4472,29 @@ declare namespace messenger {
             | 'correspondent';
 
         /** Sorts the list of messages. `sortType` must also be given. */
-        export type _UpdateUpdatePropertiesSortOrder = 'none' | 'ascending' | 'descending';
+        export type _MailTabPropertiesSortOrder = 'none' | 'ascending' | 'descending';
 
-        export type _UpdateUpdatePropertiesViewType = 'ungrouped' | 'groupedByThread' | 'groupedBySortType';
+        export type _MailTabPropertiesViewType = 'ungrouped' | 'groupedByThread' | 'groupedBySortType';
 
         /**
          * Sets the arrangement of the folder pane, message list pane, and
          * message display pane. Note that setting this applies it to all mail
          * tabs.
          */
-        export type _UpdateUpdatePropertiesLayout = 'standard' | 'wide' | 'vertical';
+        export type _MailTabPropertiesLayout = 'standard' | 'wide' | 'vertical';
 
-        export interface _UpdateUpdateProperties {
+        export interface _QueryQueryInfo {
+            /** Whether the tabs are active in their windows. */
+            active?: boolean | undefined;
+            /** Whether the tabs are in the current window. */
+            currentWindow?: boolean | undefined;
+            /** Whether the tabs are in the last focused window. */
+            lastFocusedWindow?: boolean | undefined;
             /**
-             * Sets the folder displayed in the tab. The extension must have the
-             * _accountsRead_ permission to do this. The previous message selection
-             * in the given folder will be restored.
+             * The ID of the parent window, or {@link windows.WINDOW_ID_CURRENT} for
+             * the current window.
              */
-            displayedFolder?: folders.MailFolder | undefined;
-            /** Sorts the list of messages. `sortOrder` must also be given. */
-            sortType?: _UpdateUpdatePropertiesSortType | undefined;
-            /** Sorts the list of messages. `sortType` must also be given. */
-            sortOrder?: _UpdateUpdatePropertiesSortOrder | undefined;
-            viewType?: _UpdateUpdatePropertiesViewType | undefined;
-            /**
-             * Sets the arrangement of the folder pane, message list pane, and
-             * message display pane. Note that setting this applies it to all mail
-             * tabs.
-             */
-            layout?: _UpdateUpdatePropertiesLayout | undefined;
-            /** Shows or hides the folder pane. */
-            folderPaneVisible?: boolean | undefined;
-            /** Shows or hides the message display pane. */
-            messagePaneVisible?: boolean | undefined;
+            windowId?: number | undefined;
         }
 
         export interface _SetQuickFilterProperties {
@@ -4220,7 +4507,7 @@ declare namespace messenger {
             /** Shows only messages from people in the address book. */
             contact?: boolean | undefined;
             /** Shows only messages with tags on them. */
-            tags?: boolean | messages.TagsDetail | undefined;
+            tags?: boolean | messages.tags.TagsDetail | undefined;
             /** Shows only messages with attachments. */
             attachment?: boolean | undefined;
             /** Shows only messages matching the supplied text. */
@@ -4249,17 +4536,32 @@ declare namespace messenger {
         export function getCurrent(): Promise<MailTab | undefined>;
 
         /**
+         * Creates a new mail tab. Standard tab properties can be adjusted via
+         * {@link tabs.update} after the mail tab has been created. **Note:** A
+         * new mail window can be created via {@link windows.create}.
+         */
+        export function create(createProperties?: MailTabProperties): Promise<MailTab>;
+
+        /**
          * Modifies the properties of a mail tab. Properties that are not
          * specified in `updateProperties` are not modified.
          *
          * @param tabId Defaults to the active tab of the current window.
          */
-        export function update(tabId: number, updateProperties: _UpdateUpdateProperties): Promise<any>;
+        export function update(tabId: number, updateProperties: MailTabProperties): Promise<MailTab>;
         /**
          * Modifies the properties of a mail tab. Properties that are not
          * specified in `updateProperties` are not modified.
          */
-        export function update(updateProperties: _UpdateUpdateProperties): Promise<any>;
+        export function update(updateProperties: MailTabProperties): Promise<MailTab>;
+
+        /**
+         * Lists the messages in the current view, honoring sort order and
+         * filters.
+         *
+         * @param [tabId] Defaults to the active tab of the current window.
+         */
+        export function getListedMessages(tabId?: number): Promise<messages.MessageList>;
 
         /**
          * Lists the selected messages in the current folder.
@@ -4274,20 +4576,20 @@ declare namespace messenger {
          * @param tabId Defaults to the active tab of the current window.
          *
          * @param messageIds The IDs of the messages, which should be selected.
-         * The mailTab will switch to the folder of the selected messages. Throws
-         * if they belong to different folders. Array can be empty to deselect
-         * any currently selected message.
+         * The mail tab will switch to the folder of the selected messages.
+         * Throws if they belong to different folders. Array can be empty to
+         * deselect any currently selected message.
          */
-        export function setSelectedMessages(tabId: number, messageIds: number[]): Promise<any>;
+        export function setSelectedMessages(tabId: number, messageIds: messages.MessageId[]): Promise<any>;
         /**
          * Selects none, one or multiple messages.
          *
          * @param messageIds The IDs of the messages, which should be selected.
-         * The mailTab will switch to the folder of the selected messages. Throws
-         * if they belong to different folders. Array can be empty to deselect
-         * any currently selected message.
+         * The mail tab will switch to the folder of the selected messages.
+         * Throws if they belong to different folders. Array can be empty to
+         * deselect any currently selected message.
          */
-        export function setSelectedMessages(messageIds: number[]): Promise<any>;
+        export function setSelectedMessages(messageIds: messages.MessageId[]): Promise<any>;
 
         /**
          * Sets the Quick Filter user interface based on the options specified.
@@ -4319,7 +4621,7 @@ declare namespace messenger {
      *
      * Permissions: `menus`, `menus`
      *
-     * @see https://webextension-api.thunderbird.net/en/115/menus.html
+     * @see https://webextension-api.thunderbird.net/en/latest/menus.html
      */
     export namespace menus {
         /* menus types */
@@ -4523,14 +4825,6 @@ declare namespace messenger {
         }
 
         /**
-         * The provided path may be a relative path to an icon file, an image
-         * `data:` URL, a `blob:` URL or a `moz-extension: `URL. The `data:` or
-         * `blob:` URLs can be retrieved as follows:
-         * [DataBlobUrls.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/DataBlobUrls.js),````
-         */
-        export type SingleMenuIconPath = string;
-
-        /**
          * Either a _string_ to specify a single icon path to be used for all
          * sizes, or a
          * _dictionary object_ to specify paths for multiple icons in different
@@ -4546,11 +4840,26 @@ declare namespace messenger {
          * [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes)
          * for more information on this.
          */
-        export type MenuIconPath =
-            | SingleMenuIconPath
-            | {
-                  [key: number]: SingleMenuIconPath;
-              };
+        export type MenuIconPath = string;
+
+        /**
+         * A _dictionary object_ to specify paths for multiple icons in different
+         * sizes,
+         * so the best matching icon can be used, instead of scaling a standard
+         * icon to fit the
+         * pixel density of the user's display. Each entry is a _name-value_
+         * pair, with
+         * _name_ being a size and _value_ being a {@link menus.MenuIconPath}.
+         * Example:
+         * [IconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/IconPath.json)
+         *
+         * See the
+         * [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes)
+         * for more information on this.
+         */
+        export interface MenuIconDictionary {
+            [key: number]: MenuIconPath;
+        }
 
         export type _ContextType =
             | 'all'
@@ -4612,7 +4921,7 @@ declare namespace messenger {
              * Custom icons to display next to the menu item. Custom icons can only
              * be set for items appearing in submenus.
              */
-            icons?: MenuIconPath | undefined;
+            icons?: MenuIconPath | MenuIconDictionary | undefined;
             /**
              * The text to be displayed in the item; this is _required_ unless `type`
              * is `separator`. When the context is `selection`, you can use `%s`
@@ -4651,7 +4960,7 @@ declare namespace messenger {
              *
              * @param tab The details of the tab where the click took place.
              */
-            onclick?: (info: OnClickData, tab: tabs.Tab) => void | undefined;
+            onclick?: (info: OnClickData, tab: tabs.Tab) => undefined;
             /**
              * The ID of a parent menu item; this makes the item a child of a
              * previously added item.
@@ -4682,7 +4991,7 @@ declare namespace messenger {
          */
         export interface _UpdateUpdateProperties {
             type?: ItemType | undefined;
-            icons?: MenuIconPath | undefined;
+            icons?: MenuIconPath | MenuIconDictionary | undefined;
             title?: string | undefined;
             checked?: boolean | undefined;
             contexts?: ContextType[] | undefined;
@@ -4693,7 +5002,7 @@ declare namespace messenger {
              * @param tab The details of the tab where the click took place.
              * **Note:** this parameter only present for extensions.
              */
-            onclick?: (info: OnClickData, tab: tabs.Tab) => void | undefined;
+            onclick?: (info: OnClickData, tab: tabs.Tab) => undefined;
             /**
              * **Note:** You cannot change an item to be a child of one of its own
              * descendants.
@@ -4782,7 +5091,7 @@ declare namespace messenger {
          * available as `info.targetElementId` in the {@link menus.onShown} and
          * {@link menus.onClicked} events.
          */
-        export function getTargetElement(targetElementId: number): Element | void;
+        export function getTargetElement(targetElementId: number): Element | undefined;
 
         /* menus events */
         /**
@@ -4820,7 +5129,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/messageDisplay.html
+     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplay.html
      */
     export namespace messageDisplay {
         /**
@@ -4840,7 +5149,7 @@ declare namespace messenger {
              * The id of a message to be opened. Will throw an _ExtensionError_, if
              * the provided `messageId` is unknown or invalid.
              */
-            messageId?: number | undefined;
+            messageId?: messages.MessageId | undefined;
             /**
              * The headerMessageId of a message to be opened. Will throw an
              * _ExtensionError_, if the provided `headerMessageId` is unknown or
@@ -4911,7 +5220,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/messageDisplayAction.html
+     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayAction.html
      */
     export namespace messageDisplayAction {
         /* messageDisplayAction types */
@@ -5250,10 +5559,19 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/messages.html
+     * @see https://webextension-api.thunderbird.net/en/latest/messages.html
      */
     export namespace messages {
         /* messages types */
+        /**
+         * A unique id representing a {@link messages.MessageHeader} and the
+         * associated message. This id doesn’t refer to the Message-ID email
+         * header. It is an internal tracking number that does not remain after a
+         * restart. Nor does it follow an email that has been moved to a
+         * different folder.
+         */
+        export type MessageId = number;
+
         /** Basic information about a message. */
         export interface MessageHeader {
             author: string;
@@ -5282,7 +5600,7 @@ declare namespace messenger {
              * will not be available.
              */
             headersOnly: boolean;
-            id: number;
+            id: MessageId;
             /**
              * Whether the message has been marked as junk. Always `false` for
              * news/nntp messages and external messages.
@@ -5307,15 +5625,15 @@ declare namespace messenger {
             /** The subject of the message. */
             subject: string;
             /**
-             * Tags associated with this message. For a list of available tags, call
-             * the listTags method.
+             * Tags associated with this message. For a list of available tags, use
+             * {@link messages.tags.list}.
              */
             tags: string[];
         }
 
         /**
          * See
-         * [how-to/messageLists](https://webextension-api.thunderbird.net/en/stable/how-to/messageLists.html)
+         * [examples/messageLists](https://webextension-api.thunderbird.net/en/stable/examples/messageLists.html)
          * for more information.
          */
         export interface MessageList {
@@ -5328,9 +5646,11 @@ declare namespace messenger {
             /** The content of the part */
             body?: string | undefined;
             contentType?: string | undefined;
+            /** The decryption status, only available for the root part. */
+            decryptionStatus?: _MessagePartDecryptionStatus | undefined;
             /**
              * A _dictionary object_ of part headers as _key-value_ pairs, with the
-             * header name as _key_, and an array of headers as _value_
+             * header name as _key_, and an array of headers as _value_.
              */
             headers?: { [key: string]: string[] } | undefined;
             /** Name of the part, if it is a file */
@@ -5372,42 +5692,19 @@ declare namespace messenger {
             read?: boolean | undefined;
             /**
              * Tags associated with this message. For a list of available tags, call
-             * the listTags method.
+             * the {@link messages.tags.list} method.
              */
             tags?: string[] | undefined;
         }
 
-        export interface MessageTag {
-            /** Unique tag identifier. */
-            key: string;
-            /** Human-readable tag name. */
-            tag: string;
-            /** Tag color. */
-            color: string;
-            /** Custom sort string (usually empty). */
-            ordinal: string;
-        }
-
-        /**
-         * Used for filtering messages by tag in various methods. Note that
-         * functions using this type may have a partial implementation.
-         */
-        export interface TagsDetail {
-            /**
-             * A _dictionary object_ with one or more filter condition as _key-value_
-             * pairs, the _key_ being the tag to filter on, and the _value_ being a
-             * boolean expression, requesting whether a message must include (`true`)
-             * or exclude (`false`) the tag. For a list of available tags, call the
-             * {@link messages.listTags} method.
-             */
-            tags: _TagsDetailTags;
-            /** Whether all of the tag filters must apply, or any of them. */
-            mode: _TagsDetailMode;
-        }
-
         /** Represents an attachment in a message. */
         export interface MessageAttachment {
-            /** The content type of the attachment. */
+            /**
+             * The content type of the attachment. A value of `text/x-moz-deleted`
+             * indicates that the original attachment was permanently deleted and
+             * replaced by a placeholder text attachment with some meta information
+             * about the original attachment.
+             */
             contentType: string;
             /**
              * The name, as displayed to the user, of this attachment. This is
@@ -5425,29 +5722,45 @@ declare namespace messenger {
             message?: MessageHeader | undefined;
         }
 
-        /**
-         * A _dictionary object_ with one or more filter condition as _key-value_
-         * pairs, the _key_ being the tag to filter on, and the _value_ being a
-         * boolean expression, requesting whether a message must include (`true`)
-         * or exclude (`false`) the tag. For a list of available tags, call the
-         * {@link messages.listTags} method.
-         */
-        export interface _TagsDetailTags {
-            [key: string]: boolean;
+        /** An object defining a range. */
+        export interface QueryRange {
+            /** The minimum value required to match the query. */
+            min?: number | undefined;
+            /** The maximum value required to match the query. */
+            max?: number | undefined;
         }
 
-        /** Whether all of the tag filters must apply, or any of them. */
-        export type _TagsDetailMode = 'all' | 'any';
+        /** The decryption status, only available for the root part. */
+        export type _MessagePartDecryptionStatus = 'none' | 'skipped' | 'success' | 'fail';
+
+        export interface _GetFullOptions {
+            /**
+             * Whether the message should be decrypted. If the message could not be
+             * decrypted, its parts are omitted. Defaults to true.
+             */
+            decrypt?: boolean | undefined;
+        }
 
         export type _GetRawOptionsDataFormat = 'File' | 'BinaryString' | 'File' | 'BinaryString';
 
         export interface _GetRawOptions {
-            data_format: _GetRawOptionsDataFormat;
+            /**
+             * Whether the message should be decrypted. Throws, if the message could
+             * not be decrypted.
+             */
+            decrypt?: boolean | undefined;
+            data_format?: _GetRawOptionsDataFormat | undefined;
         }
 
         export interface _QueryQueryInfo {
-            /** If specified, returns only messages with or without attachments. */
-            attachment?: boolean | undefined;
+            /** Limits the search to folders of the account with the specified id. */
+            accountId?: accounts.MailAccountId | undefined;
+            /**
+             * Whether the message has attachments, or not. Supports to specify a
+             * {@link messages.QueryRange} (min/max) instead of a simple boolean
+             * value (none/some).
+             */
+            attachment?: boolean | QueryRange | undefined;
             /**
              * Returns only messages with this value matching the author. The search
              * value is a single email address, a name or a combination (e.g.:
@@ -5462,8 +5775,19 @@ declare namespace messenger {
             /** Returns only flagged (or unflagged if false) messages. */
             flagged?: boolean | undefined;
             /**
+             * Returns only messages from the folder with the specified id. The
+             * _accountsRead_ permission is required.
+             */
+            folderId?: folders.MailFolderId | undefined;
+            /**
              * Returns only messages from the specified folder. The _accountsRead_
              * permission is required.
+             *
+             * @deprecated Support deprecated since Thunderbird 121 and removed in
+             * Manifest V3: messages.queryInfo.folder has been replaced by
+             * messages.queryInfo.folderId.
+             *
+             * Not supported on manifest versions above 2.
              */
             folder?: folders.MailFolder | undefined;
             /** Returns only messages with a date after this value. */
@@ -5480,7 +5804,7 @@ declare namespace messenger {
             fullText?: string | undefined;
             /** Returns only messages with a Message-ID header matching this value. */
             headerMessageId?: string | undefined;
-            /** Search the folder specified by `queryInfo.folder` recursively. */
+            /** Search the specified folder recursively. */
             includeSubFolders?: boolean | undefined;
             /**
              * Returns only messages whose recipients match all specified addresses.
@@ -5492,13 +5816,15 @@ declare namespace messenger {
              * matches are done case-insensitive.
              */
             recipients?: string | undefined;
-            /** Returns only messages with this value matching the subject. */
+            /** Returns only messages with a size in the specified byte range. */
+            size?: QueryRange | undefined;
+            /** Returns only messages whose subject contains the provided string. */
             subject?: string | undefined;
             /**
              * Returns only messages with the specified tags. For a list of available
-             * tags, call the {@link messages.listTags} method.
+             * tags, call the {@link messages.tags.list} method.
              */
-            tags?: TagsDetail | undefined;
+            tags?: messages.tags.TagsDetail | undefined;
             /** Returns only messages with a date before this value. */
             toDate?: extensionTypes.Date | undefined;
             /**
@@ -5506,8 +5832,42 @@ declare namespace messenger {
              * configured identity.
              */
             toMe?: boolean | undefined;
-            /** Returns only unread (or read if false) messages. */
+            /** Returns only messages whith the specified junk state. */
+            junk?: boolean | undefined;
+            /** Returns only messages with a junk score in the specified range. */
+            junkScore?: QueryRange | undefined;
+            /** Returns only messages with the specified new state. */
+            new?: boolean | undefined;
+            /**
+             * Returns only unread (or read if false) messages.
+             *
+             * Not supported on manifest versions above 2.
+             */
             unread?: boolean | undefined;
+            /**
+             * Returns only messages with the specified read state.
+             *
+             * Needs at least manifest version 3.
+             */
+            read?: boolean | undefined;
+            /**
+             * Set the timeout in ms after which results should be returned, even if
+             * the nominal number of messages-per-page has not yet been reached.
+             * Defaults to `1000` ms. Setting it to `0` will disable auto-pagination.
+             */
+            autoPaginationTimeout?: number | undefined;
+            /**
+             * Set the nominal number of messages-per-page for this query. Defaults
+             * to `100` messages.
+             */
+            messagesPerPage?: number | undefined;
+            /**
+             * The _messageListId_ is usually returned together with the first page,
+             * after some messages have been found. Enabling this option will change
+             * the return value of this function and return the _messageListId_
+             * directly.
+             */
+            returnMessageListId?: boolean | undefined;
         }
 
         export { _delete as delete };
@@ -5517,64 +5877,95 @@ declare namespace messenger {
         export interface _UpdateTagUpdateProperties {
             /** Human-readable tag name. */
             tag?: string | undefined;
-            /** Tag color in hex format (i.e.: #000080 for navy blue). */
+            /**
+             * Tag color in hex format (i.e.: #000080 for navy blue). Value will be
+             * stored as upper case.
+             */
             color?: string | undefined;
+        }
+
+        export interface _MessagesOnNewMailReceivedEvent<
+            TCallback = (folder: folders.MailFolder, messages: MessageList) => void,
+        > {
+            addListener(cb: TCallback, monitorAllFolders?: boolean): void;
+            removeListener(cb: TCallback): void;
+            hasListener(cb: TCallback): boolean;
         }
 
         /* messages functions */
         /** Gets all messages in a folder. */
-        export function list(folder: folders.MailFolder): Promise<MessageList>;
+        export function list(folder: folders.MailFolderId | folders.MailFolder): Promise<MessageList>;
 
         /**
          * Returns the next chunk of messages in a list. See
-         * [how-to/messageLists](https://webextension-api.thunderbird.net/en/stable/how-to/messageLists.html)
+         * [examples/messageLists](https://webextension-api.thunderbird.net/en/stable/examples/messageLists.html)
          * for more information.
          */
         export function continueList(messageListId: string): Promise<MessageList>;
 
-        /** Returns a specified message. */
-        export function get(messageId: number): Promise<MessageHeader>;
+        /**
+         * Finalizes the specified list and terminates any process currently
+         * still adding messages.
+         */
+        export function abortList(messageListId: string): Promise<any>;
+
+        /** Returns the specified message. */
+        export function get(messageId: MessageId): Promise<MessageHeader>;
 
         /**
-         * Returns a specified message, including all headers and MIME parts.
+         * Returns the specified message, including all headers and MIME parts.
          * Throws if the message could not be read, for example due to network
          * issues.
          */
-        export function getFull(messageId: number): Promise<MessagePart>;
+        export function getFull(messageId: MessageId, options?: _GetFullOptions): Promise<MessagePart>;
 
         /**
          * Returns the unmodified source of a message. Throws if the message
          * could not be read, for example due to network issues.
          */
-        export function getRaw(messageId: number, options?: _GetRawOptions): Promise<string | File>;
+        export function getRaw(messageId: MessageId, options?: _GetRawOptions): Promise<string | File>;
 
         /** Lists the attachments of a message. */
-        export function listAttachments(messageId: number): Promise<MessageAttachment[]>;
+        export function listAttachments(messageId: MessageId): Promise<MessageAttachment[]>;
 
         /**
          * Gets the content of a {@link messages.MessageAttachment} as a {@link File}
          * object.
          */
-        export function getAttachmentFile(messageId: number, partName: string): Promise<File>;
+        export function getAttachmentFile(messageId: MessageId, partName: string): Promise<File>;
+
+        /**
+         * Deletes the specified attachments and replaces them by placeholder
+         * text attachments with meta information about the original attachments
+         * and a `text/x-moz-deleted` content type. This permanently modifies the
+         * message.
+         *
+         * @param partNames An array of attachments, identifying the to be
+         * deleted attachments by their `partName`.
+         */
+        export function deleteAttachments(messageId: number, partNames: string[]): Promise<any>;
 
         /**
          * Opens the specified attachment
          *
          * @param tabId The ID of the tab associated with the message opening.
          */
-        export function openAttachment(messageId: number, partName: string, tabId: number): Promise<any>;
+        export function openAttachment(messageId: MessageId, partName: string, tabId: number): Promise<any>;
 
         /**
          * Gets all messages that have the specified properties, or all messages
-         * if no properties are specified.
+         * if no properties are specified. Messages of unified mailbox folders
+         * are not included by default (as that could double the amount of
+         * returned messages), but explicitly specifying a unified mailbox folder
+         * is supported.
          */
-        export function query(queryInfo?: _QueryQueryInfo): Promise<MessageList>;
+        export function query(queryInfo?: _QueryQueryInfo): Promise<MessageList | string>;
 
         /**
-         * Marks or unmarks a message as junk, read, flagged, or tagged. Updating
-         * external messages will throw an _ExtensionError_.
+         * Updates message properties and tags. Updating external messages will
+         * throw an _ExtensionError_.
          */
-        export function update(messageId: number, newProperties: MessageProperties): Promise<any>;
+        export function update(messageId: MessageId, newProperties: MessageProperties): Promise<any>;
 
         /**
          * Moves messages to a specified folder. If the messages cannot be
@@ -5585,7 +5976,10 @@ declare namespace messenger {
          *
          * @param destination The folder to move the messages to.
          */
-        export function move(messageIds: number[], destination: folders.MailFolder): Promise<any>;
+        export function move(
+            messageIds: MessageId[],
+            destination: folders.MailFolderId | folders.MailFolder,
+        ): Promise<any>;
 
         /**
          * Copies messages to a specified folder.
@@ -5594,25 +5988,23 @@ declare namespace messenger {
          *
          * @param destination The folder to copy the messages to.
          */
-        export function copy(messageIds: number[], destination: folders.MailFolder): Promise<any>;
+        export function copy(
+            messageIds: MessageId[],
+            destination: folders.MailFolderId | folders.MailFolder,
+        ): Promise<any>;
 
         /**
          * Deletes messages permanently, or moves them to the trash folder
          * (honoring the account's deletion behavior settings). Deleting external
          * messages will throw an _ExtensionError_. The `skipTrash` parameter
          * allows immediate permanent deletion, bypassing the trash folder.
-         * **Note**: Consider using {@link messages.move} to manually move
-         * messages to the account's trash folder, instead of requesting the
-         * overly powerful permission to actually delete messages. The account's
-         * trash folder can be extracted as follows:
-         * [getTrash.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/getTrash.js)
          *
          * @param messageIds The IDs of the messages to delete.
          *
          * @param [skipTrash] If true, the message will be deleted permanently,
          * regardless of the account's deletion behavior settings.
          */
-        function _delete(messageIds: number[], skipTrash?: boolean): Promise<any>;
+        function _delete(messageIds: MessageId[], skipTrash?: boolean): Promise<any>;
 
         /**
          * Imports a message into a local Thunderbird folder. To import a message
@@ -5623,7 +6015,7 @@ declare namespace messenger {
          */
         function _import(
             file: File,
-            destination: folders.MailFolder,
+            destination: folders.MailFolderId | folders.MailFolder,
             properties?: MessageProperties,
         ): Promise<MessageHeader>;
 
@@ -5633,13 +6025,18 @@ declare namespace messenger {
          *
          * @param messageIds The IDs of the messages to archive.
          */
-        export function archive(messageIds: number[]): Promise<any>;
+        export function archive(messageIds: MessageId[]): Promise<any>;
 
         /**
          * Returns a list of tags that can be set on messages, and their
          * human-friendly name, colour, and sort order.
+         *
+         * @deprecated Deprecated since Thunderbird 121 and removed in Manifest
+         * V3: messages.listTags() is now available as messages.tags.list().
+         *
+         * Not supported on manifest versions above 2.
          */
-        export function listTags(): Promise<MessageTag[]>;
+        export function listTags(): Promise<messages.tags.MessageTag[]>;
 
         /**
          * Creates a new message tag. Tagging a message will store the tag's key
@@ -5651,15 +6048,26 @@ declare namespace messenger {
          *
          * @param tag Human-readable tag name.
          *
-         * @param color Tag color in hex format (i.e.: #000080 for navy blue)
+         * @param color Tag color in hex format (i.e.: `#000080` for navy blue).
+         * Value will be stored as upper case.
+         *
+         * @deprecated Deprecated since Thunderbird 121 and removed in Manifest
+         * V3: messages.createTag() is now available as messages.tags.create().
+         *
+         * Not supported on manifest versions above 2.
          */
         export function createTag(key: string, tag: string, color: string): Promise<any>;
 
         /**
-         * Updates a message tag.
+         * Updates a message tag. Throws if the specified tag key does not exist.
          *
          * @param key Unique tag identifier (will be converted to lower case).
          * Must not include `()<>{/%*"` or spaces.
+         *
+         * @deprecated Deprecated since Thunderbird 121 and removed in Manifest
+         * V3: messages.updateTag() is now available as messages.tags.update().
+         *
+         * Not supported on manifest versions above 2.
          */
         export function updateTag(key: string, updateProperties: _UpdateTagUpdateProperties): Promise<any>;
 
@@ -5671,6 +6079,11 @@ declare namespace messenger {
          *
          * @param key Unique tag identifier (will be converted to lower case).
          * Must not include `()<>{/%*"` or spaces.
+         *
+         * @deprecated Deprecated since Thunderbird 121 and removed in Manifest
+         * V3: messages.deleteTag() is now available as messages.tags.delete().
+         *
+         * Not supported on manifest versions above 2.
          */
         export function deleteTag(key: string): Promise<any>;
 
@@ -5691,13 +6104,116 @@ declare namespace messenger {
          * Fired when a new message is received, and has been through junk
          * classification and message filters.
          */
-        export const onNewMailReceived: WebExtEvent<(folder: folders.MailFolder, messages: MessageList) => void>;
+        export const onNewMailReceived: _MessagesOnNewMailReceivedEvent;
+
+        /**
+         * Not allowed in: Content scripts, Devtools pages
+         *
+         * @see https://webextension-api.thunderbird.net/en/latest/messages.tags.html
+         */
+        export namespace tags {
+            /* messages.tags types */
+            export interface MessageTag {
+                /** Unique tag identifier. */
+                key: string;
+                /** Human-readable tag name. */
+                tag: string;
+                /** Tag color. */
+                color: string;
+                /** Custom sort string (usually empty). */
+                ordinal: string;
+            }
+
+            /**
+             * Used for filtering messages by tag in various methods. Note that
+             * functions using this type may have a partial implementation.
+             */
+            export interface TagsDetail {
+                /**
+                 * A _dictionary object_ with one or more filter condition as _key-value_
+                 * pairs, the _key_ being the tag to filter on, and the _value_ being a
+                 * boolean expression, requesting whether a message must include (`true`)
+                 * or exclude (`false`) the tag. For a list of available tags, call the
+                 * {@link messages.tags.list} method.
+                 */
+                tags: _TagsDetailTags;
+                /** Whether all of the tag filters must apply, or any of them. */
+                mode: _TagsDetailMode;
+            }
+
+            /**
+             * A _dictionary object_ with one or more filter condition as _key-value_
+             * pairs, the _key_ being the tag to filter on, and the _value_ being a
+             * boolean expression, requesting whether a message must include (`true`)
+             * or exclude (`false`) the tag. For a list of available tags, call the
+             * {@link messages.tags.list} method.
+             */
+            export interface _TagsDetailTags {
+                [key: string]: boolean;
+            }
+
+            /** Whether all of the tag filters must apply, or any of them. */
+            export type _TagsDetailMode = 'all' | 'any';
+
+            export interface _UpdateUpdateProperties {
+                /** Human-readable tag name. */
+                tag?: string | undefined;
+                /**
+                 * Tag color in hex format (i.e.: #000080 for navy blue). Value will be
+                 * stored as upper case.
+                 */
+                color?: string | undefined;
+            }
+
+            export { _delete as delete };
+
+            /* messages.tags functions */
+            /**
+             * Returns a list of tags that can be set on messages, and their
+             * human-friendly name, colour, and sort order.
+             */
+            export function list(): Promise<messages.tags.MessageTag[]>;
+
+            /**
+             * Creates a new message tag. Tagging a message will store the tag's key
+             * in the user's message. Throws if the specified tag key is used
+             * already.
+             *
+             * @param key Unique tag identifier (will be converted to lower case).
+             * Must not include `()<>{/%*"` or spaces.
+             *
+             * @param tag Human-readable tag name.
+             *
+             * @param color Tag color in hex format (i.e.: #000080 for navy blue).
+             * Value will be stored as upper case.
+             */
+            export function create(key: string, tag: string, color: string): Promise<any>;
+
+            /**
+             * Updates a message tag. Throws if the specified tag key does not exist.
+             *
+             * @param key Unique tag identifier (will be converted to lower case).
+             * Must not include `()<>{/%*"` or spaces.
+             */
+            export function update(key: string, updateProperties: _UpdateUpdateProperties): Promise<any>;
+
+            /**
+             * Deletes a message tag, removing it from the list of known tags. Its
+             * key will not be removed from tagged messages, but they will appear
+             * untagged. Recreating a deleted tag, will make all former tagged
+             * messages appear tagged again.
+             *
+             * @param key Unique tag identifier (will be converted to lower case).
+             * Must not include `()<>{/%*"` or spaces.
+             */
+            function _delete(key: string): Promise<any>;
+        }
     }
 
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/sessions.html
+     * @see https://webextension-api.thunderbird.net/en/latest/sessions.html
      */
     export namespace sessions {
         /* sessions functions */
@@ -5736,7 +6252,7 @@ declare namespace messenger {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/spaces.html
+     * @see https://webextension-api.thunderbird.net/en/latest/spaces.html
      */
     export namespace spaces {
         /* spaces types */
@@ -5909,7 +6425,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/spacesToolbar.html
+     * @see https://webextension-api.thunderbird.net/en/latest/spacesToolbar.html
      */
     export namespace spacesToolbar {
         /* spacesToolbar types */
@@ -6019,7 +6535,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/tabs.html
+     * @see https://webextension-api.thunderbird.net/en/latest/tabs.html
      */
     export namespace tabs {
         /* tabs types */
@@ -6078,8 +6594,12 @@ declare namespace messenger {
              * compatibility reasons.
              */
             cookieStoreId?: string | undefined;
-            type?: _TabType | undefined;
-            /** Whether the tab is a 3-pane tab. */
+            type?: TabType | undefined;
+            /**
+             * Whether the tab is a 3-pane tab.
+             *
+             * Not supported on manifest versions above 2.
+             */
             mailTab?: boolean | undefined;
             /** The id of the space. */
             spaceId?: number | undefined;
@@ -6087,6 +6607,20 @@ declare namespace messenger {
 
         /** Whether the tabs have completed loading. */
         export type TabStatus = 'loading' | 'complete';
+
+        /** Tab types supported by the tabs API. */
+        export type TabType =
+            | 'addressBook'
+            | 'calendar'
+            | 'calendarEvent'
+            | 'calendarTask'
+            | 'chat'
+            | 'content'
+            | 'mail'
+            | 'messageCompose'
+            | 'messageDisplay'
+            | 'special'
+            | 'tasks';
 
         /**
          * The type of a window. Under some circumstances a Window may not be
@@ -6120,19 +6654,6 @@ declare namespace messenger {
             tabId?: number | undefined;
             windowId?: number | undefined;
         }
-
-        export type _TabType =
-            | 'addressBook'
-            | 'calendar'
-            | 'calendarEvent'
-            | 'calendarTask'
-            | 'chat'
-            | 'content'
-            | 'mail'
-            | 'messageCompose'
-            | 'messageDisplay'
-            | 'special'
-            | 'tasks';
 
         export interface _ConnectConnectInfo {
             /**
@@ -6168,10 +6689,13 @@ declare namespace messenger {
              */
             index?: number | undefined;
             /**
-             * The URL to navigate the tab to initially. Fully-qualified URLs must
-             * include a scheme (i.e. `http://www.google.com`, not `www.google.com`).
-             * Relative URLs will be relative to the current page within the
-             * extension.
+             * The URL to navigate the tab to initially. If the URL points to a
+             * content page (a web page, an extension page or a registered
+             * WebExtension protocol handler page), the tab will navigate to the
+             * requested page. All other URLs will be opened externally after
+             * creating an empty tab. Fully-qualified URLs must include a scheme
+             * (i.e. `http://www.google.com`, not `www.google.com`). Relative URLs
+             * will be relative to the root of the extension.
              */
             url?: string | undefined;
             /**
@@ -6199,15 +6723,17 @@ declare namespace messenger {
         }
 
         export interface _QueryQueryInfo {
-            /** Whether the tab is a Thunderbird 3-pane tab. */
+            /**
+             * Whether the tab is a Thunderbird 3-pane tab. If specified, the
+             * `queryInfo.type` property will be ignored
+             *
+             * Not supported on manifest versions above 2.
+             */
             mailTab?: boolean | undefined;
             /** The id of the space the tabs should belong to. */
             spaceId?: number | undefined;
-            /**
-             * Match tabs against the given Tab.type (see {@link tabs.Tab}). Ignored
-             * if `queryInfo.mailTab` is specified.
-             */
-            type?: string | undefined;
+            /** Match tabs against the given tab type or types. */
+            type?: TabType | TabType[] | undefined;
             /** Whether the tabs are active in their windows. */
             active?: boolean | undefined;
             /** Whether the tabs are highlighted. Works as an alias of active. */
@@ -6251,7 +6777,7 @@ declare namespace messenger {
              * A URL of a page to load. If the URL points to a content page (a web
              * page, an extension page or a registered WebExtension protocol handler
              * page), the tab will navigate to the requested page. All other URLs
-             * will be opened externally without changing the tab. Note: This
+             * will be opened externally without changing the tab. **Note:** This
              * function will throw an error, if a content page is loaded into a
              * non-content tab (its type must be either `content` or `mail`).
              */
@@ -6555,7 +7081,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/theme.html
+     * @see https://webextension-api.thunderbird.net/en/latest/theme.html
      */
     export namespace theme {
         /* theme types */
@@ -6617,7 +7143,7 @@ declare namespace messenger {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/windows.html
+     * @see https://webextension-api.thunderbird.net/en/latest/windows.html
      */
     export namespace windows {
         /* windows types */
@@ -6692,10 +7218,16 @@ declare namespace messenger {
 
         export interface _CreateCreateData {
             /**
-             * A URL or array of URLs to open as tabs in the window. Fully-qualified
-             * URLs must include a scheme (i.e. `http://www.google.com`, not
-             * `www.google.com`). Relative URLs will be relative to the current page
-             * within the extension. Defaults to the New Tab Page.
+             * A URL to be opened in a popup window, ignored in all other window
+             * types. This may also be an array, but only the first element is used
+             * (popup windows may not have multiple tabs). If the URL points to a
+             * content page (a web page, an extension page or a registered
+             * WebExtension protocol handler page), the popup window will navigate to
+             * the requested page. All other URLs will be opened externally after
+             * creating an empty popup window. Fully-qualified URLs must include a
+             * scheme (i.e. `http://www.google.com`, not `www.google.com`). Relative
+             * URLs will be relative to the root of the extension. Defaults to the
+             * New Tab Page.
              */
             url?: string | string[] | undefined;
             /** The id of the tab for which you want to adopt to the new window. */
@@ -8257,7 +8789,7 @@ declare namespace messenger {
          * inside the current extension. Returns null if the extension has no
          * background page.
          */
-        export function getBackgroundPage(): Window | void;
+        export function getBackgroundPage(): Window | undefined;
 
         /**
          * Retrieves the state of the extension's access to Incognito-mode (as
@@ -9576,6 +10108,15 @@ declare namespace messenger {
          */
         export type OnRestartRequiredReason = 'app_update' | 'os_update' | 'periodic';
 
+        /** The performance warning event category, e.g. 'content_script'. */
+        export type OnPerformanceWarningCategory = 'content_script';
+
+        /**
+         * The performance warning event severity. Will be 'high' for serious and
+         * user-visible issues.
+         */
+        export type OnPerformanceWarningSeverity = 'low' | 'medium' | 'high';
+
         export type PlatformNaclArch = 'arm' | 'x86-32' | 'x86-64';
 
         /**
@@ -9646,6 +10187,20 @@ declare namespace messenger {
             version: string;
         }
 
+        export interface _OnPerformanceWarningDetails {
+            /** The performance warning event category, e.g. 'content_script'. */
+            category: OnPerformanceWarningCategory;
+            /** The performance warning event severity, e.g. 'high'. */
+            severity: OnPerformanceWarningSeverity;
+            /** The `tabs.Tab` that the performance warning relates to, if any. */
+            tabId?: number | undefined;
+            /**
+             * An explanation of what the warning means, and hopefully how to address
+             * it.
+             */
+            description: string;
+        }
+
         /* runtime properties */
         /**
          * This will be defined during an API method callback if there was an
@@ -9708,7 +10263,7 @@ declare namespace messenger {
         /**
          * Sets the URL to be visited upon uninstallation. This may be used to
          * clean up server-side data, do analytics, and implement surveys.
-         * Maximum 255 characters.
+         * Maximum 1023 characters.
          *
          * @param [url] URL to be opened after the extension is uninstalled. This
          * URL must have an http: or https: scheme. Set an empty string to not
@@ -9915,7 +10470,7 @@ declare namespace messenger {
                 message: any,
                 sender: MessageSender,
                 sendResponse: (response?: any) => void,
-            ) => boolean | Promise<any> | void
+            ) => boolean | Promise<any> | undefined
         >;
 
         /**
@@ -9941,7 +10496,7 @@ declare namespace messenger {
                 message: any,
                 sender: MessageSender,
                 sendResponse: (response?: any) => void,
-            ) => boolean | Promise<any> | void
+            ) => boolean | Promise<any> | undefined
         >;
 
         /**
@@ -9956,6 +10511,13 @@ declare namespace messenger {
          * @deprecated Unsupported on Firefox at this time.
          */
         export const onRestartRequired: WebExtEvent<(reason: OnRestartRequiredReason) => void> | undefined;
+
+        /**
+         * Fired when a runtime performance issue is detected with the extension.
+         * Observe this event to be proactively notified of runtime performance
+         * problems with the extension.
+         */
+        export const onPerformanceWarning: WebExtEvent<(details: _OnPerformanceWarningDetails) => void>;
     }
 
     /**
@@ -10475,18 +11037,10 @@ declare namespace messenger {
              * unique within a tab.
              */
             frameId: number;
-            /**
-             * Cause of the navigation.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionType?: TransitionType | undefined;
-            /**
-             * A list of transition qualifiers.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionQualifiers?: TransitionQualifier[] | undefined;
+            /** Cause of the navigation. */
+            transitionType: TransitionType;
+            /** A list of transition qualifiers. */
+            transitionQualifiers: TransitionQualifier[];
             /**
              * The time when the navigation was committed, in milliseconds since the
              * epoch.
@@ -10637,18 +11191,10 @@ declare namespace messenger {
              * unique within a tab.
              */
             frameId: number;
-            /**
-             * Cause of the navigation.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionType?: TransitionType | undefined;
-            /**
-             * A list of transition qualifiers.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionQualifiers?: TransitionQualifier[] | undefined;
+            /** Cause of the navigation. */
+            transitionType: TransitionType;
+            /** A list of transition qualifiers. */
+            transitionQualifiers: TransitionQualifier[];
             /**
              * The time when the navigation was committed, in milliseconds since the
              * epoch.
@@ -10692,18 +11238,10 @@ declare namespace messenger {
              * unique within a tab.
              */
             frameId: number;
-            /**
-             * Cause of the navigation.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionType?: TransitionType | undefined;
-            /**
-             * A list of transition qualifiers.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionQualifiers?: TransitionQualifier[] | undefined;
+            /** Cause of the navigation. */
+            transitionType: TransitionType;
+            /** A list of transition qualifiers. */
+            transitionQualifiers: TransitionQualifier[];
             /**
              * The time when the navigation was committed, in milliseconds since the
              * epoch.
@@ -11249,7 +11787,7 @@ declare namespace messenger {
         }
 
         export interface _WebRequestOnBeforeRequestEvent<
-            TCallback = (details: _OnBeforeRequestDetails) => BlockingResponse | Promise<BlockingResponse> | void,
+            TCallback = (details: _OnBeforeRequestDetails) => BlockingResponse | Promise<BlockingResponse> | undefined,
         > {
             addListener(cb: TCallback, filter: RequestFilter, extraInfoSpec?: OnBeforeRequestOptions[]): void;
             removeListener(cb: TCallback): void;
@@ -11315,7 +11853,7 @@ declare namespace messenger {
         }
 
         export interface _WebRequestOnBeforeSendHeadersEvent<
-            TCallback = (details: _OnBeforeSendHeadersDetails) => BlockingResponse | Promise<BlockingResponse> | void,
+            TCallback = (details: _OnBeforeSendHeadersDetails) => BlockingResponse | Promise<BlockingResponse> | undefined,
         > {
             addListener(cb: TCallback, filter: RequestFilter, extraInfoSpec?: OnBeforeSendHeadersOptions[]): void;
             removeListener(cb: TCallback): void;
@@ -11446,7 +11984,7 @@ declare namespace messenger {
         }
 
         export interface _WebRequestOnHeadersReceivedEvent<
-            TCallback = (details: _OnHeadersReceivedDetails) => BlockingResponse | Promise<BlockingResponse> | void,
+            TCallback = (details: _OnHeadersReceivedDetails) => BlockingResponse | Promise<BlockingResponse> | undefined,
         > {
             addListener(cb: TCallback, filter: RequestFilter, extraInfoSpec?: OnHeadersReceivedOptions[]): void;
             removeListener(cb: TCallback): void;
@@ -11531,7 +12069,7 @@ declare namespace messenger {
         }
 
         export interface _WebRequestOnAuthRequiredEvent<
-            TCallback = (details: _OnAuthRequiredDetails) => BlockingResponse | Promise<BlockingResponse> | void,
+            TCallback = (details: _OnAuthRequiredDetails) => BlockingResponse | Promise<BlockingResponse> | undefined,
         > {
             addListener(cb: TCallback, filter: RequestFilter, extraInfoSpec?: OnAuthRequiredOptions[]): void;
             removeListener(cb: TCallback): void;
@@ -11947,7 +12485,7 @@ declare namespace messenger {
  * to use `messenger` instead of `browser`, to remind yourself of the subtle
  * differences between the Thunderbird, Firefox, and generic WebExtension APIs.
  *
- * @version Thunderbird 115.10
+ * @version Thunderbird 127.0a1
  */
 declare namespace browser {
     /**
@@ -12015,6 +12553,12 @@ declare namespace browser {
                       service_worker: ExtensionURL;
                   }
                 | undefined;
+            /**
+             * Alias property for options_ui.page, ignored when options_ui.page is
+             * set. When using this property the options page is always opened in a
+             * new tab.
+             */
+            options_page?: ExtensionURL | undefined;
             options_ui?: _WebExtensionManifestOptionsUi | undefined;
             content_scripts?: ContentScript[] | undefined;
             content_security_policy?:
@@ -12422,6 +12966,9 @@ declare namespace browser {
             | 'messagesMove'
             | 'messagesRead'
             | 'messagesTags'
+            | 'messagesTagsList'
+            | 'messagesUpdate'
+            | 'messagesModifyPermanent'
             | 'sensitiveDataUpload'
             | 'tabs'
             | 'tabHide'
@@ -12909,6 +13456,7 @@ declare namespace browser {
             | 'idle'
             | 'scripting'
             | 'webRequest'
+            | 'webRequestAuthProvider'
             | 'webRequestBlocking'
             | 'webRequestFilterResponse'
             | 'webRequestFilterResponse.serviceWorkerScript';
@@ -13207,7 +13755,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/accounts.html
+     * @see https://webextension-api.thunderbird.net/en/latest/accounts.html
      */
     export namespace accounts {
         /* accounts types */
@@ -13218,19 +13766,33 @@ declare namespace browser {
          */
         export interface MailAccount {
             /** A unique identifier for this account. */
-            id: string;
+            id: MailAccountId;
             /** The human-friendly name of this account. */
             name: string;
             /** What sort of account this is, e.g. `imap`, `nntp`, or `pop3`. */
             type: string;
-            /** The folders for this account are only included if requested. */
+            /**
+             * The folders for this account are only included if requested.
+             *
+             * Not supported on manifest versions above 2.
+             */
             folders?: folders.MailFolder[] | undefined;
+            /** The root folder associated with this account. */
+            rootFolder?: folders.MailFolder | undefined;
             /**
              * The identities associated with this account. The default identity is
              * listed first, others in no particular order.
              */
             identities: identities.MailIdentity[];
         }
+
+        /** A unique id representing a {@link accounts.MailAccount}. */
+        export type MailAccountId = string;
+
+        /** The type of an account. */
+        export type MailAccountType = _MailAccountType;
+
+        export type _MailAccountType = 'imap' | 'pop3' | 'nntp' | 'none' | 'imap' | 'pop3' | 'nntp' | 'local';
 
         export interface _OnUpdatedChangedValues {
             /** The human-friendly name of this account. */
@@ -13258,7 +13820,7 @@ declare namespace browser {
          * object should included the account's folders.
          * Defaults to `true`.
          */
-        export function get(accountId: string, includeFolders?: boolean): Promise<MailAccount | null>;
+        export function get(accountId: MailAccountId, includeFolders?: boolean): Promise<MailAccount | null>;
 
         /**
          * Returns the default account, or `null` if it is not defined.
@@ -13272,26 +13834,32 @@ declare namespace browser {
         /**
          * Sets the default identity for an account.
          *
-         * @deprecated This will be removed. Use {@link identities.setDefault}
-         * instead.
+         * @deprecated Deprecated since Thunderbird 91 and removed in Manifest
+         * V3: accounts.setDefaultIdentity() is now available as
+         * identities.setDefault.
+         *
+         * Not supported on manifest versions above 2.
          */
-        export function setDefaultIdentity(accountId: string, identityId: string): Promise<any>;
+        export function setDefaultIdentity(accountId: MailAccountId, identityId: string): Promise<any>;
 
         /**
          * Returns the default identity for an account, or `null` if it is not
          * defined.
          *
-         * @deprecated This will be removed. Use {@link identities.getDefault}
-         * instead.
+         * @deprecated Deprecated since Thunderbird 91 and removed in Manifest
+         * V3: accounts.getDefaultIdentity() is now available as
+         * identities.getDefault.
+         *
+         * Not supported on manifest versions above 2.
          */
-        export function getDefaultIdentity(accountId: string): Promise<identities.MailIdentity | null>;
+        export function getDefaultIdentity(accountId: MailAccountId): Promise<identities.MailIdentity | null>;
 
         /* accounts events */
         /** Fired when a new account has been created. */
-        export const onCreated: WebExtEvent<(id: string, account: MailAccount) => void>;
+        export const onCreated: WebExtEvent<(accountId: MailAccountId, account: MailAccount) => void>;
 
         /** Fired when an account has been removed. */
-        export const onDeleted: WebExtEvent<(id: string) => void>;
+        export const onDeleted: WebExtEvent<(accountId: MailAccountId) => void>;
 
         /**
          * Fired when a property of an account has been modified. Folders and
@@ -13301,7 +13869,7 @@ declare namespace browser {
          * assigned as default identity, but not after a property of the default
          * identity has been changed.
          */
-        export const onUpdated: WebExtEvent<(id: string, changedValues: _OnUpdatedChangedValues) => void>;
+        export const onUpdated: WebExtEvent<(accountId: MailAccountId, changedValues: _OnUpdatedChangedValues) => void>;
     }
 
     /**
@@ -13309,7 +13877,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/addressBooks.html
+     * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.html
      */
     export namespace addressBooks {
         /* addressBooks types */
@@ -13400,7 +13968,7 @@ declare namespace browser {
          *
          * Not allowed in: Content scripts, Devtools pages
          *
-         * @see https://webextension-api.thunderbird.net/en/115/addressBooks.provider.html
+         * @see https://webextension-api.thunderbird.net/en/latest/addressBooks.provider.html
          */
         export namespace provider {
             /**
@@ -13470,7 +14038,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/contacts.html
+     * @see https://webextension-api.thunderbird.net/en/latest/contacts.html
      */
     export namespace contacts {
         /* contacts types */
@@ -13517,7 +14085,8 @@ declare namespace browser {
 
         /**
          * A set of individual properties for a particular contact, and its vCard
-         * string. Further information can be found in {@link howto_contacts}.
+         * string. Further information can be found in
+         * [examples/vcard](https://webextension-api.thunderbird.net/en/stable/examples/vcard.html).
          */
         export interface ContactProperties {
             [key: string]: string | null;
@@ -13634,7 +14203,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/mailingLists.html
+     * @see https://webextension-api.thunderbird.net/en/latest/mailingLists.html
      */
     export namespace mailingLists {
         /* mailingLists types */
@@ -14406,7 +14975,7 @@ declare namespace browser {
      *
      * Not allowed in: Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/cloudFile.html
+     * @see https://webextension-api.thunderbird.net/en/latest/cloudFile.html
      */
     export namespace cloudFile {
         /* cloudFile types */
@@ -14710,7 +15279,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/commands.html
+     * @see https://webextension-api.thunderbird.net/en/latest/commands.html
      */
     export namespace commands {
         /* commands types */
@@ -14788,7 +15357,7 @@ declare namespace browser {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/compose.html
+     * @see https://webextension-api.thunderbird.net/en/latest/compose.html
      */
     export namespace compose {
         /* compose types */
@@ -14799,8 +15368,7 @@ declare namespace browser {
                    * The ID of a contact or mailing list from the
                    * [contacts](https://webextension-api.thunderbird.net/en/stable/contacts.html)
                    * and
-                   * [mailingLists](https://webextension-api.thunderbird.net/en/stable/mailingLists.html)
-                   * APIs.
+                   * [mailingLists](https://webextension-api.thunderbird.net/en/stable/mailingLists.html).
                    */
                   id: string;
                   /** Which sort of object this ID is for. */
@@ -14824,24 +15392,67 @@ declare namespace browser {
          */
         export interface ComposeDetails {
             /**
-             * The ID of an identity from the
-             * [accounts](https://webextension-api.thunderbird.net/en/stable/accounts.html)
-             * API. The settings from the identity will be used in the composed
-             * message. If `replyTo` is also specified, the `replyTo` property of the
-             * identity is overridden. The permission _accountsRead_ is required to
-             * include the `identityId`.
+             * An additional fcc folder which can be selected while composing the
+             * message, an empty string if not used.
              */
-            identityId?: string | undefined;
+            additionalFccFolder?: folders.MailFolderId | folders.MailFolder | '' | undefined;
+            /**
+             * Whether or not the vCard of the used identity will be attached to the
+             * message during send. **Note:** If the value has not been modified,
+             * selecting a different identity will load the default value of the new
+             * identity.
+             */
+            attachVCard?: boolean | undefined;
+            /** Only used in the begin\* functions. Attachments to add to the message. */
+            attachments?: Array<FileAttachment | ComposeAttachment> | undefined;
+            bcc?: ComposeRecipientList | undefined;
+            /** The HTML content of the message. */
+            body?: string | undefined;
+            cc?: ComposeRecipientList | undefined;
+            /**
+             * Array of custom headers. Headers will be returned in
+             * _Http-Header-Case_ (a.k.a. _Train-Case_). Set an empty array to clear
+             * all custom headers.
+             */
+            customHeaders?: CustomHeader[] | undefined;
+            /**
+             * Defines the MIME format of the sent message (ignored on plain text
+             * messages). Defaults to `auto`, which will send html messages as plain
+             * text, if they do not include any formatting, and as `both` otherwise
+             * (a multipart/mixed message).
+             */
+            deliveryFormat?: _ComposeDetailsDeliveryFormat | undefined;
+            /**
+             * Let the sender know when the recipient's server received the message.
+             * Not supported by all servers.
+             */
+            deliveryStatusNotification?: boolean | undefined;
+            followupTo?: ComposeRecipientList | undefined;
             /**
              * _Caution_: Setting a value for `from` does not change the used
-             * identity, it overrides the FROM header. Many email servers do not
-             * accept emails where the FROM header does not match the sender
+             * identity, it overrides the `From` header. Many email servers do not
+             * accept emails where the `From` header does not match the sender
              * identity. Must be set to exactly one valid email address.
              */
             from?: ComposeRecipient | undefined;
-            to?: ComposeRecipientList | undefined;
-            cc?: ComposeRecipientList | undefined;
-            bcc?: ComposeRecipientList | undefined;
+            /**
+             * The ID of an identity from the
+             * [accounts](https://webextension-api.thunderbird.net/en/stable/accounts.html).
+             * The settings from the identity will be used in the composed message.
+             * If `replyTo` is also specified, the `replyTo` property of the identity
+             * is overridden. The permission _accountsRead_ is required to include
+             * the `identityId`.
+             */
+            identityId?: string | undefined;
+            /**
+             * Whether the composer is considered modified by the user. A modified
+             * composer asks for confirmation, when it is closed.
+             */
+            isModified?: boolean | undefined;
+            /** Whether the message is an HTML message or a plain text message. */
+            isPlainText?: boolean | undefined;
+            /** A single newsgroup name or an array of newsgroup names. */
+            newsgroups?: string | string[] | undefined;
             /**
              * Indicates whether the default fcc setting (defined by the used
              * identity) is being overridden for this message. Setting `false` will
@@ -14855,49 +15466,18 @@ declare namespace browser {
              * specifying the folder for the copy of the sent message, or an empty
              * string to not save a copy at all.
              */
-            overrideDefaultFccFolder?: folders.MailFolder | '' | undefined;
-            /**
-             * An additional fcc folder which can be selected while composing the
-             * message, an empty string if not used.
-             */
-            additionalFccFolder?: folders.MailFolder | '' | undefined;
-            replyTo?: ComposeRecipientList | undefined;
-            followupTo?: ComposeRecipientList | undefined;
-            /** A single newsgroup name or an array of newsgroup names. */
-            newsgroups?: string | string[] | undefined;
+            overrideDefaultFccFolder?: folders.MailFolderId | folders.MailFolder | '' | undefined;
+            /** The plain text content of the message. */
+            plainTextBody?: string | undefined;
+            /** The priority of the message. */
+            priority?: _ComposeDetailsPriority | undefined;
             /**
              * The id of the original message (in case of draft, template, forward or
              * reply). Read-only. Is `null` in all other cases or if the original
              * message was opened from file.
              */
-            relatedMessageId?: number | undefined;
-            subject?: string | undefined;
-            /**
-             * Read-only. The type of the message being composed, depending on how
-             * the compose window was opened by the user.
-             */
-            type?: _ComposeDetailsType | undefined;
-            /** The HTML content of the message. */
-            body?: string | undefined;
-            /** The plain text content of the message. */
-            plainTextBody?: string | undefined;
-            /** Whether the message is an HTML message or a plain text message. */
-            isPlainText?: boolean | undefined;
-            /**
-             * Defines the mime format of the sent message (ignored on plain text
-             * messages). Defaults to `auto`, which will send html messages as plain
-             * text, if they do not include any formatting, and as `both` otherwise
-             * (a multipart/mixed message).
-             */
-            deliveryFormat?: _ComposeDetailsDeliveryFormat | undefined;
-            /**
-             * Array of custom headers. Headers will be returned in
-             * _Http-Header-Case_ (a.k.a. _Train-Case_). Set an empty array to clear
-             * all custom headers.
-             */
-            customHeaders?: CustomHeader[] | undefined;
-            /** The priority of the message. */
-            priority?: _ComposeDetailsPriority | undefined;
+            relatedMessageId?: messages.MessageId | undefined;
+            replyTo?: ComposeRecipientList | undefined;
             /**
              * Add the _Disposition-Notification-To_ header to the message to
              * requests the recipients email client to send a reply once the message
@@ -14905,20 +15485,13 @@ declare namespace browser {
              * recipient might ignore the request.
              */
             returnReceipt?: boolean | undefined;
+            subject?: string | undefined;
+            to?: ComposeRecipientList | undefined;
             /**
-             * Let the sender know when the recipient's server received the message.
-             * Not supported by all servers.
+             * Read-only. The type of the message being composed, depending on how
+             * the compose window was opened by the user.
              */
-            deliveryStatusNotification?: boolean | undefined;
-            /**
-             * Wether or not the vCard of the used identity will be attached to the
-             * message during send. Note: If the value has not been modified,
-             * selecting a different identity will load the default value of the new
-             * identity.
-             */
-            attachVCard?: boolean | undefined;
-            /** Only used in the begin\* functions. Attachments to add to the message. */
-            attachments?: Array<FileAttachment | ComposeAttachment> | undefined;
+            type?: _ComposeDetailsType | undefined;
         }
 
         /**
@@ -14947,7 +15520,11 @@ declare namespace browser {
 
         /** A custom header definition. */
         export interface CustomHeader {
-            /** Name of a custom header, must have a `X-` prefix. */
+            /**
+             * Name of a custom header, must be prefixed by `X-` (but not by
+             * `X-Mozilla-`) or be one of the explicitly allowed headers
+             * (`MSIP_Labels`)
+             */
             name: string;
             value: string;
         }
@@ -14966,13 +15543,7 @@ declare namespace browser {
         export type _UndefinedType = 'contact' | 'mailingList';
 
         /**
-         * Read-only. The type of the message being composed, depending on how
-         * the compose window was opened by the user.
-         */
-        export type _ComposeDetailsType = 'draft' | 'new' | 'redirect' | 'reply' | 'forward';
-
-        /**
-         * Defines the mime format of the sent message (ignored on plain text
+         * Defines the MIME format of the sent message (ignored on plain text
          * messages). Defaults to `auto`, which will send html messages as plain
          * text, if they do not include any formatting, and as `both` otherwise
          * (a multipart/mixed message).
@@ -14981,6 +15552,12 @@ declare namespace browser {
 
         /** The priority of the message. */
         export type _ComposeDetailsPriority = 'lowest' | 'low' | 'normal' | 'high' | 'highest';
+
+        /**
+         * Read-only. The type of the message being composed, depending on how
+         * the compose window was opened by the user.
+         */
+        export type _ComposeDetailsType = 'draft' | 'new' | 'redirect' | 'reply' | 'forward';
 
         export type _BeginReplyReplyType = 'replyToSender' | 'replyToList' | 'replyToAll';
 
@@ -15050,7 +15627,7 @@ declare namespace browser {
         }
 
         /** The used save mode. */
-        export type _OnAfterSaveSaveInfoMode = 'draft' | 'template';
+        export type _OnAfterSaveSaveInfoMode = 'autoSave' | 'draft' | 'template';
 
         export interface _OnAfterSaveSaveInfo {
             /** The used save mode. */
@@ -15085,7 +15662,7 @@ declare namespace browser {
          * @param messageId If specified, the message or template to edit as a
          * new message.
          */
-        export function beginNew(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
+        export function beginNew(messageId: messages.MessageId, details?: ComposeDetails): Promise<tabs.Tab>;
         /**
          * Open a new message compose window.
          *
@@ -15126,7 +15703,7 @@ declare namespace browser {
          * APIs.
          */
         export function beginReply(
-            messageId: number,
+            messageId: messages.MessageId,
             replyType: _BeginReplyReplyType,
             details?: ComposeDetails,
         ): Promise<tabs.Tab>;
@@ -15150,7 +15727,7 @@ declare namespace browser {
          * @param messageId The message to reply to, as retrieved using other
          * APIs.
          */
-        export function beginReply(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
+        export function beginReply(messageId: messages.MessageId, details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
          * Open a new message compose window forwarding a given message.
@@ -15173,7 +15750,7 @@ declare namespace browser {
          * APIs.
          */
         export function beginForward(
-            messageId: number,
+            messageId: messages.MessageId,
             forwardType: _BeginForwardForwardType,
             details?: ComposeDetails,
         ): Promise<tabs.Tab>;
@@ -15197,7 +15774,7 @@ declare namespace browser {
          * @param messageId The message to forward, as retrieved using other
          * APIs.
          */
-        export function beginForward(messageId: number, details?: ComposeDetails): Promise<tabs.Tab>;
+        export function beginForward(messageId: messages.MessageId, details?: ComposeDetails): Promise<tabs.Tab>;
 
         /**
          * Fetches the current state of a compose window. Currently only a
@@ -15363,7 +15940,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/composeAction.html
+     * @see https://webextension-api.thunderbird.net/en/latest/composeAction.html
      */
     export namespace composeAction {
         /* composeAction types */
@@ -15696,7 +16273,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/composeScripts.html
+     * @see https://webextension-api.thunderbird.net/en/latest/composeScripts.html
      */
     export namespace composeScripts {
         /* composeScripts types */
@@ -15724,7 +16301,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/messageDisplayScripts.html
+     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayScripts.html
      */
     export namespace messageDisplayScripts {
         /* messageDisplayScripts types */
@@ -15734,6 +16311,12 @@ declare namespace browser {
             css?: extensionTypes.ExtensionFileOrCode[] | undefined;
             /** The list of JavaScript files to inject */
             js?: extensionTypes.ExtensionFileOrCode[] | undefined;
+            /**
+             * Determines when the files specified in css and js are injected. The
+             * states directly correspond to `Document.readyState`: `loading`,
+             * `interactive` and `complete`
+             */
+            runAt?: _RegisteredMessageDisplayScriptOptionsRunAt | undefined;
         }
 
         /**
@@ -15745,8 +16328,21 @@ declare namespace browser {
             unregister(): Promise<any>;
         }
 
+        /**
+         * Determines when the files specified in css and js are injected. The
+         * states directly correspond to `Document.readyState`: `loading`,
+         * `interactive` and `complete`
+         */
+        export type _RegisteredMessageDisplayScriptOptionsRunAt = 'document_start' | 'document_end' | 'document_idle';
+
         /* messageDisplayScripts functions */
-        /** Register a message display script programmatically */
+        /**
+         * Register a message display script programmatically. **Note:**
+         * Registered scripts will only be applied to newly opened messages. To
+         * apply the script to already open messages, manually inject your script
+         * by calling {@link tabs.executeScript} for each of the open
+         * `messageDisplay` tabs.
+         */
         export function register(messageDisplayScriptOptions: RegisteredMessageDisplayScriptOptions): Promise<any>;
     }
 
@@ -15755,21 +16351,27 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/folders.html
+     * @see https://webextension-api.thunderbird.net/en/latest/folders.html
      */
     export namespace folders {
         /* folders types */
         /**
-         * An object describing a mail folder, as returned for example by the
-         * {@link folders.getParentFolders} or {@link folders.getSubFolders}
-         * methods, or part of a {@link accounts.MailAccount} object, which is
-         * returned for example by the {@link accounts.list} and {@link accounts.get}
-         * methods. The `subFolders` property is only included if
-         * requested.
+         * An object describing a folder. The `subFolders` property is only
+         * included if requested.
          */
         export interface MailFolder {
-            /** The account this folder belongs to. */
-            accountId: string;
+            /** The id of the account this folder belongs to. */
+            accountId?: accounts.MailAccountId | undefined;
+            /** An identifier for the folder. */
+            id?: MailFolderId | undefined;
+            /** Whether this folder is a favorite folder. */
+            isFavorite?: boolean | undefined;
+            /** Whether this folder is a root folder. */
+            isRoot?: boolean | undefined;
+            /** Whether this folder is a unified mailbox folder. */
+            isUnified?: boolean | undefined;
+            /** Whether this folder is a virtual search folder. */
+            isVirtual?: boolean | undefined;
             /** The human-friendly name of this folder. */
             name?: string | undefined;
             /**
@@ -15780,26 +16382,66 @@ declare namespace browser {
              */
             path: string;
             /**
+             * The special use of this folder. A folder can have multiple special
+             * uses.
+             */
+            specialUse?: MailFolderSpecialUse[] | undefined;
+            /**
              * Subfolders are only included if requested. They will be returned in
              * the same order as used in Thunderbird's folder pane.
              */
             subFolders?: MailFolder[] | undefined;
-            /** The type of folder, for several common types. */
-            type?: _MailFolderType | undefined;
+            /**
+             * Deprecated. Was used to represent the type of this folder.
+             *
+             * Not supported on manifest versions above 2.
+             */
+            type?: MailFolderSpecialUse | undefined;
         }
 
-        /** An object containing additional information about a mail folder. */
+        /**
+         * A unique id representing a {@link folders.MailFolder} throughout a
+         * session. Renaming or moving a folder will invalidate its id.
+         */
+        export type MailFolderId = string;
+
+        /** An object containing additional information about a folder. */
         export interface MailFolderInfo {
-            /** Whether this folder is a favorite folder. */
+            /**
+             * Deprecated. This information is now available in {@link folders.MailFolder}.
+             *
+             *
+             * Not supported on manifest versions above 2.
+             */
             favorite?: boolean | undefined;
+            /** Date the folder was last used (precision: seconds). */
+            lastUsed?: extensionTypes.Date | undefined;
+            /** Quota information, if available. */
+            quota?: MailFolderQuota[] | undefined;
+            /** Number of new messages in this folder. */
+            newMessageCount?: number | undefined;
             /** Number of messages in this folder. */
             totalMessageCount?: number | undefined;
             /** Number of unread messages in this folder. */
             unreadMessageCount?: number | undefined;
         }
 
-        /** The type of folder, for several common types. */
-        export type _MailFolderType =
+        /** An object containing capability information about a folder. */
+        export interface MailFolderCapabilities {
+            /** Whether this folder supports adding new messages. */
+            canAddMessages?: boolean | undefined;
+            /** Whether this folder supports adding new subfolders. */
+            canAddSubfolders?: boolean | undefined;
+            /** Whether this folder can be deleted. */
+            canBeDeleted?: boolean | undefined;
+            /** Whether this folder can be renamed. */
+            canBeRenamed?: boolean | undefined;
+            /** Whether this folder supports deleting messages. */
+            canDeleteMessages?: boolean | undefined;
+        }
+
+        /** Supported values for the special use of a folder. */
+        export type MailFolderSpecialUse =
             | 'inbox'
             | 'drafts'
             | 'sent'
@@ -15809,43 +16451,213 @@ declare namespace browser {
             | 'junk'
             | 'outbox';
 
+        /** An object containing quota information. */
+        export interface MailFolderQuota {
+            /**
+             * The type of the quota as defined by RFC2087\. A `STORAGE` quota is
+             * constraining the available storage in bytes, a `MESSAGE` quota is
+             * constraining the number of storable messages.
+             */
+            type: _MailFolderQuotaType;
+            /** The maximum available quota. */
+            limit: number;
+            /** The currently used quota. */
+            used: number;
+            /** The currently unused quota. */
+            unused: number;
+        }
+
+        /** An object defining a range. */
+        export interface QueryRange {
+            /** The minimum value required to match the query. */
+            min?: number | undefined;
+            /** The maximum value required to match the query. */
+            max?: number | undefined;
+        }
+
+        export interface RegularExpression {
+            /** A regular expression, for example `^Projects \d{4}$`. */
+            regexp: string;
+            /**
+             * Supported RegExp flags: `i` = case insensitive, and/or one of `u` =
+             * unicode support or `v` = extended unicode support
+             */
+            flags?: string | undefined;
+        }
+
+        /**
+         * The type of the quota as defined by RFC2087\. A `STORAGE` quota is
+         * constraining the available storage in bytes, a `MESSAGE` quota is
+         * constraining the number of storable messages.
+         */
+        export type _MailFolderQuotaType = 'STORAGE' | 'MESSAGE';
+
+        export interface _QueryQueryInfo {
+            /** Limits the search to folders of the account with the specified id. */
+            accountId?: accounts.MailAccountId | undefined;
+            /** Whether the folder supports adding new messages, or not. */
+            canAddMessages?: boolean | undefined;
+            /** Whether the folder supports adding new subfolders, or not. */
+            canAddSubfolders?: boolean | undefined;
+            /** Whether the folder can be deleted, or not. */
+            canBeDeleted?: boolean | undefined;
+            /** Whether the folder can be renamed, or not. */
+            canBeRenamed?: boolean | undefined;
+            /** Whether the folder supports deleting messages, or not. */
+            canDeleteMessages?: boolean | undefined;
+            /** Limits the search to the folder with the specified id. */
+            folderId?: MailFolderId | undefined;
+            /**
+             * Whether the folder (excluding subfolders) contains messages, or not.
+             * Supports to specify a {@link folders.QueryRange} (min/max) instead of
+             * a simple boolean value (none/some).
+             */
+            hasMessages?: boolean | QueryRange | undefined;
+            /**
+             * Whether the folder (excluding subfolders) contains unread messages, or
+             * not. Supports to specify a {@link folders.QueryRange} (min/max)
+             * instead of a simple boolean value (none/some).
+             */
+            hasUnreadMessages?: boolean | QueryRange | undefined;
+            /**
+             * Whether the folder (excluding subfolders) contains new messages, or
+             * not. Supports to specify a {@link folders.QueryRange} (min/max)
+             * instead of a simple boolean value (none/some).
+             */
+            hasNewMessages?: boolean | QueryRange | undefined;
+            /**
+             * Whether the folder has subfolders, or not. Supports to specify a
+             * {@link folders.QueryRange} (min/max) instead of a simple boolean value
+             * (none/some).
+             */
+            hasSubFolders?: boolean | QueryRange | undefined;
+            /** Whether the folder is a favorite folder, or not. */
+            isFavorite?: boolean | undefined;
+            /** Whether the folder is a root folder, or not. */
+            isRoot?: boolean | undefined;
+            /**
+             * Whether the folder is a unified mailbox folder, or not. Note: Unified
+             * mailbox folders are always skipped, unless this property is set to
+             * `true`
+             */
+            isUnified?: boolean | undefined;
+            /** Whether the folder is a virtual search folder, or not. */
+            isVirtual?: boolean | undefined;
+            /**
+             * Limits the number of returned folders. If used together with `recent`,
+             * supports being set to {@link folders.DEFAULT_MOST_RECENT_LIMIT}
+             */
+            limit?: number | undefined;
+            /**
+             * Return only folders whose name is matched by the provided string or
+             * regular expression.
+             */
+            name?: RegularExpression | string | undefined;
+            /**
+             * Return only folders whose path is matched by the provided string or
+             * regular expression.
+             */
+            path?: RegularExpression | string | undefined;
+            /**
+             * Whether the folder (excluding subfolders) has been used within the
+             * last month, or not. The returned folders will be sorted by their
+             * recentness.
+             */
+            recent?: boolean | undefined;
+            /**
+             * Match only folders with the specified special use (folders have to
+             * match all specified uses).
+             */
+            specialUse?: MailFolderSpecialUse[] | undefined;
+            /**
+             * Deprecated. Match only folders with the specified special use.
+             *
+             * Not supported on manifest versions above 2.
+             */
+            type?: MailFolderSpecialUse | undefined;
+        }
+
         export { _delete as delete };
 
+        /** The properties to update. */
+        export interface _UpdateUpdateProperties {
+            /** Sets or clears the favorite status. */
+            isFavorite?: boolean | undefined;
+        }
+
+        /* folders properties */
+        /**
+         * The number of most recent folders used in Thunderbird's UI. Controled
+         * by the `mail.folder_widget.max_recent` preference.
+         */
+        export const DEFAULT_MOST_RECENT_LIMIT: number;
+
         /* folders functions */
+        /**
+         * Gets folders that match the specified properties, or all folders if no
+         * properties are specified.
+         */
+        export function query(queryInfo?: _QueryQueryInfo): Promise<MailFolder[]>;
+
+        /**
+         * Returns the specified folder.
+         *
+         * @param [includeSubFolders] Specifies whether the returned {@link folders.MailFolder}
+         * object should include all its nested subfolders .
+         * Defaults to `true`.
+         */
+        export function get(folder: MailFolderId, includeSubFolders?: boolean): Promise<MailFolder>;
+
         /**
          * Creates a new subfolder in the specified folder or at the root of the
          * specified account.
          */
-        export function create(parent: MailFolder | accounts.MailAccount, childName: string): Promise<MailFolder>;
+        export function create(
+            destination: MailFolderId | MailFolder | accounts.MailAccount,
+            childName: string,
+        ): Promise<MailFolder>;
 
         /** Renames a folder. */
-        export function rename(folder: MailFolder, newName: string): Promise<MailFolder>;
+        export function rename(folder: MailFolderId | MailFolder, newName: string): Promise<MailFolder>;
 
         /**
-         * Moves the given `sourceFolder` into the given `destination`. Throws if
-         * the destination already contains a folder with the name of the source
-         * folder.
+         * Moves the given source folder into the given destination folder.
+         * Throws if the destination already contains a folder with the name of
+         * the source folder.
          */
         export function move(
-            sourceFolder: MailFolder,
-            destination: MailFolder | accounts.MailAccount,
+            source: MailFolderId | MailFolder,
+            destination: MailFolderId | MailFolder | accounts.MailAccount,
         ): Promise<MailFolder>;
 
         /**
-         * Copies the given `sourceFolder` into the given `destination`. Throws
-         * if the destination already contains a folder with the name of the
-         * source folder.
+         * Copies the given source folder into the given destination folder.
+         * Throws if the destination already contains a folder with the name of
+         * the source folder.
          */
         export function copy(
-            sourceFolder: MailFolder,
-            destination: MailFolder | accounts.MailAccount,
+            source: MailFolderId | MailFolder,
+            destination: MailFolderId | MailFolder | accounts.MailAccount,
         ): Promise<MailFolder>;
 
         /** Deletes a folder. */
-        function _delete(folder: MailFolder): Promise<any>;
+        function _delete(folder: MailFolderId | MailFolder): Promise<any>;
 
-        /** Get additional information about a mail folder. */
-        export function getFolderInfo(folder: MailFolder): Promise<MailFolderInfo>;
+        /**
+         * Updates properties of a folder.
+         *
+         * @param updateProperties The properties to update.
+         */
+        export function update(
+            folder: MailFolderId | MailFolder,
+            updateProperties: _UpdateUpdateProperties,
+        ): Promise<any>;
+
+        /** Get additional information about a folder. */
+        export function getFolderInfo(folder: MailFolderId | MailFolder): Promise<MailFolderInfo>;
+
+        /** Get capability information about a folder. */
+        export function getFolderCapabilities(folder: MailFolderId | MailFolder): Promise<MailFolderCapabilities>;
 
         /**
          * Get all parent folders as a flat ordered array. The first array entry
@@ -15855,7 +16667,10 @@ declare namespace browser {
          * object for each parent folder should include its
          * nested subfolders . Defaults to `false`.
          */
-        export function getParentFolders(folder: MailFolder, includeSubFolders?: boolean): Promise<MailFolder[]>;
+        export function getParentFolders(
+            folder: MailFolderId | MailFolder,
+            includeSubFolders?: boolean,
+        ): Promise<MailFolder[]>;
 
         /**
          * Get the subfolders of the specified folder or account.
@@ -15865,9 +16680,12 @@ declare namespace browser {
          * include all its nested subfolders . Defaults to `true`.
          */
         export function getSubFolders(
-            folderOrAccount: MailFolder | accounts.MailAccount,
+            folder: MailFolderId | MailFolder | accounts.MailAccount,
             includeSubFolders?: boolean,
         ): Promise<MailFolder[]>;
+
+        /** Marks all messages in a folder as read. */
+        export function markAsRead(folder: MailFolderId | MailFolder): void;
 
         /* folders events */
         /** Fired when a folder has been created. */
@@ -15886,6 +16704,12 @@ declare namespace browser {
         export const onDeleted: WebExtEvent<(deletedFolder: MailFolder) => void>;
 
         /**
+         * Fired when properties of a folder have changed (`specialUse` and
+         * `isFavorite`).
+         */
+        export const onUpdated: WebExtEvent<(originalFolder: MailFolder, updatedFolder: MailFolder) => void>;
+
+        /**
          * Fired when certain information of a folder have changed. Bursts of
          * message count changes are collapsed to a single event.
          */
@@ -15897,7 +16721,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/identities.html
+     * @see https://webextension-api.thunderbird.net/en/latest/identities.html
      */
     export namespace identities {
         /* identities types */
@@ -15906,7 +16730,7 @@ declare namespace browser {
              * The id of the {@link accounts.MailAccount} this identity belongs to.
              * The `accountId` property is read-only.
              */
-            accountId?: string | undefined;
+            accountId?: accounts.MailAccountId | undefined;
             /** If the identity uses HTML as the default compose format. */
             composeHtml?: boolean | undefined;
             /**
@@ -15939,7 +16763,7 @@ declare namespace browser {
          * in any specific order. Use {@link identities.getDefault} to get the
          * default identity of an account.
          */
-        export function list(accountId?: string): Promise<MailIdentity[]>;
+        export function list(accountId?: accounts.MailAccountId): Promise<MailIdentity[]>;
 
         /**
          * Returns details of the requested identity, or `null` if it doesn't
@@ -15948,7 +16772,7 @@ declare namespace browser {
         export function get(identityId: string): Promise<MailIdentity | null>;
 
         /** Create a new identity in the specified account. */
-        export function create(accountId: string, details: MailIdentity): Promise<MailIdentity>;
+        export function create(accountId: accounts.MailAccountId, details: MailIdentity): Promise<MailIdentity>;
 
         /**
          * Attempts to delete the requested identity. Default identities cannot
@@ -15963,10 +16787,10 @@ declare namespace browser {
          * Returns the default identity for the requested account, or `null` if
          * it is not defined.
          */
-        export function getDefault(accountId: string): Promise<MailIdentity | null>;
+        export function getDefault(accountId: accounts.MailAccountId): Promise<MailIdentity | null>;
 
         /** Sets the default identity for the requested account. */
-        export function setDefault(accountId: string, identityId: string): Promise<any>;
+        export function setDefault(accountId: accounts.MailAccountId, identityId: string): Promise<any>;
 
         /* identities events */
         /**
@@ -15990,7 +16814,7 @@ declare namespace browser {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/mailTabs.html
+     * @see https://webextension-api.thunderbird.net/en/latest/mailTabs.html
      */
     export namespace mailTabs {
         /* mailTabs types */
@@ -16017,6 +16841,31 @@ declare namespace browser {
              * included.
              */
             displayedFolder?: folders.MailFolder | undefined;
+        }
+
+        export interface MailTabProperties {
+            /** Sorts the list of messages. `sortOrder` must also be given. */
+            sortType?: _MailTabPropertiesSortType | undefined;
+            /** Sorts the list of messages. `sortType` must also be given. */
+            sortOrder?: _MailTabPropertiesSortOrder | undefined;
+            viewType?: _MailTabPropertiesViewType | undefined;
+            /**
+             * Sets the arrangement of the folder pane, message list pane, and
+             * message display pane. Note that setting this applies it to all mail
+             * tabs.
+             */
+            layout?: _MailTabPropertiesLayout | undefined;
+            /** Shows or hides the folder pane. */
+            folderPaneVisible?: boolean | undefined;
+            /** Shows or hides the message display pane. */
+            messagePaneVisible?: boolean | undefined;
+            /**
+             * Sets the folder displayed in the mail tab. Requires the _accountsRead_
+             * permission. The previous message selection in the given folder will be
+             * restored, if any. This property is ignored, if `selectedMessages` is
+             * specified.
+             */
+            displayedFolder?: folders.MailFolderId | folders.MailFolder | undefined;
         }
 
         export interface QuickFilterTextDetail {
@@ -16071,22 +16920,8 @@ declare namespace browser {
 
         export type _MailTabLayout = 'standard' | 'wide' | 'vertical';
 
-        export interface _QueryQueryInfo {
-            /** Whether the tabs are active in their windows. */
-            active?: boolean | undefined;
-            /** Whether the tabs are in the current window. */
-            currentWindow?: boolean | undefined;
-            /** Whether the tabs are in the last focused window. */
-            lastFocusedWindow?: boolean | undefined;
-            /**
-             * The ID of the parent window, or {@link windows.WINDOW_ID_CURRENT} for
-             * the current window.
-             */
-            windowId?: number | undefined;
-        }
-
         /** Sorts the list of messages. `sortOrder` must also be given. */
-        export type _UpdateUpdatePropertiesSortType =
+        export type _MailTabPropertiesSortType =
             | 'none'
             | 'date'
             | 'subject'
@@ -16109,39 +16944,29 @@ declare namespace browser {
             | 'correspondent';
 
         /** Sorts the list of messages. `sortType` must also be given. */
-        export type _UpdateUpdatePropertiesSortOrder = 'none' | 'ascending' | 'descending';
+        export type _MailTabPropertiesSortOrder = 'none' | 'ascending' | 'descending';
 
-        export type _UpdateUpdatePropertiesViewType = 'ungrouped' | 'groupedByThread' | 'groupedBySortType';
+        export type _MailTabPropertiesViewType = 'ungrouped' | 'groupedByThread' | 'groupedBySortType';
 
         /**
          * Sets the arrangement of the folder pane, message list pane, and
          * message display pane. Note that setting this applies it to all mail
          * tabs.
          */
-        export type _UpdateUpdatePropertiesLayout = 'standard' | 'wide' | 'vertical';
+        export type _MailTabPropertiesLayout = 'standard' | 'wide' | 'vertical';
 
-        export interface _UpdateUpdateProperties {
+        export interface _QueryQueryInfo {
+            /** Whether the tabs are active in their windows. */
+            active?: boolean | undefined;
+            /** Whether the tabs are in the current window. */
+            currentWindow?: boolean | undefined;
+            /** Whether the tabs are in the last focused window. */
+            lastFocusedWindow?: boolean | undefined;
             /**
-             * Sets the folder displayed in the tab. The extension must have the
-             * _accountsRead_ permission to do this. The previous message selection
-             * in the given folder will be restored.
+             * The ID of the parent window, or {@link windows.WINDOW_ID_CURRENT} for
+             * the current window.
              */
-            displayedFolder?: folders.MailFolder | undefined;
-            /** Sorts the list of messages. `sortOrder` must also be given. */
-            sortType?: _UpdateUpdatePropertiesSortType | undefined;
-            /** Sorts the list of messages. `sortType` must also be given. */
-            sortOrder?: _UpdateUpdatePropertiesSortOrder | undefined;
-            viewType?: _UpdateUpdatePropertiesViewType | undefined;
-            /**
-             * Sets the arrangement of the folder pane, message list pane, and
-             * message display pane. Note that setting this applies it to all mail
-             * tabs.
-             */
-            layout?: _UpdateUpdatePropertiesLayout | undefined;
-            /** Shows or hides the folder pane. */
-            folderPaneVisible?: boolean | undefined;
-            /** Shows or hides the message display pane. */
-            messagePaneVisible?: boolean | undefined;
+            windowId?: number | undefined;
         }
 
         export interface _SetQuickFilterProperties {
@@ -16154,7 +16979,7 @@ declare namespace browser {
             /** Shows only messages from people in the address book. */
             contact?: boolean | undefined;
             /** Shows only messages with tags on them. */
-            tags?: boolean | messages.TagsDetail | undefined;
+            tags?: boolean | messages.tags.TagsDetail | undefined;
             /** Shows only messages with attachments. */
             attachment?: boolean | undefined;
             /** Shows only messages matching the supplied text. */
@@ -16183,17 +17008,32 @@ declare namespace browser {
         export function getCurrent(): Promise<MailTab | undefined>;
 
         /**
+         * Creates a new mail tab. Standard tab properties can be adjusted via
+         * {@link tabs.update} after the mail tab has been created. **Note:** A
+         * new mail window can be created via {@link windows.create}.
+         */
+        export function create(createProperties?: MailTabProperties): Promise<MailTab>;
+
+        /**
          * Modifies the properties of a mail tab. Properties that are not
          * specified in `updateProperties` are not modified.
          *
          * @param tabId Defaults to the active tab of the current window.
          */
-        export function update(tabId: number, updateProperties: _UpdateUpdateProperties): Promise<any>;
+        export function update(tabId: number, updateProperties: MailTabProperties): Promise<MailTab>;
         /**
          * Modifies the properties of a mail tab. Properties that are not
          * specified in `updateProperties` are not modified.
          */
-        export function update(updateProperties: _UpdateUpdateProperties): Promise<any>;
+        export function update(updateProperties: MailTabProperties): Promise<MailTab>;
+
+        /**
+         * Lists the messages in the current view, honoring sort order and
+         * filters.
+         *
+         * @param [tabId] Defaults to the active tab of the current window.
+         */
+        export function getListedMessages(tabId?: number): Promise<messages.MessageList>;
 
         /**
          * Lists the selected messages in the current folder.
@@ -16208,20 +17048,20 @@ declare namespace browser {
          * @param tabId Defaults to the active tab of the current window.
          *
          * @param messageIds The IDs of the messages, which should be selected.
-         * The mailTab will switch to the folder of the selected messages. Throws
-         * if they belong to different folders. Array can be empty to deselect
-         * any currently selected message.
+         * The mail tab will switch to the folder of the selected messages.
+         * Throws if they belong to different folders. Array can be empty to
+         * deselect any currently selected message.
          */
-        export function setSelectedMessages(tabId: number, messageIds: number[]): Promise<any>;
+        export function setSelectedMessages(tabId: number, messageIds: messages.MessageId[]): Promise<any>;
         /**
          * Selects none, one or multiple messages.
          *
          * @param messageIds The IDs of the messages, which should be selected.
-         * The mailTab will switch to the folder of the selected messages. Throws
-         * if they belong to different folders. Array can be empty to deselect
-         * any currently selected message.
+         * The mail tab will switch to the folder of the selected messages.
+         * Throws if they belong to different folders. Array can be empty to
+         * deselect any currently selected message.
          */
-        export function setSelectedMessages(messageIds: number[]): Promise<any>;
+        export function setSelectedMessages(messageIds: messages.MessageId[]): Promise<any>;
 
         /**
          * Sets the Quick Filter user interface based on the options specified.
@@ -16253,7 +17093,7 @@ declare namespace browser {
      *
      * Permissions: `menus`, `menus`
      *
-     * @see https://webextension-api.thunderbird.net/en/115/menus.html
+     * @see https://webextension-api.thunderbird.net/en/latest/menus.html
      */
     export namespace menus {
         /* menus types */
@@ -16457,14 +17297,6 @@ declare namespace browser {
         }
 
         /**
-         * The provided path may be a relative path to an icon file, an image
-         * `data:` URL, a `blob:` URL or a `moz-extension: `URL. The `data:` or
-         * `blob:` URLs can be retrieved as follows:
-         * [DataBlobUrls.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/DataBlobUrls.js),````
-         */
-        export type SingleMenuIconPath = string;
-
-        /**
          * Either a _string_ to specify a single icon path to be used for all
          * sizes, or a
          * _dictionary object_ to specify paths for multiple icons in different
@@ -16480,11 +17312,26 @@ declare namespace browser {
          * [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes)
          * for more information on this.
          */
-        export type MenuIconPath =
-            | SingleMenuIconPath
-            | {
-                  [key: number]: SingleMenuIconPath;
-              };
+        export type MenuIconPath = string;
+
+        /**
+         * A _dictionary object_ to specify paths for multiple icons in different
+         * sizes,
+         * so the best matching icon can be used, instead of scaling a standard
+         * icon to fit the
+         * pixel density of the user's display. Each entry is a _name-value_
+         * pair, with
+         * _name_ being a size and _value_ being a {@link menus.MenuIconPath}.
+         * Example:
+         * [IconPath.json](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/IconPath.json)
+         *
+         * See the
+         * [MDN documentation about choosing icon sizes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action#choosing_icon_sizes)
+         * for more information on this.
+         */
+        export interface MenuIconDictionary {
+            [key: number]: MenuIconPath;
+        }
 
         export type _ContextType =
             | 'all'
@@ -16546,7 +17393,7 @@ declare namespace browser {
              * Custom icons to display next to the menu item. Custom icons can only
              * be set for items appearing in submenus.
              */
-            icons?: MenuIconPath | undefined;
+            icons?: MenuIconPath | MenuIconDictionary | undefined;
             /**
              * The text to be displayed in the item; this is _required_ unless `type`
              * is `separator`. When the context is `selection`, you can use `%s`
@@ -16585,7 +17432,7 @@ declare namespace browser {
              *
              * @param tab The details of the tab where the click took place.
              */
-            onclick?: (info: OnClickData, tab: tabs.Tab) => void | undefined;
+            onclick?: (info: OnClickData, tab: tabs.Tab) => undefined;
             /**
              * The ID of a parent menu item; this makes the item a child of a
              * previously added item.
@@ -16616,7 +17463,7 @@ declare namespace browser {
          */
         export interface _UpdateUpdateProperties {
             type?: ItemType | undefined;
-            icons?: MenuIconPath | undefined;
+            icons?: MenuIconPath | MenuIconDictionary | undefined;
             title?: string | undefined;
             checked?: boolean | undefined;
             contexts?: ContextType[] | undefined;
@@ -16627,7 +17474,7 @@ declare namespace browser {
              * @param tab The details of the tab where the click took place.
              * **Note:** this parameter only present for extensions.
              */
-            onclick?: (info: OnClickData, tab: tabs.Tab) => void | undefined;
+            onclick?: (info: OnClickData, tab: tabs.Tab) => undefined;
             /**
              * **Note:** You cannot change an item to be a child of one of its own
              * descendants.
@@ -16716,7 +17563,7 @@ declare namespace browser {
          * available as `info.targetElementId` in the {@link menus.onShown} and
          * {@link menus.onClicked} events.
          */
-        export function getTargetElement(targetElementId: number): Element | void;
+        export function getTargetElement(targetElementId: number): Element | undefined;
 
         /* menus events */
         /**
@@ -16754,7 +17601,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/messageDisplay.html
+     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplay.html
      */
     export namespace messageDisplay {
         /**
@@ -16774,7 +17621,7 @@ declare namespace browser {
              * The id of a message to be opened. Will throw an _ExtensionError_, if
              * the provided `messageId` is unknown or invalid.
              */
-            messageId?: number | undefined;
+            messageId?: messages.MessageId | undefined;
             /**
              * The headerMessageId of a message to be opened. Will throw an
              * _ExtensionError_, if the provided `headerMessageId` is unknown or
@@ -16845,7 +17692,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/messageDisplayAction.html
+     * @see https://webextension-api.thunderbird.net/en/latest/messageDisplayAction.html
      */
     export namespace messageDisplayAction {
         /* messageDisplayAction types */
@@ -17184,10 +18031,19 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/messages.html
+     * @see https://webextension-api.thunderbird.net/en/latest/messages.html
      */
     export namespace messages {
         /* messages types */
+        /**
+         * A unique id representing a {@link messages.MessageHeader} and the
+         * associated message. This id doesn’t refer to the Message-ID email
+         * header. It is an internal tracking number that does not remain after a
+         * restart. Nor does it follow an email that has been moved to a
+         * different folder.
+         */
+        export type MessageId = number;
+
         /** Basic information about a message. */
         export interface MessageHeader {
             author: string;
@@ -17216,7 +18072,7 @@ declare namespace browser {
              * will not be available.
              */
             headersOnly: boolean;
-            id: number;
+            id: MessageId;
             /**
              * Whether the message has been marked as junk. Always `false` for
              * news/nntp messages and external messages.
@@ -17241,15 +18097,15 @@ declare namespace browser {
             /** The subject of the message. */
             subject: string;
             /**
-             * Tags associated with this message. For a list of available tags, call
-             * the listTags method.
+             * Tags associated with this message. For a list of available tags, use
+             * {@link messages.tags.list}.
              */
             tags: string[];
         }
 
         /**
          * See
-         * [how-to/messageLists](https://webextension-api.thunderbird.net/en/stable/how-to/messageLists.html)
+         * [examples/messageLists](https://webextension-api.thunderbird.net/en/stable/examples/messageLists.html)
          * for more information.
          */
         export interface MessageList {
@@ -17262,9 +18118,11 @@ declare namespace browser {
             /** The content of the part */
             body?: string | undefined;
             contentType?: string | undefined;
+            /** The decryption status, only available for the root part. */
+            decryptionStatus?: _MessagePartDecryptionStatus | undefined;
             /**
              * A _dictionary object_ of part headers as _key-value_ pairs, with the
-             * header name as _key_, and an array of headers as _value_
+             * header name as _key_, and an array of headers as _value_.
              */
             headers?: { [key: string]: string[] } | undefined;
             /** Name of the part, if it is a file */
@@ -17306,42 +18164,19 @@ declare namespace browser {
             read?: boolean | undefined;
             /**
              * Tags associated with this message. For a list of available tags, call
-             * the listTags method.
+             * the {@link messages.tags.list} method.
              */
             tags?: string[] | undefined;
         }
 
-        export interface MessageTag {
-            /** Unique tag identifier. */
-            key: string;
-            /** Human-readable tag name. */
-            tag: string;
-            /** Tag color. */
-            color: string;
-            /** Custom sort string (usually empty). */
-            ordinal: string;
-        }
-
-        /**
-         * Used for filtering messages by tag in various methods. Note that
-         * functions using this type may have a partial implementation.
-         */
-        export interface TagsDetail {
-            /**
-             * A _dictionary object_ with one or more filter condition as _key-value_
-             * pairs, the _key_ being the tag to filter on, and the _value_ being a
-             * boolean expression, requesting whether a message must include (`true`)
-             * or exclude (`false`) the tag. For a list of available tags, call the
-             * {@link messages.listTags} method.
-             */
-            tags: _TagsDetailTags;
-            /** Whether all of the tag filters must apply, or any of them. */
-            mode: _TagsDetailMode;
-        }
-
         /** Represents an attachment in a message. */
         export interface MessageAttachment {
-            /** The content type of the attachment. */
+            /**
+             * The content type of the attachment. A value of `text/x-moz-deleted`
+             * indicates that the original attachment was permanently deleted and
+             * replaced by a placeholder text attachment with some meta information
+             * about the original attachment.
+             */
             contentType: string;
             /**
              * The name, as displayed to the user, of this attachment. This is
@@ -17359,29 +18194,45 @@ declare namespace browser {
             message?: MessageHeader | undefined;
         }
 
-        /**
-         * A _dictionary object_ with one or more filter condition as _key-value_
-         * pairs, the _key_ being the tag to filter on, and the _value_ being a
-         * boolean expression, requesting whether a message must include (`true`)
-         * or exclude (`false`) the tag. For a list of available tags, call the
-         * {@link messages.listTags} method.
-         */
-        export interface _TagsDetailTags {
-            [key: string]: boolean;
+        /** An object defining a range. */
+        export interface QueryRange {
+            /** The minimum value required to match the query. */
+            min?: number | undefined;
+            /** The maximum value required to match the query. */
+            max?: number | undefined;
         }
 
-        /** Whether all of the tag filters must apply, or any of them. */
-        export type _TagsDetailMode = 'all' | 'any';
+        /** The decryption status, only available for the root part. */
+        export type _MessagePartDecryptionStatus = 'none' | 'skipped' | 'success' | 'fail';
+
+        export interface _GetFullOptions {
+            /**
+             * Whether the message should be decrypted. If the message could not be
+             * decrypted, its parts are omitted. Defaults to true.
+             */
+            decrypt?: boolean | undefined;
+        }
 
         export type _GetRawOptionsDataFormat = 'File' | 'BinaryString' | 'File' | 'BinaryString';
 
         export interface _GetRawOptions {
-            data_format: _GetRawOptionsDataFormat;
+            /**
+             * Whether the message should be decrypted. Throws, if the message could
+             * not be decrypted.
+             */
+            decrypt?: boolean | undefined;
+            data_format?: _GetRawOptionsDataFormat | undefined;
         }
 
         export interface _QueryQueryInfo {
-            /** If specified, returns only messages with or without attachments. */
-            attachment?: boolean | undefined;
+            /** Limits the search to folders of the account with the specified id. */
+            accountId?: accounts.MailAccountId | undefined;
+            /**
+             * Whether the message has attachments, or not. Supports to specify a
+             * {@link messages.QueryRange} (min/max) instead of a simple boolean
+             * value (none/some).
+             */
+            attachment?: boolean | QueryRange | undefined;
             /**
              * Returns only messages with this value matching the author. The search
              * value is a single email address, a name or a combination (e.g.:
@@ -17396,8 +18247,19 @@ declare namespace browser {
             /** Returns only flagged (or unflagged if false) messages. */
             flagged?: boolean | undefined;
             /**
+             * Returns only messages from the folder with the specified id. The
+             * _accountsRead_ permission is required.
+             */
+            folderId?: folders.MailFolderId | undefined;
+            /**
              * Returns only messages from the specified folder. The _accountsRead_
              * permission is required.
+             *
+             * @deprecated Support deprecated since Thunderbird 121 and removed in
+             * Manifest V3: messages.queryInfo.folder has been replaced by
+             * messages.queryInfo.folderId.
+             *
+             * Not supported on manifest versions above 2.
              */
             folder?: folders.MailFolder | undefined;
             /** Returns only messages with a date after this value. */
@@ -17414,7 +18276,7 @@ declare namespace browser {
             fullText?: string | undefined;
             /** Returns only messages with a Message-ID header matching this value. */
             headerMessageId?: string | undefined;
-            /** Search the folder specified by `queryInfo.folder` recursively. */
+            /** Search the specified folder recursively. */
             includeSubFolders?: boolean | undefined;
             /**
              * Returns only messages whose recipients match all specified addresses.
@@ -17426,13 +18288,15 @@ declare namespace browser {
              * matches are done case-insensitive.
              */
             recipients?: string | undefined;
-            /** Returns only messages with this value matching the subject. */
+            /** Returns only messages with a size in the specified byte range. */
+            size?: QueryRange | undefined;
+            /** Returns only messages whose subject contains the provided string. */
             subject?: string | undefined;
             /**
              * Returns only messages with the specified tags. For a list of available
-             * tags, call the {@link messages.listTags} method.
+             * tags, call the {@link messages.tags.list} method.
              */
-            tags?: TagsDetail | undefined;
+            tags?: messages.tags.TagsDetail | undefined;
             /** Returns only messages with a date before this value. */
             toDate?: extensionTypes.Date | undefined;
             /**
@@ -17440,8 +18304,42 @@ declare namespace browser {
              * configured identity.
              */
             toMe?: boolean | undefined;
-            /** Returns only unread (or read if false) messages. */
+            /** Returns only messages whith the specified junk state. */
+            junk?: boolean | undefined;
+            /** Returns only messages with a junk score in the specified range. */
+            junkScore?: QueryRange | undefined;
+            /** Returns only messages with the specified new state. */
+            new?: boolean | undefined;
+            /**
+             * Returns only unread (or read if false) messages.
+             *
+             * Not supported on manifest versions above 2.
+             */
             unread?: boolean | undefined;
+            /**
+             * Returns only messages with the specified read state.
+             *
+             * Needs at least manifest version 3.
+             */
+            read?: boolean | undefined;
+            /**
+             * Set the timeout in ms after which results should be returned, even if
+             * the nominal number of messages-per-page has not yet been reached.
+             * Defaults to `1000` ms. Setting it to `0` will disable auto-pagination.
+             */
+            autoPaginationTimeout?: number | undefined;
+            /**
+             * Set the nominal number of messages-per-page for this query. Defaults
+             * to `100` messages.
+             */
+            messagesPerPage?: number | undefined;
+            /**
+             * The _messageListId_ is usually returned together with the first page,
+             * after some messages have been found. Enabling this option will change
+             * the return value of this function and return the _messageListId_
+             * directly.
+             */
+            returnMessageListId?: boolean | undefined;
         }
 
         export { _delete as delete };
@@ -17451,64 +18349,95 @@ declare namespace browser {
         export interface _UpdateTagUpdateProperties {
             /** Human-readable tag name. */
             tag?: string | undefined;
-            /** Tag color in hex format (i.e.: #000080 for navy blue). */
+            /**
+             * Tag color in hex format (i.e.: #000080 for navy blue). Value will be
+             * stored as upper case.
+             */
             color?: string | undefined;
+        }
+
+        export interface _MessagesOnNewMailReceivedEvent<
+            TCallback = (folder: folders.MailFolder, messages: MessageList) => void,
+        > {
+            addListener(cb: TCallback, monitorAllFolders?: boolean): void;
+            removeListener(cb: TCallback): void;
+            hasListener(cb: TCallback): boolean;
         }
 
         /* messages functions */
         /** Gets all messages in a folder. */
-        export function list(folder: folders.MailFolder): Promise<MessageList>;
+        export function list(folder: folders.MailFolderId | folders.MailFolder): Promise<MessageList>;
 
         /**
          * Returns the next chunk of messages in a list. See
-         * [how-to/messageLists](https://webextension-api.thunderbird.net/en/stable/how-to/messageLists.html)
+         * [examples/messageLists](https://webextension-api.thunderbird.net/en/stable/examples/messageLists.html)
          * for more information.
          */
         export function continueList(messageListId: string): Promise<MessageList>;
 
-        /** Returns a specified message. */
-        export function get(messageId: number): Promise<MessageHeader>;
+        /**
+         * Finalizes the specified list and terminates any process currently
+         * still adding messages.
+         */
+        export function abortList(messageListId: string): Promise<any>;
+
+        /** Returns the specified message. */
+        export function get(messageId: MessageId): Promise<MessageHeader>;
 
         /**
-         * Returns a specified message, including all headers and MIME parts.
+         * Returns the specified message, including all headers and MIME parts.
          * Throws if the message could not be read, for example due to network
          * issues.
          */
-        export function getFull(messageId: number): Promise<MessagePart>;
+        export function getFull(messageId: MessageId, options?: _GetFullOptions): Promise<MessagePart>;
 
         /**
          * Returns the unmodified source of a message. Throws if the message
          * could not be read, for example due to network issues.
          */
-        export function getRaw(messageId: number, options?: _GetRawOptions): Promise<string | File>;
+        export function getRaw(messageId: MessageId, options?: _GetRawOptions): Promise<string | File>;
 
         /** Lists the attachments of a message. */
-        export function listAttachments(messageId: number): Promise<MessageAttachment[]>;
+        export function listAttachments(messageId: MessageId): Promise<MessageAttachment[]>;
 
         /**
          * Gets the content of a {@link messages.MessageAttachment} as a {@link File}
          * object.
          */
-        export function getAttachmentFile(messageId: number, partName: string): Promise<File>;
+        export function getAttachmentFile(messageId: MessageId, partName: string): Promise<File>;
+
+        /**
+         * Deletes the specified attachments and replaces them by placeholder
+         * text attachments with meta information about the original attachments
+         * and a `text/x-moz-deleted` content type. This permanently modifies the
+         * message.
+         *
+         * @param partNames An array of attachments, identifying the to be
+         * deleted attachments by their `partName`.
+         */
+        export function deleteAttachments(messageId: number, partNames: string[]): Promise<any>;
 
         /**
          * Opens the specified attachment
          *
          * @param tabId The ID of the tab associated with the message opening.
          */
-        export function openAttachment(messageId: number, partName: string, tabId: number): Promise<any>;
+        export function openAttachment(messageId: MessageId, partName: string, tabId: number): Promise<any>;
 
         /**
          * Gets all messages that have the specified properties, or all messages
-         * if no properties are specified.
+         * if no properties are specified. Messages of unified mailbox folders
+         * are not included by default (as that could double the amount of
+         * returned messages), but explicitly specifying a unified mailbox folder
+         * is supported.
          */
-        export function query(queryInfo?: _QueryQueryInfo): Promise<MessageList>;
+        export function query(queryInfo?: _QueryQueryInfo): Promise<MessageList | string>;
 
         /**
-         * Marks or unmarks a message as junk, read, flagged, or tagged. Updating
-         * external messages will throw an _ExtensionError_.
+         * Updates message properties and tags. Updating external messages will
+         * throw an _ExtensionError_.
          */
-        export function update(messageId: number, newProperties: MessageProperties): Promise<any>;
+        export function update(messageId: MessageId, newProperties: MessageProperties): Promise<any>;
 
         /**
          * Moves messages to a specified folder. If the messages cannot be
@@ -17519,7 +18448,10 @@ declare namespace browser {
          *
          * @param destination The folder to move the messages to.
          */
-        export function move(messageIds: number[], destination: folders.MailFolder): Promise<any>;
+        export function move(
+            messageIds: MessageId[],
+            destination: folders.MailFolderId | folders.MailFolder,
+        ): Promise<any>;
 
         /**
          * Copies messages to a specified folder.
@@ -17528,25 +18460,23 @@ declare namespace browser {
          *
          * @param destination The folder to copy the messages to.
          */
-        export function copy(messageIds: number[], destination: folders.MailFolder): Promise<any>;
+        export function copy(
+            messageIds: MessageId[],
+            destination: folders.MailFolderId | folders.MailFolder,
+        ): Promise<any>;
 
         /**
          * Deletes messages permanently, or moves them to the trash folder
          * (honoring the account's deletion behavior settings). Deleting external
          * messages will throw an _ExtensionError_. The `skipTrash` parameter
          * allows immediate permanent deletion, bypassing the trash folder.
-         * **Note**: Consider using {@link messages.move} to manually move
-         * messages to the account's trash folder, instead of requesting the
-         * overly powerful permission to actually delete messages. The account's
-         * trash folder can be extracted as follows:
-         * [getTrash.js](https://raw.githubusercontent.com/thundernest/webext-docs/latest-mv2/includes/messages/getTrash.js)
          *
          * @param messageIds The IDs of the messages to delete.
          *
          * @param [skipTrash] If true, the message will be deleted permanently,
          * regardless of the account's deletion behavior settings.
          */
-        function _delete(messageIds: number[], skipTrash?: boolean): Promise<any>;
+        function _delete(messageIds: MessageId[], skipTrash?: boolean): Promise<any>;
 
         /**
          * Imports a message into a local Thunderbird folder. To import a message
@@ -17557,7 +18487,7 @@ declare namespace browser {
          */
         function _import(
             file: File,
-            destination: folders.MailFolder,
+            destination: folders.MailFolderId | folders.MailFolder,
             properties?: MessageProperties,
         ): Promise<MessageHeader>;
 
@@ -17567,13 +18497,18 @@ declare namespace browser {
          *
          * @param messageIds The IDs of the messages to archive.
          */
-        export function archive(messageIds: number[]): Promise<any>;
+        export function archive(messageIds: MessageId[]): Promise<any>;
 
         /**
          * Returns a list of tags that can be set on messages, and their
          * human-friendly name, colour, and sort order.
+         *
+         * @deprecated Deprecated since Thunderbird 121 and removed in Manifest
+         * V3: messages.listTags() is now available as messages.tags.list().
+         *
+         * Not supported on manifest versions above 2.
          */
-        export function listTags(): Promise<MessageTag[]>;
+        export function listTags(): Promise<messages.tags.MessageTag[]>;
 
         /**
          * Creates a new message tag. Tagging a message will store the tag's key
@@ -17585,15 +18520,26 @@ declare namespace browser {
          *
          * @param tag Human-readable tag name.
          *
-         * @param color Tag color in hex format (i.e.: #000080 for navy blue)
+         * @param color Tag color in hex format (i.e.: `#000080` for navy blue).
+         * Value will be stored as upper case.
+         *
+         * @deprecated Deprecated since Thunderbird 121 and removed in Manifest
+         * V3: messages.createTag() is now available as messages.tags.create().
+         *
+         * Not supported on manifest versions above 2.
          */
         export function createTag(key: string, tag: string, color: string): Promise<any>;
 
         /**
-         * Updates a message tag.
+         * Updates a message tag. Throws if the specified tag key does not exist.
          *
          * @param key Unique tag identifier (will be converted to lower case).
          * Must not include `()<>{/%*"` or spaces.
+         *
+         * @deprecated Deprecated since Thunderbird 121 and removed in Manifest
+         * V3: messages.updateTag() is now available as messages.tags.update().
+         *
+         * Not supported on manifest versions above 2.
          */
         export function updateTag(key: string, updateProperties: _UpdateTagUpdateProperties): Promise<any>;
 
@@ -17605,6 +18551,11 @@ declare namespace browser {
          *
          * @param key Unique tag identifier (will be converted to lower case).
          * Must not include `()<>{/%*"` or spaces.
+         *
+         * @deprecated Deprecated since Thunderbird 121 and removed in Manifest
+         * V3: messages.deleteTag() is now available as messages.tags.delete().
+         *
+         * Not supported on manifest versions above 2.
          */
         export function deleteTag(key: string): Promise<any>;
 
@@ -17625,13 +18576,116 @@ declare namespace browser {
          * Fired when a new message is received, and has been through junk
          * classification and message filters.
          */
-        export const onNewMailReceived: WebExtEvent<(folder: folders.MailFolder, messages: MessageList) => void>;
+        export const onNewMailReceived: _MessagesOnNewMailReceivedEvent;
+
+        /**
+         * Not allowed in: Content scripts, Devtools pages
+         *
+         * @see https://webextension-api.thunderbird.net/en/latest/messages.tags.html
+         */
+        export namespace tags {
+            /* messages.tags types */
+            export interface MessageTag {
+                /** Unique tag identifier. */
+                key: string;
+                /** Human-readable tag name. */
+                tag: string;
+                /** Tag color. */
+                color: string;
+                /** Custom sort string (usually empty). */
+                ordinal: string;
+            }
+
+            /**
+             * Used for filtering messages by tag in various methods. Note that
+             * functions using this type may have a partial implementation.
+             */
+            export interface TagsDetail {
+                /**
+                 * A _dictionary object_ with one or more filter condition as _key-value_
+                 * pairs, the _key_ being the tag to filter on, and the _value_ being a
+                 * boolean expression, requesting whether a message must include (`true`)
+                 * or exclude (`false`) the tag. For a list of available tags, call the
+                 * {@link messages.tags.list} method.
+                 */
+                tags: _TagsDetailTags;
+                /** Whether all of the tag filters must apply, or any of them. */
+                mode: _TagsDetailMode;
+            }
+
+            /**
+             * A _dictionary object_ with one or more filter condition as _key-value_
+             * pairs, the _key_ being the tag to filter on, and the _value_ being a
+             * boolean expression, requesting whether a message must include (`true`)
+             * or exclude (`false`) the tag. For a list of available tags, call the
+             * {@link messages.tags.list} method.
+             */
+            export interface _TagsDetailTags {
+                [key: string]: boolean;
+            }
+
+            /** Whether all of the tag filters must apply, or any of them. */
+            export type _TagsDetailMode = 'all' | 'any';
+
+            export interface _UpdateUpdateProperties {
+                /** Human-readable tag name. */
+                tag?: string | undefined;
+                /**
+                 * Tag color in hex format (i.e.: #000080 for navy blue). Value will be
+                 * stored as upper case.
+                 */
+                color?: string | undefined;
+            }
+
+            export { _delete as delete };
+
+            /* messages.tags functions */
+            /**
+             * Returns a list of tags that can be set on messages, and their
+             * human-friendly name, colour, and sort order.
+             */
+            export function list(): Promise<messages.tags.MessageTag[]>;
+
+            /**
+             * Creates a new message tag. Tagging a message will store the tag's key
+             * in the user's message. Throws if the specified tag key is used
+             * already.
+             *
+             * @param key Unique tag identifier (will be converted to lower case).
+             * Must not include `()<>{/%*"` or spaces.
+             *
+             * @param tag Human-readable tag name.
+             *
+             * @param color Tag color in hex format (i.e.: #000080 for navy blue).
+             * Value will be stored as upper case.
+             */
+            export function create(key: string, tag: string, color: string): Promise<any>;
+
+            /**
+             * Updates a message tag. Throws if the specified tag key does not exist.
+             *
+             * @param key Unique tag identifier (will be converted to lower case).
+             * Must not include `()<>{/%*"` or spaces.
+             */
+            export function update(key: string, updateProperties: _UpdateUpdateProperties): Promise<any>;
+
+            /**
+             * Deletes a message tag, removing it from the list of known tags. Its
+             * key will not be removed from tagged messages, but they will appear
+             * untagged. Recreating a deleted tag, will make all former tagged
+             * messages appear tagged again.
+             *
+             * @param key Unique tag identifier (will be converted to lower case).
+             * Must not include `()<>{/%*"` or spaces.
+             */
+            function _delete(key: string): Promise<any>;
+        }
     }
 
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/sessions.html
+     * @see https://webextension-api.thunderbird.net/en/latest/sessions.html
      */
     export namespace sessions {
         /* sessions functions */
@@ -17670,7 +18724,7 @@ declare namespace browser {
     /**
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/spaces.html
+     * @see https://webextension-api.thunderbird.net/en/latest/spaces.html
      */
     export namespace spaces {
         /* spaces types */
@@ -17843,7 +18897,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/spacesToolbar.html
+     * @see https://webextension-api.thunderbird.net/en/latest/spacesToolbar.html
      */
     export namespace spacesToolbar {
         /* spacesToolbar types */
@@ -17953,7 +19007,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/tabs.html
+     * @see https://webextension-api.thunderbird.net/en/latest/tabs.html
      */
     export namespace tabs {
         /* tabs types */
@@ -18012,8 +19066,12 @@ declare namespace browser {
              * compatibility reasons.
              */
             cookieStoreId?: string | undefined;
-            type?: _TabType | undefined;
-            /** Whether the tab is a 3-pane tab. */
+            type?: TabType | undefined;
+            /**
+             * Whether the tab is a 3-pane tab.
+             *
+             * Not supported on manifest versions above 2.
+             */
             mailTab?: boolean | undefined;
             /** The id of the space. */
             spaceId?: number | undefined;
@@ -18021,6 +19079,20 @@ declare namespace browser {
 
         /** Whether the tabs have completed loading. */
         export type TabStatus = 'loading' | 'complete';
+
+        /** Tab types supported by the tabs API. */
+        export type TabType =
+            | 'addressBook'
+            | 'calendar'
+            | 'calendarEvent'
+            | 'calendarTask'
+            | 'chat'
+            | 'content'
+            | 'mail'
+            | 'messageCompose'
+            | 'messageDisplay'
+            | 'special'
+            | 'tasks';
 
         /**
          * The type of a window. Under some circumstances a Window may not be
@@ -18054,19 +19126,6 @@ declare namespace browser {
             tabId?: number | undefined;
             windowId?: number | undefined;
         }
-
-        export type _TabType =
-            | 'addressBook'
-            | 'calendar'
-            | 'calendarEvent'
-            | 'calendarTask'
-            | 'chat'
-            | 'content'
-            | 'mail'
-            | 'messageCompose'
-            | 'messageDisplay'
-            | 'special'
-            | 'tasks';
 
         export interface _ConnectConnectInfo {
             /**
@@ -18102,10 +19161,13 @@ declare namespace browser {
              */
             index?: number | undefined;
             /**
-             * The URL to navigate the tab to initially. Fully-qualified URLs must
-             * include a scheme (i.e. `http://www.google.com`, not `www.google.com`).
-             * Relative URLs will be relative to the current page within the
-             * extension.
+             * The URL to navigate the tab to initially. If the URL points to a
+             * content page (a web page, an extension page or a registered
+             * WebExtension protocol handler page), the tab will navigate to the
+             * requested page. All other URLs will be opened externally after
+             * creating an empty tab. Fully-qualified URLs must include a scheme
+             * (i.e. `http://www.google.com`, not `www.google.com`). Relative URLs
+             * will be relative to the root of the extension.
              */
             url?: string | undefined;
             /**
@@ -18133,15 +19195,17 @@ declare namespace browser {
         }
 
         export interface _QueryQueryInfo {
-            /** Whether the tab is a Thunderbird 3-pane tab. */
+            /**
+             * Whether the tab is a Thunderbird 3-pane tab. If specified, the
+             * `queryInfo.type` property will be ignored
+             *
+             * Not supported on manifest versions above 2.
+             */
             mailTab?: boolean | undefined;
             /** The id of the space the tabs should belong to. */
             spaceId?: number | undefined;
-            /**
-             * Match tabs against the given Tab.type (see {@link tabs.Tab}). Ignored
-             * if `queryInfo.mailTab` is specified.
-             */
-            type?: string | undefined;
+            /** Match tabs against the given tab type or types. */
+            type?: TabType | TabType[] | undefined;
             /** Whether the tabs are active in their windows. */
             active?: boolean | undefined;
             /** Whether the tabs are highlighted. Works as an alias of active. */
@@ -18185,7 +19249,7 @@ declare namespace browser {
              * A URL of a page to load. If the URL points to a content page (a web
              * page, an extension page or a registered WebExtension protocol handler
              * page), the tab will navigate to the requested page. All other URLs
-             * will be opened externally without changing the tab. Note: This
+             * will be opened externally without changing the tab. **Note:** This
              * function will throw an error, if a content page is loaded into a
              * non-content tab (its type must be either `content` or `mail`).
              */
@@ -18489,7 +19553,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/theme.html
+     * @see https://webextension-api.thunderbird.net/en/latest/theme.html
      */
     export namespace theme {
         /* theme types */
@@ -18551,7 +19615,7 @@ declare namespace browser {
      *
      * Not allowed in: Content scripts, Devtools pages
      *
-     * @see https://webextension-api.thunderbird.net/en/115/windows.html
+     * @see https://webextension-api.thunderbird.net/en/latest/windows.html
      */
     export namespace windows {
         /* windows types */
@@ -18626,10 +19690,16 @@ declare namespace browser {
 
         export interface _CreateCreateData {
             /**
-             * A URL or array of URLs to open as tabs in the window. Fully-qualified
-             * URLs must include a scheme (i.e. `http://www.google.com`, not
-             * `www.google.com`). Relative URLs will be relative to the current page
-             * within the extension. Defaults to the New Tab Page.
+             * A URL to be opened in a popup window, ignored in all other window
+             * types. This may also be an array, but only the first element is used
+             * (popup windows may not have multiple tabs). If the URL points to a
+             * content page (a web page, an extension page or a registered
+             * WebExtension protocol handler page), the popup window will navigate to
+             * the requested page. All other URLs will be opened externally after
+             * creating an empty popup window. Fully-qualified URLs must include a
+             * scheme (i.e. `http://www.google.com`, not `www.google.com`). Relative
+             * URLs will be relative to the root of the extension. Defaults to the
+             * New Tab Page.
              */
             url?: string | string[] | undefined;
             /** The id of the tab for which you want to adopt to the new window. */
@@ -20191,7 +21261,7 @@ declare namespace browser {
          * inside the current extension. Returns null if the extension has no
          * background page.
          */
-        export function getBackgroundPage(): Window | void;
+        export function getBackgroundPage(): Window | undefined;
 
         /**
          * Retrieves the state of the extension's access to Incognito-mode (as
@@ -21510,6 +22580,15 @@ declare namespace browser {
          */
         export type OnRestartRequiredReason = 'app_update' | 'os_update' | 'periodic';
 
+        /** The performance warning event category, e.g. 'content_script'. */
+        export type OnPerformanceWarningCategory = 'content_script';
+
+        /**
+         * The performance warning event severity. Will be 'high' for serious and
+         * user-visible issues.
+         */
+        export type OnPerformanceWarningSeverity = 'low' | 'medium' | 'high';
+
         export type PlatformNaclArch = 'arm' | 'x86-32' | 'x86-64';
 
         /**
@@ -21580,6 +22659,20 @@ declare namespace browser {
             version: string;
         }
 
+        export interface _OnPerformanceWarningDetails {
+            /** The performance warning event category, e.g. 'content_script'. */
+            category: OnPerformanceWarningCategory;
+            /** The performance warning event severity, e.g. 'high'. */
+            severity: OnPerformanceWarningSeverity;
+            /** The `tabs.Tab` that the performance warning relates to, if any. */
+            tabId?: number | undefined;
+            /**
+             * An explanation of what the warning means, and hopefully how to address
+             * it.
+             */
+            description: string;
+        }
+
         /* runtime properties */
         /**
          * This will be defined during an API method callback if there was an
@@ -21642,7 +22735,7 @@ declare namespace browser {
         /**
          * Sets the URL to be visited upon uninstallation. This may be used to
          * clean up server-side data, do analytics, and implement surveys.
-         * Maximum 255 characters.
+         * Maximum 1023 characters.
          *
          * @param [url] URL to be opened after the extension is uninstalled. This
          * URL must have an http: or https: scheme. Set an empty string to not
@@ -21849,7 +22942,7 @@ declare namespace browser {
                 message: any,
                 sender: MessageSender,
                 sendResponse: (response?: any) => void,
-            ) => boolean | Promise<any> | void
+            ) => boolean | Promise<any> | undefined
         >;
 
         /**
@@ -21875,7 +22968,7 @@ declare namespace browser {
                 message: any,
                 sender: MessageSender,
                 sendResponse: (response?: any) => void,
-            ) => boolean | Promise<any> | void
+            ) => boolean | Promise<any> | undefined
         >;
 
         /**
@@ -21890,6 +22983,13 @@ declare namespace browser {
          * @deprecated Unsupported on Firefox at this time.
          */
         export const onRestartRequired: WebExtEvent<(reason: OnRestartRequiredReason) => void> | undefined;
+
+        /**
+         * Fired when a runtime performance issue is detected with the extension.
+         * Observe this event to be proactively notified of runtime performance
+         * problems with the extension.
+         */
+        export const onPerformanceWarning: WebExtEvent<(details: _OnPerformanceWarningDetails) => void>;
     }
 
     /**
@@ -22409,18 +23509,10 @@ declare namespace browser {
              * unique within a tab.
              */
             frameId: number;
-            /**
-             * Cause of the navigation.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionType?: TransitionType | undefined;
-            /**
-             * A list of transition qualifiers.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionQualifiers?: TransitionQualifier[] | undefined;
+            /** Cause of the navigation. */
+            transitionType: TransitionType;
+            /** A list of transition qualifiers. */
+            transitionQualifiers: TransitionQualifier[];
             /**
              * The time when the navigation was committed, in milliseconds since the
              * epoch.
@@ -22571,18 +23663,10 @@ declare namespace browser {
              * unique within a tab.
              */
             frameId: number;
-            /**
-             * Cause of the navigation.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionType?: TransitionType | undefined;
-            /**
-             * A list of transition qualifiers.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionQualifiers?: TransitionQualifier[] | undefined;
+            /** Cause of the navigation. */
+            transitionType: TransitionType;
+            /** A list of transition qualifiers. */
+            transitionQualifiers: TransitionQualifier[];
             /**
              * The time when the navigation was committed, in milliseconds since the
              * epoch.
@@ -22626,18 +23710,10 @@ declare namespace browser {
              * unique within a tab.
              */
             frameId: number;
-            /**
-             * Cause of the navigation.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionType?: TransitionType | undefined;
-            /**
-             * A list of transition qualifiers.
-             *
-             * @deprecated Unsupported on Firefox at this time.
-             */
-            transitionQualifiers?: TransitionQualifier[] | undefined;
+            /** Cause of the navigation. */
+            transitionType: TransitionType;
+            /** A list of transition qualifiers. */
+            transitionQualifiers: TransitionQualifier[];
             /**
              * The time when the navigation was committed, in milliseconds since the
              * epoch.
@@ -23183,7 +24259,7 @@ declare namespace browser {
         }
 
         export interface _WebRequestOnBeforeRequestEvent<
-            TCallback = (details: _OnBeforeRequestDetails) => BlockingResponse | Promise<BlockingResponse> | void,
+            TCallback = (details: _OnBeforeRequestDetails) => BlockingResponse | Promise<BlockingResponse> | undefined,
         > {
             addListener(cb: TCallback, filter: RequestFilter, extraInfoSpec?: OnBeforeRequestOptions[]): void;
             removeListener(cb: TCallback): void;
@@ -23249,7 +24325,7 @@ declare namespace browser {
         }
 
         export interface _WebRequestOnBeforeSendHeadersEvent<
-            TCallback = (details: _OnBeforeSendHeadersDetails) => BlockingResponse | Promise<BlockingResponse> | void,
+            TCallback = (details: _OnBeforeSendHeadersDetails) => BlockingResponse | Promise<BlockingResponse> | undefined,
         > {
             addListener(cb: TCallback, filter: RequestFilter, extraInfoSpec?: OnBeforeSendHeadersOptions[]): void;
             removeListener(cb: TCallback): void;
@@ -23380,7 +24456,7 @@ declare namespace browser {
         }
 
         export interface _WebRequestOnHeadersReceivedEvent<
-            TCallback = (details: _OnHeadersReceivedDetails) => BlockingResponse | Promise<BlockingResponse> | void,
+            TCallback = (details: _OnHeadersReceivedDetails) => BlockingResponse | Promise<BlockingResponse> | undefined,
         > {
             addListener(cb: TCallback, filter: RequestFilter, extraInfoSpec?: OnHeadersReceivedOptions[]): void;
             removeListener(cb: TCallback): void;
@@ -23465,7 +24541,7 @@ declare namespace browser {
         }
 
         export interface _WebRequestOnAuthRequiredEvent<
-            TCallback = (details: _OnAuthRequiredDetails) => BlockingResponse | Promise<BlockingResponse> | void,
+            TCallback = (details: _OnAuthRequiredDetails) => BlockingResponse | Promise<BlockingResponse> | undefined,
         > {
             addListener(cb: TCallback, filter: RequestFilter, extraInfoSpec?: OnAuthRequiredOptions[]): void;
             removeListener(cb: TCallback): void;
