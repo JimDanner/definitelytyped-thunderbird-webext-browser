@@ -88,7 +88,12 @@ How you install the definition file `index.d.ts` in your IDE depends on the IDE.
 The definitions [are also in](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/thunderbird-webext-browser) the `@types` repository, also known as [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped), and in the [npm repository](https://www.npmjs.com/package/@types/thunderbird-webext-browser), so a development environment can install it from those sources as `@types/thunderbird-webext-browser`.
 
 <details><summary><b>Submitting updates to DefinitelyTyped</b> (click the arrow for details)</summary>
+<<<<<<< HEAD
 The DefinitelyTyped repository will accept updates in the form of pull requests. See <a href="doc/TypeScript%20Declaration%20files.md#Publishing-to-DefinitelyTyped">the detailed documentation</a>. A brief summary:
+=======
+The DefinitelyTyped repository will accept updates in the form of pull requests. See 
+<a href="doc/TypeScript%20Declaration%20files.md#Publishing-to-DefinitelyTyped">the detailed documentation</a>. A brief summary:
+>>>>>>> a306207f4213b2261983d9c8211b71320cacbf0e
 
 * Update your personal fork of the DefinitelyTyped repository
 * Sparse-clone (or pull) your fork to your computer
